@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* global.css or styles.css */
+
+/* Center the whole container */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* Calendar and form container */
+.container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Calendar container styles */
+.calendar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Booking form styles */
+.form-container {
+  width: 350px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+h3 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Calendar Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  font-size: 16px;
+}
+
+th {
+  background-color: #f3f4f6;
+}
+
+td {
+  cursor: pointer;
+}
+
+td:hover {
+  background-color: #e5e7eb;
+}
+
+/* Month Navigation Buttons */
+button {
+  padding: 10px 20px;
+  background-color: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #4338ca;
+}
+
+/* Input Fields Styling for Form */
+input[type="date"],
+input[type="number"],
+input[type="text"] {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 16px;
+}
+
+/* Styling the form submit button */
+button[type="button"] {
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button[type="button"]:hover {
+  background-color: #45a049;
+}
