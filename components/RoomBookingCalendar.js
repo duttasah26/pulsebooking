@@ -126,6 +126,7 @@ const RoomBookingCalendar = () => {
         check_in: checkInDate.toISOString().split('T')[0],
         check_out: checkOutDate.toISOString().split('T')[0],
         name: '',
+        phone: '',
         channel: 'Website',
         guests: 1,
         nights: lastCell.day - firstCell.day + 1,
@@ -151,7 +152,7 @@ const RoomBookingCalendar = () => {
     try {
       if (selectedBooking && selectedBooking.id) {
         // Update existing booking
-        await axios.put(`/api/bookings/${selectedBooking.id}`, bookingData);
+        await axios.patch(`/api/bookings/${selectedBooking.id}`, bookingData);
       } else {
         // Create new booking
         await axios.post('/api/bookings', bookingData);
@@ -282,6 +283,20 @@ const RoomBookingCalendar = () => {
               className={`border p-2 rounded-md w-full ${selectedBooking ? '' : 'bg-gray-100'}`}
               readOnly={!selectedBooking}
               required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-2">Phone:</label>
+            <input
+              type="tel"
+              value={selectedBooking ? selectedBooking.phone || '' : ''}
+              onChange={(e) => setSelectedBooking(prev => ({
+                ...prev,
+                phone: e.target.value
+              }))}
+              className={`border p-2 rounded-md w-full ${selectedBooking ? '' : 'bg-gray-100'}`}
+              readOnly={!selectedBooking}
             />
           </div>
 

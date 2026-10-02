@@ -1,14 +1,13 @@
-import db from './db';
+import sql from '../../lib/db';
+import { route } from '../../lib/api';
 
-export default function handler(req, res) {
-  if (req.method === 'GET') {
-    db.query('SELECT * FROM rooms', (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.status(200).json(results);
-    });
-  } else {
-    res.status(405).json({ message: 'Method Not Allowed' });
-  }
+// GET /api/rooms           active rooms only
+// GET /api/rooms?all=1     include retired rooms (needed to show old bookings)
+async function list(req, res) {
+  const rows = req.query.all
+    ? await sql`SELECT id, number, active FROM rooms ORDER BY number`
+    : await sql`SELECT id, number, active FROM rooms WHERE active ORDER BY number`;
+  res.status(200).json(rows);
 }
+
+export default route({ GET: list });
