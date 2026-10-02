@@ -1,12 +1,10 @@
-import RoomBookingCalendar from '@/components/RoomBookingCalendar';
+import Layout from '../components/Layout';
+import CalendarPage from '../components/calendar/CalendarPage';
 
-
-const Home = () => {
+export default function Home() {
   return (
-    <div className="container">
-      <RoomBookingCalendar />
-    </div>
+    <Layout title="Calendar">
+      <CalendarPage />
+    </Layout>
   );
-};
-
-export default Home;
+}

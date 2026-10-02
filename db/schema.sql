@@ -35,6 +35,7 @@ CREATE TABLE bookings (
   adults      int NOT NULL DEFAULT 1,
   children    int NOT NULL DEFAULT 0,
   notes       text,
+  color       text,                        -- palette key, NULL = automatic per guest
   created_at  timestamptz NOT NULL DEFAULT now(),
   created_by  text,
   updated_at  timestamptz NOT NULL DEFAULT now(),

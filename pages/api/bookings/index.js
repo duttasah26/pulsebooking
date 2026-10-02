@@ -1,6 +1,6 @@
 import sql from '../../../lib/db';
 import { bookingColumns, bookingJoins, getBooking } from '../../../lib/bookings';
-import { HttpError, actor, parseId, parseDate, parseStay, route } from '../../../lib/api';
+import { HttpError, actor, parseColor, parseId, parseDate, parseStay, route } from '../../../lib/api';
 
 const SORTS = {
   check_in: sql`lower(b.stay)`,
@@ -98,13 +98,13 @@ async function create(req, res) {
   const id = await sql.begin(async (tx) => {
     const guestId = await resolveGuestId(tx, body);
     const [row] = await tx`
-      INSERT INTO bookings (room_id, guest_id, stay, status, channel, rate_plan, adults, children, notes, created_by)
+      INSERT INTO bookings (room_id, guest_id, stay, status, channel, rate_plan, adults, children, notes, color, created_by)
       VALUES (
         ${roomId}, ${guestId}, ${stay},
         ${body.status ?? 'confirmed'}, ${body.channel ?? 'Direct'}, ${body.rate_plan ?? 'EP'},
         ${Number.isInteger(body.adults) ? body.adults : Number.isInteger(body.guests) ? body.guests : 1},
         ${Number.isInteger(body.children) ? body.children : 0},
-        ${body.notes ?? null}, ${by}
+        ${body.notes ?? null}, ${parseColor(body.color)}, ${by}
       )
       RETURNING id
     `;
