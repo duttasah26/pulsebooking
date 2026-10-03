@@ -76,6 +76,12 @@ body {
   }
 }
 
+/* Booked or on-hold nights: diagonal hatching. */
+.hatch {
+  background-color: var(--surface-2);
+  background-image: repeating-linear-gradient(135deg, transparent 0 4px, color-mix(in srgb, var(--muted) 30%, transparent) 4px 5px);
+}
+
 /* Drag selection: cells pop in as the range grows; new bookings ease in. */
 @keyframes pop {
   from { transform: scale(0.8); opacity: 0.35; }

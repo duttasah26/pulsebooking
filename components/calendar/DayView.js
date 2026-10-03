@@ -28,7 +28,7 @@ function Row({ b, detail, onOpen }) {
 
 // Front-desk view for one date: who arrives, who leaves, who is in, which rooms are free.
 export default function DayView({ date, rooms, bookings, onOpen, onCreate }) {
-  const live = bookings.filter((b) => b.status !== 'cancelled');
+  const live = bookings.filter((b) => b.status !== 'cancelled'); // on-hold bookings count: they block the room
   const arriving = live.filter((b) => b.check_in === date);
   const departing = live.filter((b) => b.check_out === date);
   const inHouse = live.filter((b) => b.check_in <= date && b.check_out > date);
@@ -57,7 +57,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate }) {
           <li key={r.id}>
             <button
               type="button"
-              onClick={() => onCreate({ room: r, checkIn: date, checkOut: addDays(date, 1) })}
+              onClick={() => onCreate({ roomIds: [r.id], checkIn: date, checkOut: addDays(date, 1) })}
               className="flex min-h-14 w-full items-center justify-between px-4 py-2 text-left hover:bg-surface-2"
             >
               <span className="font-mono font-semibold">Room {r.number}</span>

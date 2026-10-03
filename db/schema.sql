@@ -17,17 +17,18 @@ CREATE TABLE guests (
   phone       text,
   email       text,
   notes       text,
+  organization text,                       -- default organization for this guest
   created_at  timestamptz NOT NULL DEFAULT now(),
   CHECK (phone IS NOT NULL OR email IS NOT NULL)
 );
 CREATE INDEX guests_name_idx ON guests (lower(name));
 
-CREATE TYPE booking_status AS ENUM ('confirmed', 'checked_in', 'checked_out', 'cancelled');
+CREATE TYPE booking_status AS ENUM ('confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hold');
 
 CREATE TABLE bookings (
   id          serial PRIMARY KEY,
   room_id     int NOT NULL REFERENCES rooms(id),
-  guest_id    int NOT NULL REFERENCES guests(id),
+  guest_id    int REFERENCES guests(id),   -- NULL only for an on-hold booking
   stay        daterange NOT NULL,          -- [check_in, check_out)
   status      booking_status NOT NULL DEFAULT 'confirmed',
   channel     text NOT NULL DEFAULT 'Direct',
@@ -36,6 +37,9 @@ CREATE TABLE bookings (
   children    int NOT NULL DEFAULT 0,
   notes       text,
   color       text,                        -- palette key, NULL = automatic per guest
+  organization text,
+  label       text,                        -- short title, mainly for holds
+  group_id    uuid,                        -- shared by rooms booked together
   created_at  timestamptz NOT NULL DEFAULT now(),
   created_by  text,
   updated_at  timestamptz NOT NULL DEFAULT now(),
@@ -43,12 +47,14 @@ CREATE TABLE bookings (
   deleted_at  timestamptz,
   deleted_by  text,
   CHECK (NOT isempty(stay)),
+  CONSTRAINT bookings_guest_required CHECK (guest_id IS NOT NULL OR status = 'on_hold'),
   -- No overlapping stays in the same room, ignoring deleted/cancelled rows.
   EXCLUDE USING gist (room_id WITH =, stay WITH &&)
     WHERE (deleted_at IS NULL AND status <> 'cancelled')
 );
 CREATE INDEX bookings_stay_idx ON bookings USING gist (stay);
 CREATE INDEX bookings_guest_idx ON bookings (guest_id);
+CREATE INDEX bookings_group_idx ON bookings (group_id) WHERE group_id IS NOT NULL;
 
 CREATE TABLE booking_history (
   id          serial PRIMARY KEY,

@@ -8,21 +8,21 @@ const contact = (g) => [g.phone, g.email].filter(Boolean).join(', ');
 /*
   Pick an existing guest or add a new one.
   Names are not unique, so matches show phone / email and the last stay.
-  onChange receives { guestId } for an existing guest, { newGuest: {name, phone, email} } for a new one,
+  onChange receives { guestId, guest } for an existing guest, { newGuest: {name, phone, email, organization} } for a new one,
   or null while nothing valid is chosen.
 */
 export default function GuestPicker({ initial, onChange }) {
   const [selected, setSelected] = useState(initial ?? null);
   const [query, setQuery] = useState('');
   const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState({ name: '', phone: '', email: '' });
+  const [draft, setDraft] = useState({ name: '', phone: '', email: '', organization: '' });
 
   const debounced = useDebounced(query.trim());
   const search = useApi(!selected && !adding && debounced.length >= 2 ? `/api/guests?q=${encodeURIComponent(debounced)}` : null);
   const matches = (search.data ?? []).slice(0, 6);
 
   useEffect(() => {
-    if (selected) onChange({ guestId: selected.id });
+    if (selected) onChange({ guestId: selected.id, guest: selected });
     else if (adding && draft.name.trim() && (draft.phone.trim() || draft.email.trim())) onChange({ newGuest: draft });
     else onChange(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,7 +36,9 @@ export default function GuestPicker({ initial, onChange }) {
           <UserCircle size={28} className="shrink-0 text-muted" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{selected.name}</p>
-            <p className="truncate text-sm text-muted">{contact(selected) || 'No contact saved'}</p>
+            <p className="truncate text-sm text-muted">
+              {[contact(selected) || 'No contact saved', selected.organization].filter(Boolean).join(', ')}
+            </p>
           </div>
           <button type="button" className="btn" onClick={() => { setSelected(null); setQuery(''); }}>
             Change
@@ -64,6 +66,10 @@ export default function GuestPicker({ initial, onChange }) {
             <label className="label" htmlFor="ng-email">Email</label>
             <input id="ng-email" type="email" inputMode="email" className="field" value={draft.email} onChange={set('email')} />
           </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="ng-org">Organization (optional)</label>
+          <input id="ng-org" className="field" value={draft.organization} onChange={set('organization')} autoComplete="off" />
         </div>
         <p className="text-sm text-muted">Phone or email is needed so guests with the same name can be told apart.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
@@ -95,6 +101,7 @@ export default function GuestPicker({ initial, onChange }) {
                 <span className="font-medium">{g.name}</span>
                 <span className="text-sm text-muted">
                   {contact(g) || 'No contact saved'}
+                  {g.organization ? `, ${g.organization}` : ''}
                   {Number(g.stays) > 0 && `, ${g.stays} stay${Number(g.stays) === 1 ? '' : 's'}, last ${fmtDayMonthYear(g.last_check_in)}`}
                 </span>
               </button>
@@ -105,7 +112,7 @@ export default function GuestPicker({ initial, onChange }) {
             <button
               type="button"
               className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium text-accent hover:bg-surface-2"
-              onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '' }); }}
+              onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '' }); }}
             >
               <Plus size={18} /> Add &ldquo;{query.trim()}&rdquo; as a new guest
             </button>

@@ -5,9 +5,8 @@ import Sheet from '../components/Sheet';
 import BookingSheet from '../components/BookingSheet';
 import { useToast } from '../components/Toast';
 import { api, useApi, useDebounced } from '../lib/useApi';
+import { STATUS_LABEL } from '../lib/status';
 import { addDays, fmtDayMonthYear, fmtShort, nightsLabel, today } from '../lib/dates';
-
-const STATUS = { confirmed: 'Confirmed', checked_in: 'Checked in', checked_out: 'Checked out', cancelled: 'Cancelled' };
 
 export default function Guests() {
   const [q, setQ] = useState('');
@@ -28,7 +27,7 @@ export default function Guests() {
 
         <div className="relative">
           <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-          <input className="field pl-10" placeholder="Search by name, phone or email" aria-label="Search guests" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="field pl-10" placeholder="Search by name, phone, email or organization" aria-label="Search guests" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
 
         {list.error && (
@@ -54,7 +53,7 @@ export default function Guests() {
                   <UserCircle size={32} className="shrink-0 text-muted" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{g.name}</span>
-                    <span className="block truncate text-sm text-muted">{[g.phone, g.email].filter(Boolean).join(', ') || 'No contact saved'}</span>
+                    <span className="block truncate text-sm text-muted">{[g.phone, g.email, g.organization].filter(Boolean).join(', ') || 'No contact saved'}</span>
                   </span>
                   <span className="shrink-0 text-right text-sm">
                     <span className="block font-mono font-semibold">{g.stays} stay{Number(g.stays) === 1 ? '' : 's'}</span>
@@ -90,7 +89,7 @@ function GuestSheet({ id, onClose, onChanged }) {
 }
 
 function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
-  const [form, setForm] = useState({ name: guest?.name ?? '', phone: guest?.phone ?? '', email: guest?.email ?? '', notes: guest?.notes ?? '' });
+  const [form, setForm] = useState({ name: guest?.name ?? '', phone: guest?.phone ?? '', email: guest?.email ?? '', organization: guest?.organization ?? '', notes: guest?.notes ?? '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [booking, setBooking] = useState(null);
@@ -103,7 +102,7 @@ function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
     if (!form.phone.trim() && !form.email.trim()) return setError('Add a phone or email so guests with the same name can be told apart.');
     setBusy(true);
     try {
-      const body = { name: form.name.trim(), phone: form.phone.trim() || null, email: form.email.trim() || null, notes: form.notes.trim() || null };
+      const body = { name: form.name.trim(), phone: form.phone.trim() || null, email: form.email.trim() || null, organization: form.organization.trim() || null, notes: form.notes.trim() || null };
       if (isNew) await api('/api/guests', { method: 'POST', body });
       else await api(`/api/guests/${guest.id}`, { method: 'PATCH', body });
       toast({ message: isNew ? 'Guest added' : 'Guest updated', duration: 3000 });
@@ -145,6 +144,10 @@ function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
             </div>
           </div>
           <div>
+            <label className="label" htmlFor="g-org">Organization</label>
+            <input id="g-org" className="field" value={form.organization} onChange={set('organization')} autoComplete="off" />
+          </div>
+          <div>
             <label className="label" htmlFor="g-notes">Notes</label>
             <textarea id="g-notes" rows={3} className="field" value={form.notes} onChange={set('notes')} />
           </div>
@@ -161,7 +164,7 @@ function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
                 disabled={rooms.length === 0}
                 onClick={() => {
                   const t = today();
-                  setBooking({ roomId: rooms[0].id, checkIn: t, checkOut: addDays(t, 1), guest });
+                  setBooking({ roomIds: [rooms[0].id], checkIn: t, checkOut: addDays(t, 1), guest });
                 }}
               >
                 <Plus size={18} /> Book again
@@ -177,7 +180,7 @@ function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
                       <span className="block font-medium">{fmtShort(b.check_in)} to {fmtShort(b.check_out)}</span>
                       <span className="block text-muted">Room {b.room_number}, {nightsLabel(b.nights)}</span>
                     </span>
-                    <span className="badge shrink-0">{b.deleted_at ? 'Deleted' : STATUS[b.status]}</span>
+                    <span className="badge shrink-0">{b.deleted_at ? 'Deleted' : STATUS_LABEL[b.status]}</span>
                   </li>
                 ))}
               </ul>

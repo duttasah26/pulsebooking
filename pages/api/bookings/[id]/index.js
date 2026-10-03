@@ -12,7 +12,10 @@ async function get(req, res) {
   res.status(200).json({ ...booking, history });
 }
 
-const EDITABLE = ['room_id', 'guest_id', 'status', 'channel', 'rate_plan', 'adults', 'children', 'notes', 'color'];
+const EDITABLE = [
+  'room_id', 'guest_id', 'status', 'channel', 'rate_plan', 'adults', 'children', 'notes', 'color', 'organization', 'label',
+];
+const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hold'];
 
 // PATCH sends only the fields that changed. Dates: send check_in and/or check_out.
 // The no-overlap rule is re-checked by the database on every edit.
@@ -26,10 +29,20 @@ async function patch(req, res) {
   const updates = { updated_by: actor(req) };
   for (const key of EDITABLE) if (body[key] !== undefined) updates[key] = body[key];
   if ('color' in updates) updates.color = parseColor(updates.color);
+  for (const key of ['organization', 'label']) {
+    if (key in updates) updates[key] = updates[key]?.toString().trim() || null;
+  }
+  if ('status' in updates && !STATUSES.includes(updates.status)) {
+    throw new HttpError(400, `status must be one of ${STATUSES.join(', ')}`);
+  }
   if (body.guests !== undefined && body.adults === undefined) updates.adults = body.guests;
   if (body.check_in !== undefined || body.check_out !== undefined) {
     updates.stay = parseStay(body.check_in ?? existing.check_in, body.check_out ?? existing.check_out);
   }
+
+  const nextStatus = updates.status ?? existing.status;
+  const nextGuest = 'guest_id' in updates ? updates.guest_id : existing.guest_id;
+  if (nextStatus !== 'on_hold' && !nextGuest) throw new HttpError(400, 'Choose a guest before confirming this booking');
 
   const keys = Object.keys(updates);
   await sql`UPDATE bookings SET ${sql(updates, ...keys)} WHERE id = ${id}`;

@@ -5,11 +5,13 @@ import BookingSheet from '../components/BookingSheet';
 import { useToast } from '../components/Toast';
 import { colorFor } from '../lib/colors';
 import { api, useApi, useDebounced } from '../lib/useApi';
+import { STATUS_LABEL } from '../lib/status';
 import { addDays, fmtDateTime, fmtShort, nightsLabel, today } from '../lib/dates';
 
 const TABS = [
   { key: 'upcoming', label: 'Upcoming', query: 'when=upcoming', dir: 'asc' },
   { key: 'current', label: 'In house', query: 'when=current', dir: 'asc' },
+  { key: 'hold', label: 'On hold', query: 'status=on_hold&when=all', dir: 'asc' },
   { key: 'past', label: 'Past', query: 'when=past', dir: 'desc' },
   { key: 'deleted', label: 'Deleted', query: 'deleted=only&when=all', dir: 'desc' },
   { key: 'all', label: 'All', query: 'when=all', dir: 'desc' },
@@ -20,7 +22,6 @@ const SORTS = [
   ['room', 'Room'],
   ['created', 'Date added'],
 ];
-const STATUS = { confirmed: 'Confirmed', checked_in: 'Checked in', checked_out: 'Checked out', cancelled: 'Cancelled' };
 
 export default function Bookings() {
   const toast = useToast();
@@ -66,7 +67,7 @@ export default function Bookings() {
             disabled={!rooms.data?.length}
             onClick={() => {
               const t = today();
-              setSheet({ mode: 'create', defaults: { roomId: rooms.data[0].id, checkIn: t, checkOut: addDays(t, 1) } });
+              setSheet({ mode: 'create', defaults: { roomIds: [rooms.data[0].id], checkIn: t, checkOut: addDays(t, 1) } });
             }}
           >
             <Plus size={18} /> New booking
@@ -91,7 +92,7 @@ export default function Bookings() {
         <div className="flex gap-2">
           <div className="relative flex-1">
             <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input className="field pl-10" placeholder="Search by guest name" aria-label="Search by guest name" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input className="field pl-10" placeholder="Search guest, organization or label" aria-label="Search guest, organization or label" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           <select className="field !w-auto" aria-label="Sort by" value={sort} onChange={(e) => setSort(e.target.value)}>
             {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -137,7 +138,9 @@ export default function Bookings() {
                   >
                     <span className="min-w-0">
                       <span className={`block truncate font-medium ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
-                      <span className="block truncate text-sm text-muted">{b.phone || b.email || 'No contact saved'}</span>
+                      <span className="block truncate text-sm text-muted">
+                        {[b.organization, b.guest_id ? b.phone || b.email || 'No contact saved' : 'No guest yet'].filter(Boolean).join(', ')}
+                      </span>
                     </span>
                     <span className="font-mono text-sm font-semibold md:order-none">Room {b.room_number}</span>
                     <span className="col-span-2 text-sm md:col-span-1">
@@ -146,7 +149,7 @@ export default function Bookings() {
                     </span>
                     <span className="col-span-2 md:col-span-1">
                       <span className="badge">
-                        {isDeleted ? `Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}` : STATUS[b.status]}
+                        {isDeleted ? `Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}` : STATUS_LABEL[b.status]}
                       </span>
                     </span>
                   </button>
