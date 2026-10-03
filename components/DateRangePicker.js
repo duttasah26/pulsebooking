@@ -83,7 +83,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
               onClick={() => pick(d)}
               aria-label={`${fmtShort(d)}${isStart ? ', check-in' : isEnd ? ', check-out' : busy ? ', booked' : ''}`}
               aria-pressed={isStart || isEnd}
-              className={`cell mx-auto flex size-10 items-center justify-center rounded-lg font-mono text-sm transition-colors lg:size-7 lg:text-xs disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
+              className={`cell mx-auto flex size-10 items-center justify-center rounded-lg font-mono text-sm transition-colors lg:size-6 lg:text-[11px] disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
                 d === todayStr && !isStart && !isEnd ? 'ring-1 ring-accent' : ''
               }`}
             >

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { MagnifyingGlass, Plus, UserCircle } from '@phosphor-icons/react';
+import { Buildings, Envelope, MagnifyingGlass, Phone, Plus, User, UserCircle } from '@phosphor-icons/react';
+import FieldLabel from './FieldLabel';
 import { useApi, useDebounced } from '../lib/useApi';
 import { fmtDayMonthYear } from '../lib/dates';
 
@@ -11,7 +12,7 @@ const contact = (g) => [g.phone, g.email].filter(Boolean).join(', ');
   onChange receives { guestId, guest } for an existing guest, { newGuest: {name, phone, email, organization} } for a new one,
   or null while nothing valid is chosen.
 */
-export default function GuestPicker({ initial, onChange, onQuery }) {
+export default function GuestPicker({ initial, onChange, onQuery, tone }) {
   const [selected, setSelected] = useState(initial ?? null);
   const [query, setQuery] = useState('');
   const [adding, setAdding] = useState(false);
@@ -37,8 +38,11 @@ export default function GuestPicker({ initial, onChange, onQuery }) {
   if (selected) {
     return (
       <div>
-        <span className="label">Guest</span>
-        <div className="flex items-center gap-3 rounded-lg border border-line p-3">
+        <FieldLabel as="span" icon={User}>Guest</FieldLabel>
+        <div
+          className="flex items-center gap-3 rounded-lg border border-line p-3"
+          style={tone ? { backgroundColor: tone.bg, borderColor: tone.border } : undefined}
+        >
           <UserCircle size={28} className="shrink-0 text-muted" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{selected.name}</p>
@@ -58,28 +62,28 @@ export default function GuestPicker({ initial, onChange, onQuery }) {
     const set = (k) => (e) => setDraft({ ...draft, [k]: e.target.value });
     return (
       <fieldset className="space-y-3">
-        <legend className="label">New guest</legend>
+        <FieldLabel as="legend" icon={User}>New Guest</FieldLabel>
         <div>
-          <label className="label" htmlFor="ng-name">Name</label>
-          <input id="ng-name" className="field" value={draft.name} onChange={set('name')} autoComplete="off" autoFocus />
+          <FieldLabel icon={User} htmlFor="ng-name">Name</FieldLabel>
+          <input id="ng-name" name="guest-name" className="field" value={draft.name} onChange={set('name')} autoComplete="off" autoFocus />
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="label" htmlFor="ng-phone">Phone</label>
-            <input id="ng-phone" type="tel" inputMode="tel" className="field" value={draft.phone} onChange={set('phone')} />
+            <FieldLabel icon={Phone} htmlFor="ng-phone">Phone (optional)</FieldLabel>
+            <input id="ng-phone" name="guest-phone" type="tel" inputMode="tel" className="field" value={draft.phone} onChange={set('phone')} autoComplete="off" placeholder="+91 98450 12345" />
           </div>
           <div>
-            <label className="label" htmlFor="ng-email">Email</label>
-            <input id="ng-email" type="email" inputMode="email" className="field" value={draft.email} onChange={set('email')} />
+            <FieldLabel icon={Envelope} htmlFor="ng-email">Email (optional)</FieldLabel>
+            <input id="ng-email" name="guest-email" type="email" inputMode="email" className="field" value={draft.email} onChange={set('email')} autoComplete="off" spellCheck={false} placeholder="name@example.com" />
           </div>
         </div>
         <div>
-          <label className="label" htmlFor="ng-org">Organization (optional)</label>
-          <input id="ng-org" className="field" value={draft.organization} onChange={set('organization')} autoComplete="off" />
+          <FieldLabel icon={Buildings} htmlFor="ng-org">Organization (optional)</FieldLabel>
+          <input id="ng-org" name="guest-organization" className="field" value={draft.organization} onChange={set('organization')} autoComplete="off" />
         </div>
         <p className="text-sm text-muted">Phone and email are optional. Add one if two guests share a name.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
-          Back to search
+          Back to Search
         </button>
       </fieldset>
     );
@@ -87,13 +91,16 @@ export default function GuestPicker({ initial, onChange, onQuery }) {
 
   return (
     <div>
-      <label className="label" htmlFor="guest-search">Guest</label>
+      <FieldLabel icon={User} htmlFor="guest-search">Guest</FieldLabel>
       <div className="relative">
-        <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+        <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
         <input
           id="guest-search"
+          name="guest-search"
+          type="search"
+          spellCheck={false}
           className="field pl-10"
-          placeholder="Search by name, phone or email"
+          placeholder="Search by name, phone or email…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
@@ -113,14 +120,14 @@ export default function GuestPicker({ initial, onChange, onQuery }) {
               </button>
             </li>
           ))}
-          {search.loading && matches.length === 0 && <li className="px-3 py-3 text-sm text-muted">Searching...</li>}
+          {search.loading && matches.length === 0 && <li className="px-3 py-3 text-sm text-muted">Searching…</li>}
           <li>
             <button
               type="button"
               className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium text-accent-text hover:bg-surface-2"
               onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '' }); }}
             >
-              <Plus size={18} /> Add &ldquo;{query.trim()}&rdquo; as a new guest
+              <Plus size={18} aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest
             </button>
           </li>
         </ul>

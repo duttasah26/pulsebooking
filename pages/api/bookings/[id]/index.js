@@ -68,8 +68,8 @@ async function remove(req, res) {
     )
     SELECT id, true AS hold FROM hold UNION ALL SELECT id, false AS hold FROM soft
   `;
-  if (!row) throw new HttpError(404, 'Booking not found or already deleted');
-  res.status(200).json(row);
+  // Deleting something that is already gone is a success, so a double click or a retried request is harmless.
+  res.status(200).json(row ?? { id, hold: false, gone: true });
 }
 
 export default route({ GET: get, PATCH: patch, DELETE: remove });

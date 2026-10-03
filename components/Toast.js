@@ -38,7 +38,11 @@ export function ToastProvider({ children }) {
                 className="min-h-11 rounded-lg px-3 font-semibold underline underline-offset-2"
                 onClick={async () => {
                   dismiss();
-                  await toast.onAction?.();
+                  try {
+                    await toast.onAction?.();
+                  } catch (err) {
+                    show({ message: err.message || 'Something went wrong', duration: 4000 });
+                  }
                 }}
               >
                 {toast.actionLabel}

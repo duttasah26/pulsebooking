@@ -15,7 +15,7 @@ function Section({ title, count, icon: Icon, children, empty }) {
 function Row({ b, detail, onOpen }) {
   return (
     <li>
-      <button type="button" onClick={() => onOpen(b)} className="flex min-h-14 w-full items-center justify-between gap-3 px-4 py-2 text-left hover:bg-surface-2">
+      <button type="button" onClick={() => onOpen(b)} className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-2 text-left hover:bg-surface-2">
         <span className="min-w-0">
           <span className="block truncate font-medium">{b.name}</span>
           <span className="block truncate text-sm text-muted">{detail}</span>

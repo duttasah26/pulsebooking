@@ -36,6 +36,20 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+/* No double-tap zoom delay on anything tappable, and no grey flash on tap (pressed states are drawn instead). */
+button, a, select, summary, label, input, textarea, [role="tab"], [role="gridcell"] {
+  touch-action: manipulation;
+}
+html {
+  -webkit-tap-highlight-color: transparent;
+  /* Keep the scrollbar's space reserved. Opening a pop-up form hides the page scrollbar, which used to widen the
+     calendar by a few pixels and made it look like it zoomed. */
+  scrollbar-gutter: stable;
+}
+h1, h2 {
+  text-wrap: balance;
+}
+
 html,
 body {
   background: var(--canvas);
@@ -51,7 +65,7 @@ body {
 @layer components {
   /* Touch size on phones, denser on desktop (24px minimum target, 8px+ between targets). */
   .field {
-    @apply block min-h-11 w-full rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted lg:min-h-9 lg:py-1 lg:text-sm;
+    @apply block min-h-11 w-full rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted lg:min-h-8 lg:py-0.5 lg:text-sm;
   }
   .field:focus-visible,
   .btn:focus-visible,
@@ -60,10 +74,10 @@ body {
     outline-offset: 2px;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-ink lg:mb-1;
+    @apply mb-1.5 block text-sm font-medium text-ink lg:mb-0.5 lg:text-xs;
   }
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50 lg:min-h-9;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50 lg:min-h-8;
   }
   .btn-primary {
     @apply border-transparent bg-accent text-accent-ink hover:bg-accent hover:opacity-90;
@@ -72,7 +86,7 @@ body {
     @apply text-danger;
   }
   .btn-icon {
-    @apply min-h-11 min-w-11 px-0 lg:min-h-9 lg:min-w-9;
+    @apply min-h-11 min-w-11 px-0 lg:min-h-8 lg:min-w-8;
   }
   .badge {
     @apply inline-flex items-center rounded-lg border border-line px-2 py-0.5 text-xs font-medium text-muted;
@@ -90,13 +104,14 @@ body {
 }
 
 /* Drag selection: cells pop in as the range grows; new bookings ease in. */
+/* Opacity only: a scale made a multi-room selection look like the calendar was zooming in. */
 @keyframes pop {
-  from { transform: scale(0.8); opacity: 0.35; }
-  to { transform: scale(1); opacity: 1; }
+  from { opacity: 0.35; }
+  to { opacity: 1; }
 }
 @keyframes bar-in {
-  from { transform: scale(0.96); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .animate-pop { animation: pop 160ms cubic-bezier(0.16, 1, 0.3, 1); }
 .animate-bar-in { animation: bar-in 200ms cubic-bezier(0.16, 1, 0.3, 1); }

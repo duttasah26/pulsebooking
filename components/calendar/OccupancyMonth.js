@@ -38,7 +38,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay }) {
               type="button"
               onClick={() => onPickDay(d)}
               aria-label={`${d}, ${occupied[i]} of ${rooms.length} rooms occupied`}
-              className={`cell flex min-h-16 flex-col items-start justify-between rounded-lg border p-1.5 text-left sm:min-h-20 sm:p-2 ${
+              className={`cell flex min-h-12 flex-col items-start justify-between rounded-lg border p-1.5 text-left sm:min-h-14 sm:p-2 ${
                 d === todayStr ? 'border-accent' : 'border-line'
               }`}
               style={{ backgroundColor: `color-mix(in srgb, var(--accent) ${Math.round(ratio * 38)}%, var(--surface))` }}
