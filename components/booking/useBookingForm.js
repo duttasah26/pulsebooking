@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRemoveBooking } from './useRemoveBooking';
-import { api, useApi } from '../../lib/useApi';
+import { api } from '../../lib/useApi';
 import { useSettings } from '../SettingsProvider';
 import { addDays, diffDays } from '../../lib/dates';
 
@@ -50,6 +50,7 @@ export function useBookingForm({
   const [busy, setBusy] = useState(false);
   const orgTouched = useRef(edit);
   const timesTouched = useRef(edit);
+  const adultsTouched = useRef(edit);
 
   // The saved default times can arrive after a blank form is already showing: follow them until a time is picked by hand.
   useEffect(() => {
@@ -69,7 +70,6 @@ export function useBookingForm({
   const isHold = status === 'on_hold';
   const isHoldEdit = edit && booking.status === 'on_hold';
   const ignoreId = edit ? booking.id : null;
-  const history = useApi(edit && booking.id > 0 ? `/api/bookings/${booking.id}` : null).data?.history ?? [];
   const { remove, removing, removeError } = useRemoveBooking({ booking, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
 
   // Show the booking on the calendar grid while it is being filled in.
@@ -83,6 +83,11 @@ export function useBookingForm({
   useEffect(() => {
     if (!orgTouched.current && guestOrg) setOrganization(guestOrg);
   }, [guestOrg]);
+
+  // A new booking starts with one adult per room (4 rooms, 4 adults) until the number is typed in by hand.
+  useEffect(() => {
+    if (!adultsTouched.current) setAdults(Math.max(1, roomIds.length));
+  }, [roomIds.length]);
 
   const nightBusy = (date) => roomIds.some((id) => isBusy(id, date, ignoreId));
   const roomTaken = (id) => {
@@ -143,13 +148,14 @@ export function useBookingForm({
   };
 
   return {
-    edit, booking, targets, unconfirmed, isHold, isHoldEdit, initialGuest, history, error: error || removeError, busy: busy || removing,
+    edit, booking, targets, unconfirmed, isHold, isHoldEdit, initialGuest, error: error || removeError, busy: busy || removing,
     roomIds, setRoomIds, toggleRoom, roomTaken, nightBusy,
     checkIn, checkOut, nights, setDates: (a, b) => { setCheckIn(a); setCheckOut(b); },
+    setAdults: (v) => { adultsTouched.current = true; setAdults(v); },
     checkInTime, checkOutTime,
     setCheckInTime: (v) => { timesTouched.current = true; setCheckInTime(v); },
     setCheckOutTime: (v) => { timesTouched.current = true; setCheckOutTime(v); },
-    status, setStatus, channel, setChannel, ratePlan, setRatePlan, adults, setAdults, children, setChildren,
+    status, setStatus, channel, setChannel, ratePlan, setRatePlan, adults, children, setChildren,
     notes, setNotes, color, setColor, organization, editOrganization, label, setLabel,
     guestChoice, setGuestChoice, typedGuest, setTypedGuest, submit, remove,
   };

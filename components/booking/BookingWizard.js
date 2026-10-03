@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft, ArrowRight, Baby, Bed, Buildings, CalendarBlank, Check, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Tag, User, Users, WarningCircle, X,
 } from '@phosphor-icons/react';
@@ -28,13 +28,14 @@ function Row({ icon: Icon, label, children }) {
   );
 }
 
-// The three steps as tabs: tap any to jump there. A step that is not filled in yet shows an exclamation mark in place of its number.
+// The three steps as tabs: tap any to jump there. A step you have moved past without filling it in shows a yellow
+// exclamation mark in place of its number.
 function StepList({ step, done, onGo }) {
   return (
     <ol className="grid grid-cols-3 gap-1.5" aria-label="Booking steps">
       {STEPS.map((name, i) => {
         const current = i === step;
-        const missing = done[i] === false;
+        const missing = done[i] === false && step > i; // only once you have moved on without filling it in
         return (
           <li key={name}>
             <button
@@ -47,7 +48,7 @@ function StepList({ step, done, onGo }) {
             >
               {/* The step number turns into an exclamation mark while the step is not filled in. */}
               {missing ? (
-                <WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />
+                <WarningCircle size={20} weight="fill" className="shrink-0 text-amber-500" />
               ) : (
                 <span className={`grid size-5 place-items-center rounded-full text-[11px] ${current ? 'bg-accent text-accent-ink' : 'bg-surface-2'}`}>
                   {done[i] && !current ? <Check size={12} weight="bold" /> : i + 1}
@@ -72,13 +73,15 @@ function StepList({ step, done, onGo }) {
 */
 export default function BookingWizard({ onDone, ...props }) {
   const [round, setRound] = useState(0);
-  return <Steps key={round} {...props} onDone={() => { onDone?.(); setRound((n) => n + 1); }} />;
+  const restart = () => setRound((n) => n + 1);
+  return <Steps key={round} {...props} onClear={restart} onDone={() => { onDone?.(); restart(); }} />;
 }
 
-function Steps({ rooms, onCancel, ...rest }) {
+function Steps({ rooms, onCancel, onClear, onPreview, ...rest }) {
   const f = useBookingForm(rest);
   const { settings } = useSettings();
   const [step, setStep] = useState(0);
+  const [reached, setReached] = useState(0); // furthest step seen: the ghost stays on the calendar once the dates step was reached
 
   const guest = f.guestChoice?.guest ?? f.guestChoice?.newGuest ?? null;
   const takenRoom = f.roomIds.map((id) => rooms.find((r) => r.id === id)).find((r) => r && f.roomTaken(r.id));
@@ -89,7 +92,7 @@ function Steps({ rooms, onCancel, ...rest }) {
     : takenRoom ? `Room ${takenRoom.number} is booked on those dates (step 2).` : '';
   const done = [!guestProblem, !stayProblem, null]; // null: nothing is required on step 3
   const [hint, setHint] = useState('');
-  const go = (i) => { setHint(''); setStep(i); };
+  const go = (i) => { setHint(''); setStep(i); setReached((r) => Math.max(r, i)); };
 
   // Confirm checks every step and jumps to the first one that is not filled in.
   const confirm = () => {
@@ -104,6 +107,15 @@ function Steps({ rooms, onCancel, ...rest }) {
   const times = [f.checkInTime && `in ${formatTime(f.checkInTime)}`, f.checkOutTime && `out ${formatTime(f.checkOutTime)}`].filter(Boolean);
   const guestName = guest?.name ?? (f.typedGuest.trim() || null);
   const ratePlan = RATE_PLANS.find(([v]) => v === f.ratePlan)?.[1] ?? f.ratePlan;
+  // Ghost of this booking on the main calendar once the rooms and dates step has been reached.
+  const previewKey = `${f.roomIds.join(',')}|${f.checkIn}|${f.checkOut}|${f.checkInTime}|${f.checkOutTime}|${tone.border}|${guestName ?? ''}`;
+  useEffect(() => {
+    if (!onPreview) return;
+    onPreview(reached >= 1 && f.nights >= 1 ? { roomIds: f.roomIds, checkIn: f.checkIn, checkOut: f.checkOut, checkInTime: f.checkInTime, checkOutTime: f.checkOutTime, tone, name: guestName } : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reached, previewKey]);
+  useEffect(() => () => onPreview?.(null), []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const confirmLabel = f.isHold ? 'Place Hold' : f.roomIds.length > 1 ? `Confirm ${f.roomIds.length} Rooms` : 'Confirm Booking';
 
   return (
@@ -115,7 +127,22 @@ function Steps({ rooms, onCancel, ...rest }) {
       }}
       className="space-y-4 lg:space-y-3"
     >
-      <StepList step={step} done={done} onGo={go} />
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <StepList step={step} done={done} onGo={go} />
+        </div>
+        {/* Cancels the new booking: closes the pop-up, or clears everything entered and removes the ghost from the calendar. */}
+        <button
+          type="button"
+          className="btn btn-icon min-h-8 min-w-8 shrink-0 lg:min-h-8"
+          aria-label="Cancel new booking"
+          title="Cancel new booking"
+          onClick={() => (onCancel ? onCancel() : onClear())}
+          disabled={f.busy}
+        >
+          <X size={16} aria-hidden="true" />
+        </button>
+      </div>
 
       {/* Step 1: the guest (and organization). */}
       <div className={`space-y-3 ${step === 0 ? '' : 'hidden'}`}>
@@ -123,6 +150,16 @@ function Steps({ rooms, onCancel, ...rest }) {
         <div>
           <FieldLabel icon={Buildings} htmlFor="b-org">Organization (optional)</FieldLabel>
           <input id="b-org" name="organization" className="field" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel icon={Users} htmlFor="b-adults">Adults</FieldLabel>
+            <input id="b-adults" name="adults" autoComplete="off" type="number" inputMode="numeric" min="1" className="field" value={f.adults} onChange={(e) => f.setAdults(e.target.value)} />
+          </div>
+          <div>
+            <FieldLabel icon={Baby} htmlFor="b-children">Children</FieldLabel>
+            <input id="b-children" name="children" autoComplete="off" type="number" inputMode="numeric" min="0" className="field" value={f.children} onChange={(e) => f.setChildren(e.target.value)} />
+          </div>
         </div>
       </div>
 
@@ -179,10 +216,10 @@ function Steps({ rooms, onCancel, ...rest }) {
           </dl>
         </section>
 
-        <MoreOptions f={f} defaultOpen />
+        <MoreOptions f={f} defaultOpen hideParty />
       </div>
 
-      {hint ? <p className="rounded-lg border border-danger px-3 py-2 text-sm text-danger" role="alert">{hint}</p> : null}
+      {hint ? <p className="flex items-center gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm" role="alert"><WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
       {f.error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">{f.error}</p>}
 
       <div className="sticky bottom-0 -mx-4 flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-2 lg:pt-2">

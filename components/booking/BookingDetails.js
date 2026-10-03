@@ -1,14 +1,33 @@
 import {
-  Baby, Bed, Buildings, CalendarBlank, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Trash, Users,
+  Baby, Bed, Buildings, Check, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Trash, Users,
 } from '@phosphor-icons/react';
-import StatusBadge from '../StatusBadge';
+import { STATUS_ICON } from '../StatusBadge';
+import HoldButton from '../HoldButton';
+import RoomChips from '../RoomChips';
+import { partyOf, partyText } from '../../lib/party';
 import { useSettings } from '../SettingsProvider';
-import HistoryList from './HistoryList';
 import { useRemoveBooking } from './useRemoveBooking';
 import { formatTime } from '../TimeSelect';
-import { colorFor } from '../../lib/colors';
-import { useApi } from '../../lib/useApi';
+import { colorFor, statusColor } from '../../lib/colors';
+import { STATUS_LABEL } from '../../lib/status';
 import { fmtShort, nightsLabel } from '../../lib/dates';
+
+// One end of the stay: the date and the time, in large type. With no time of its own it shows the default time, marked.
+function Moment({ icon: Icon, label, date, time, fallback }) {
+  const shown = time || fallback;
+  return (
+    <div className="bg-surface p-3">
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
+        <Icon size={14} aria-hidden="true" /> {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold leading-tight">{fmtShort(date)}</p>
+      <p className="font-mono text-base">
+        {shown ? formatTime(shown) : 'No time set'}
+        {!time && shown && <span className="ml-1.5 font-sans text-xs text-muted">default</span>}
+      </p>
+    </div>
+  );
+}
 
 function Line({ icon: Icon, children }) {
   return (
@@ -21,21 +40,29 @@ function Line({ icon: Icon, children }) {
 
 // A booking as plain details. The contact card takes the booking's colour, so it matches its bar on the calendar.
 // The pencil in the panel header switches to the form.
-export default function BookingDetails({ booking: b, group, onRemove, onSaved, onDone, onRemoved }) {
+export default function BookingDetails({ booking: b, group, onRemove, onSaved, onDone, onRemoved, onConfirm, groupCount = 0, onShowGroup }) {
   const targets = group && group.length > 1 ? group : [b];
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
-  const history = useApi(b.id > 0 ? `/api/bookings/${b.id}` : null).data?.history ?? [];
   const { settings } = useSettings();
   const c = colorFor(b, settings);
-  const times = [b.check_in_time && `in ${formatTime(b.check_in_time)}`, b.check_out_time && `out ${formatTime(b.check_out_time)}`].filter(Boolean);
+  const sc = statusColor(b.status, settings);
+  const StatusIcon = STATUS_ICON[b.status] ?? Check;
 
   return (
     <div className="space-y-3 pb-4">
+      {/* The status first, in its own colour: ON HOLD (dashed, like its bar on the calendar), Confirmed, Checked in... */}
+      <div
+        className={`flex items-center justify-between gap-2 rounded-lg border-2 px-3 py-2 ${b.status === 'on_hold' ? 'border-dashed' : ''}`}
+        style={{ backgroundColor: sc.bg, borderColor: sc.border }}
+      >
+        <span className="flex items-center gap-2 text-base font-semibold uppercase tracking-wide">
+          <StatusIcon size={18} weight="bold" aria-hidden="true" /> {STATUS_LABEL[b.status]}
+        </span>
+        {b.status === 'on_hold' && <span className="text-sm">Not confirmed yet</span>}
+      </div>
+
       <div className="rounded-lg border p-3" style={{ backgroundColor: c.bg, borderColor: c.border }}>
-        <div className="flex items-start justify-between gap-2">
-          <p className="min-w-0 break-words text-base font-medium">{b.name}</p>
-          <StatusBadge status={b.status} />
-        </div>
+        <p className="min-w-0 break-words text-base font-medium">{b.name}</p>
         <ul className="mt-1.5 space-y-1 text-sm">
           {b.phone && <Line icon={Phone}>{b.phone}</Line>}
           {b.email && <Line icon={Envelope}>{b.email}</Line>}
@@ -44,31 +71,49 @@ export default function BookingDetails({ booking: b, group, onRemove, onSaved, o
         </ul>
       </div>
 
+      {/* The two moments that matter most, large: the day and time of arrival and of departure. */}
+      <div>
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
+          <Moment icon={SignIn} label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
+          <Moment icon={SignOut} label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
+        </div>
+        <p className="mt-1 text-center text-xs text-muted">{nightsLabel(b.nights)}</p>
+      </div>
+
+      {/* The room, or every room of the group after a double-click on its bar, as coloured chips in large type. */}
+      <RoomChips
+        numbers={targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number]}
+        note={
+          groupCount > 1 && onShowGroup ? (
+            <button type="button" className="btn mt-2 min-h-8 px-2.5 text-xs" onClick={onShowGroup}>
+              Booked with {groupCount - 1} other room{groupCount === 2 ? '' : 's'}: show all
+            </button>
+          ) : null
+        }
+      />
+
       <ul className="space-y-2 text-sm">
-        <Line icon={Bed}>Room {targets.map((t) => t.room_number).join(', ')}</Line>
-        <Line icon={CalendarBlank}>
-          {fmtShort(b.check_in)} to {fmtShort(b.check_out)}
-          <span className="text-muted">, {nightsLabel(b.nights)}</span>
-        </Line>
-        {times.length > 0 && <Line icon={b.check_in_time ? SignIn : SignOut}>{times.join(', ')}</Line>}
-        <Line icon={Users}>
-          {b.adults} {b.adults === 1 ? 'adult' : 'adults'}
-          {b.children > 0 && (
-            <>
-              , <Baby size={14} aria-hidden="true" className="inline align-text-bottom" /> {b.children} {b.children === 1 ? 'child' : 'children'}
-            </>
-          )}
-        </Line>
+        <Line icon={Users}>{partyText(partyOf(targets))}</Line>
         <Line icon={Megaphone}>Booked via {b.channel}</Line>
         <Line icon={Receipt}>{b.rate_plan}</Line>
         {b.notes && <Line icon={Note}>{b.notes}</Line>}
       </ul>
 
-      <HistoryList history={history} />
-
-      <button type="button" className="btn btn-danger" onClick={remove} disabled={removing || b.id < 0}>
-        <Trash size={18} aria-hidden="true" /> Delete
-      </button>
+      <div className="flex gap-2">
+        {b.status === 'on_hold' && onConfirm && (
+          <button type="button" className="btn btn-primary flex-1" onClick={() => onConfirm(b)} disabled={b.id < 0}>
+            <Check size={18} aria-hidden="true" /> Confirm
+          </button>
+        )}
+        <HoldButton
+          className={`btn btn-danger ${b.status === 'on_hold' && onConfirm ? 'flex-1' : ''}`}
+          title={b.status === 'on_hold' ? 'Hold to cancel this hold' : 'Hold to delete'}
+          onConfirm={remove}
+          disabled={removing || b.id < 0}
+        >
+          <Trash size={18} aria-hidden="true" /> {b.status === 'on_hold' ? 'Hold to Cancel' : 'Hold to Delete'}
+        </HoldButton>
+      </div>
     </div>
   );
 }

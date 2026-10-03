@@ -3,7 +3,7 @@ import CalendarPage from '../components/calendar/CalendarPage';
 
 export default function Home() {
   return (
-    <Layout title="Calendar">
+    <Layout title="Calendar" wide>
       <CalendarPage />
     </Layout>
   );

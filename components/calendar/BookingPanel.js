@@ -3,6 +3,8 @@ import Dock from '../Dock';
 import BookingForm from '../booking/BookingForm';
 import BookingSheet from '../booking/BookingSheet';
 import ExistingBooking from '../booking/ExistingBooking';
+import SelectionPanel from './SelectionPanel';
+import Sheet from '../Sheet';
 import EditButton from '../booking/EditButton';
 
 /*
@@ -11,12 +13,28 @@ import EditButton from '../booking/EditButton';
                    (details with a pencil, or the form while editing, or straight to the form for a hold just placed).
     narrow screens: the open booking opens as a bottom sheet.
   panel = { booking, key?, editing } or null. setPanel changes it.
+  selection: the bookings picked in select mode to look at together (2 or more); it takes the place of everything else.
 */
 export default function BookingPanel({
-  wide, formOpen, onToggle, panel, setPanel, panelBooking, group, rooms, isBusy, blank, onSaved, onRemove, closePanel,
+  wide, formOpen, onToggle, panel, setPanel, panelBooking, group, rooms, isBusy, blank, onSaved, onRemove, onConfirm, closePanel, groupCount, onShowGroup,
+  selection, onOpenFromSelection, onConfirmAll, onDeleteAll, onCloseSelection,
 }) {
   const setEditing = (editing) => setPanel((p) => (p ? { ...p, editing } : p));
   const title = panel ? panelBooking.name : 'New Booking';
+
+  const selectionView = selection && (
+    <SelectionPanel bookings={selection} onOpen={onOpenFromSelection} onConfirmAll={onConfirmAll} onDeleteAll={onDeleteAll} />
+  );
+  if (selection && !wide) {
+    return <Sheet title={`${selection.length} Selected`} onClose={onCloseSelection}>{selectionView}</Sheet>;
+  }
+  if (selection) {
+    return (
+      <Dock open={formOpen} onToggle={onToggle} label="Selected bookings" title={`${selection.length} Selected`} tab={`${selection.length} selected`} tabMark>
+        {selectionView}
+      </Dock>
+    );
+  }
 
   if (!wide) {
     if (!panel) return null;
@@ -33,6 +51,9 @@ export default function BookingPanel({
         onClose={closePanel}
         onSaved={onSaved}
         onRemove={onRemove}
+        onConfirm={onConfirm}
+        groupCount={groupCount}
+        onShowGroup={onShowGroup}
       />
     );
   }
@@ -72,6 +93,9 @@ export default function BookingPanel({
           isBusy={isBusy}
           onSaved={onSaved}
           onRemove={onRemove}
+          onConfirm={onConfirm}
+          groupCount={groupCount}
+          onShowGroup={onShowGroup}
         />
       ) : (
         <BookingForm key="blank" {...blank} rooms={rooms} isBusy={isBusy} onSaved={onSaved} onDone={() => {}} />

@@ -1,11 +1,12 @@
-import { ArrowUUpLeft, Bed, Buildings, CalendarBlank, Phone } from '@phosphor-icons/react';
+import { ArrowUUpLeft, Bed, Buildings, CalendarBlank, Check, Phone, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
-import { colorFor } from '../../lib/colors';
+import { colorFor, roomShade } from '../../lib/colors';
 import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
 
-// One booking in the list: colour stripe, guest and contact, room, dates and status. A deleted booking offers Restore.
-export default function BookingRow({ b, onOpen, onRestore }) {
+// One booking in the list: colour stripe, guest and contact, room, dates and status. A deleted booking offers Restore;
+// a hold offers Confirm and Cancel in one click.
+export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHold }) {
   const { settings } = useSettings();
   const isDeleted = Boolean(b.deleted_at);
   const contact = b.guest_id ? b.phone || b.email : null;
@@ -36,7 +37,7 @@ export default function BookingRow({ b, onOpen, onRestore }) {
         </span>
         <span className="flex items-center gap-1.5 font-mono text-sm font-semibold">
           <Bed size={16} aria-hidden="true" className="shrink-0 text-muted" />
-          {b.room_number}
+          <span className="rounded px-1.5 py-0.5" style={{ backgroundColor: roomShade({ number: b.room_number }, settings).fill }}>{b.room_number}</span>
         </span>
         <span className="col-span-2 flex items-center gap-1.5 text-sm md:col-span-1">
           <CalendarBlank size={16} aria-hidden="true" className="shrink-0 text-muted" />
@@ -53,6 +54,16 @@ export default function BookingRow({ b, onOpen, onRestore }) {
           )}
         </span>
       </button>
+      {!isDeleted && b.status === 'on_hold' && onConfirm && (
+        <div className="flex shrink-0 items-center gap-1.5 pr-2">
+          <button type="button" className="btn btn-primary px-3" onClick={() => onConfirm(b)} aria-label={`Confirm hold, ${b.name}`}>
+            <Check size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Confirm</span>
+          </button>
+          <button type="button" className="btn px-3" onClick={() => onCancelHold(b)} aria-label={`Cancel hold, ${b.name}`}>
+            <X size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Cancel</span>
+          </button>
+        </div>
+      )}
       {isDeleted && (
         <button type="button" className="btn m-2 self-center" onClick={() => onRestore(b)}>
           <ArrowUUpLeft size={18} aria-hidden="true" /> Restore

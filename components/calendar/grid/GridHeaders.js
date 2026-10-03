@@ -1,5 +1,5 @@
 import { useSettings } from '../../SettingsProvider';
-import { floorColor } from '../../../lib/colors';
+import { roomShade } from '../../../lib/colors';
 import { dayOfMonth, fmtDayMonth, fmtMonthShort, fmtWeekday, isWeekend } from '../../../lib/dates';
 
 const tint = (d) => (isWeekend(d) ? 'bg-surface-2' : 'bg-surface');
@@ -41,14 +41,14 @@ export function DayLabel({ d, i, isToday }) {
 // other are picked; a room on the hold shows a dark outline.
 export function RoomHead({ room, r, rows, active, onToggle }) {
   const { settings } = useSettings();
-  const tone = floorColor(room, settings);
+  const tone = roomShade(room, settings);
   const cls = rows
     ? 'sticky left-0 z-[2] flex items-center gap-2 border-r border-t px-3 font-mono text-xs font-semibold'
     : 'sticky top-0 z-[2] flex items-center justify-center gap-1.5 border-b border-l font-mono text-xs font-semibold';
   const style = {
     ...(rows ? { gridRow: r + 2, gridColumn: 1 } : { gridRow: 1, gridColumn: r + 2 }),
-    backgroundColor: tone.bg,
-    borderColor: tone.border,
+    backgroundColor: tone.fill,
+    borderColor: tone.edge,
     ...(active ? { boxShadow: 'inset 0 0 0 2px var(--ink)' } : {}),
   };
   if (!onToggle) return <div className={cls} style={style}>{room.number}</div>;

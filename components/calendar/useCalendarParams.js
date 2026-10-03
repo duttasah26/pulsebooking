@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { CalendarDots, GridFour, Rows, Sun } from '@phosphor-icons/react';
-import { isDate, today } from '../../lib/dates';
+import { isDate, monthStart, today } from '../../lib/dates';
 
 // 'timeline' is the default: rooms down, dates across. 'month' flips it: rooms across, dates down.
 export const VIEWS = [
@@ -10,7 +10,8 @@ export const VIEWS = [
   { key: 'calendar', label: 'Occupancy', Icon: CalendarDots },
   { key: 'day', label: 'Day', Icon: Sun },
 ];
-export const SPANS = [7, 14, 30];
+export const SPANS = [7, 14, 30]; // the quick choices; any length from 1 to MAX_SPAN days works (a custom range)
+export const MAX_SPAN = 92;
 
 // The view, date, span and floors live in the URL, so a view can be bookmarked or shared.
 // floors is null for "every floor", otherwise a list of floor digits like ['1', '3'].
@@ -18,8 +19,10 @@ export function useCalendarParams() {
   const router = useRouter();
   const q = router.query;
   const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'timeline';
-  const date = isDate(q.date) ? q.date : today();
-  const span = SPANS.includes(Number(q.span)) ? Number(q.span) : typeof window !== 'undefined' && window.innerWidth < 640 ? 7 : 14;
+  // With no date in the address the timeline opens on the first day of this month (Today still jumps to today).
+  const date = isDate(q.date) ? q.date : view === 'timeline' ? monthStart(today()) : today();
+  const spanParam = Number(q.span);
+  const span = Number.isInteger(spanParam) && spanParam >= 1 && spanParam <= MAX_SPAN ? spanParam : typeof window !== 'undefined' && window.innerWidth < 640 ? 7 : 14;
   const floorsParam = typeof q.floors === 'string' && q.floors ? q.floors : '';
   const floors = floorsParam ? floorsParam.split(',') : null;
 

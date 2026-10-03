@@ -10,8 +10,11 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   Visual range picker. Tap check-in, then tap check-out.
   isBusy(date) says whether the selected room(s) are taken that night. Busy nights are hatched and
   cannot start or be inside a stay, but a busy day CAN be the check-out day (same-day turnover).
+  inclusive: for choosing a span of days to look at (the calendar's Go to) rather than a stay. Tap the first day, then
+  the last day (the same day again is allowed). The value is still (first, day after last), so onChange(a, b) means
+  the days a up to b - 1, and the last day is the one highlighted as the end.
 */
-export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = () => false }) {
+export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = () => false, inclusive = false }) {
   const [view, setView] = useState(monthStart(checkIn || today()));
   const [awaitingEnd, setAwaitingEnd] = useState(false);
   const todayStr = today();
@@ -29,6 +32,10 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
 
   const days = range(view, daysInMonth(view));
   const nights = checkIn && checkOut ? diffDays(checkIn, checkOut) : 0;
+  const lastDay = checkOut ? (inclusive ? addDays(checkOut, -1) : checkOut) : null; // the day drawn as the end of the range
+  const words = inclusive
+    ? { start: 'first day', end: 'last day', pickStart: 'Pick the first day', pickEnd: 'Now pick the last day', unit: (n) => `${n} day${n === 1 ? '' : 's'}` }
+    : { start: 'check-in', end: 'check-out', pickStart: 'Pick a check-in day', pickEnd: 'Now pick the check-out day', unit: nightsLabel };
 
   // Every night from checkIn up to (not including) `d` must be free.
   const clearThrough = (d) => {
@@ -37,6 +44,12 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
   };
 
   const pick = (d) => {
+    if (inclusive && awaitingEnd && d >= checkIn) {
+      own.current = true;
+      onChange(checkIn, addDays(d, 1));
+      setAwaitingEnd(false);
+      return;
+    }
     if (awaitingEnd && d > checkIn && clearThrough(d)) {
       own.current = true;
       onChange(checkIn, d);
@@ -66,11 +79,11 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
         {Array.from({ length: weekdayIndex(view) }, (_, i) => <span key={`pad-${i}`} />)}
         {days.map((d) => {
           const isStart = d === checkIn;
-          const isEnd = d === checkOut;
-          const inside = checkIn && checkOut && d > checkIn && d < checkOut;
+          const isEnd = d === lastDay;
+          const inside = checkIn && lastDay && d > checkIn && d < lastDay;
           const busy = isBusy(d);
           const blockedEnd = awaitingEnd && d > checkIn && !clearThrough(d);
-          const disabled = awaitingEnd ? (d <= checkIn ? busy : blockedEnd) : busy;
+          const disabled = awaitingEnd ? (d < checkIn || (d === checkIn && !inclusive) ? busy : blockedEnd) : busy;
           let tone = 'text-ink hover:bg-surface-2';
           if (isStart || isEnd) tone = 'bg-accent text-accent-ink hover:bg-accent';
           else if (inside) tone = 'bg-accent-soft text-ink';
@@ -81,7 +94,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
               type="button"
               disabled={disabled && !isStart && !isEnd}
               onClick={() => pick(d)}
-              aria-label={`${fmtShort(d)}${isStart ? ', check-in' : isEnd ? ', check-out' : busy ? ', booked' : ''}`}
+              aria-label={`${fmtShort(d)}${isStart ? `, ${words.start}` : isEnd ? `, ${words.end}` : busy ? ', booked' : ''}`}
               aria-pressed={isStart || isEnd}
               className={`cell mx-auto flex size-10 items-center justify-center rounded-lg font-mono text-sm transition-colors lg:size-6 lg:text-[11px] disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
                 d === todayStr && !isStart && !isEnd ? 'ring-1 ring-accent' : ''
@@ -96,13 +109,13 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
       <p className="mt-2 text-sm lg:mt-1 lg:text-xs" aria-live="polite">
         {checkIn && checkOut ? (
           <>
-            <span className="font-medium">{fmtShort(checkIn)}</span> to <span className="font-medium">{fmtShort(checkOut)}</span>
-            <span className="text-muted">, {nightsLabel(nights)}</span>
+            <span className="font-medium">{fmtShort(checkIn)}</span> to <span className="font-medium">{fmtShort(lastDay)}</span>
+            <span className="text-muted">, {words.unit(nights)}</span>
           </>
         ) : (
-          <span className="text-muted">Pick a check-in day</span>
+          <span className="text-muted">{words.pickStart}</span>
         )}
-        {awaitingEnd && <span className="block text-accent-text">Now pick the check-out day</span>}
+        {awaitingEnd && <span className="block text-accent-text">{words.pickEnd}</span>}
       </p>
     </div>
   );

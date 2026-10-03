@@ -93,6 +93,20 @@ body {
   }
 }
 
+/* The calendar grid scrolls both ways: keep its scrollbars visible, and in the brand's muted tone. */
+.scroll-area {
+  scrollbar-width: auto;
+  scrollbar-color: color-mix(in srgb, var(--muted) 55%, transparent) var(--surface-2);
+}
+.scroll-area::-webkit-scrollbar { width: 12px; height: 12px; }
+.scroll-area::-webkit-scrollbar-track { background: var(--surface-2); }
+.scroll-area::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
+  border: 2px solid var(--surface-2);
+  border-radius: 8px;
+}
+.scroll-area::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
 /* Scrolls normally but shows no scrollbar (the booking form panel). */
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }

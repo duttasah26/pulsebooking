@@ -3,8 +3,10 @@ import { useApi } from '../../lib/useApi';
 import { addDays, daysInMonth, monthStart } from '../../lib/dates';
 
 // The dates the current view needs bookings for.
-function windowFor(view, date, span) {
-  if (view === 'timeline') return { from: date, days: span };
+// The timeline loads `windows` screens of `span` days after the start date (more as you scroll right) and `lead` days
+// before it (so past dates can be scrolled to), so the days around the visible ones are ready.
+function windowFor(view, date, span, windows, lead) {
+  if (view === 'timeline') return { from: addDays(date, -lead), days: lead + span * windows };
   if (view === 'day') return { from: addDays(date, -1), days: 3 };
   const first = monthStart(date);
   return { from: first, days: daysInMonth(first) };
@@ -14,12 +16,13 @@ function windowFor(view, date, span) {
   Rooms and bookings for the current view, plus the bookkeeping that makes holds feel instant:
     extra:   bookings added on screen that the server has not returned yet (temporary holds, recreated holds)
     removed: ids deleted on screen that the server list may still contain
+    patches: fields changed on screen that the server list may not show yet (a hold just confirmed)
   bookingList is the server list with those two applied. Both are tidied whenever a fresh list arrives.
   isBusy(roomId, date, ignoreId) tells whether a room is taken that night (used to grey out rooms and dates).
   cancelledKeys holds temporary holds the user removed before the server had confirmed them.
 */
-export function useBookingData({ view, date, span, enabled }) {
-  const win = useMemo(() => windowFor(view, date, span), [view, date, span]);
+export function useBookingData({ view, date, span, windows = 1, lead = 0, enabled }) {
+  const win = useMemo(() => windowFor(view, date, span, windows, lead), [view, date, span, windows, lead]);
   const rooms = useApi('/api/rooms');
   const bookings = useApi(
     enabled ? `/api/bookings?from=${win.from}&to=${addDays(win.from, win.days)}&sort=check_in&dir=asc` : null,
@@ -28,12 +31,19 @@ export function useBookingData({ view, date, span, enabled }) {
 
   const [extra, setExtra] = useState([]);
   const [removed, setRemoved] = useState(() => new Set());
+  const [patches, setPatches] = useState(() => new Map());
   const cancelledKeys = useRef(new Set());
 
   useEffect(() => {
     if (!fetched) return;
     const ids = new Set(fetched.map((b) => b.id));
     setExtra((list) => (list.some((b) => ids.has(b.id)) ? list.filter((b) => !ids.has(b.id)) : list));
+    // A patch is done once the server list shows it.
+    setPatches((map) => {
+      const rows = new Map(fetched.map((b) => [b.id, b]));
+      const kept = [...map].filter(([id, p]) => !Object.entries(p).every(([k, v]) => rows.get(id)?.[k] === v));
+      return kept.length === map.size ? map : new Map(kept);
+    });
     setRemoved((set) => {
       const kept = [...set].filter((id) => ids.has(id));
       return kept.length === set.size ? set : new Set(kept);
@@ -44,8 +54,10 @@ export function useBookingData({ view, date, span, enabled }) {
   // recreated hold, after Undo, that is in both lists for a moment).
   const bookingList = useMemo(() => {
     const listed = new Set((fetched ?? []).map((b) => b.id));
-    return [...(fetched ?? []), ...extra.filter((b) => !listed.has(b.id))].filter((b) => !removed.has(b.id));
-  }, [fetched, extra, removed]);
+    return [...(fetched ?? []), ...extra.filter((b) => !listed.has(b.id))]
+      .filter((b) => !removed.has(b.id))
+      .map((b) => (patches.has(b.id) ? { ...b, ...patches.get(b.id) } : b));
+  }, [fetched, extra, removed, patches]);
 
   const busyNights = useMemo(() => {
     const map = new Map();
@@ -63,6 +75,16 @@ export function useBookingData({ view, date, span, enabled }) {
     [busyNights],
   );
 
+  // patchLocal(ids, { status: 'confirmed' }) changes rows on screen at once; patchLocal(ids, null) drops the change.
+  const patchLocal = (ids, partial) =>
+    setPatches((map) => {
+      const next = new Map(map);
+      for (const id of ids) {
+        if (partial) next.set(id, { ...next.get(id), ...partial });
+        else next.delete(id);
+      }
+      return next;
+    });
   const forget = (id) => setRemoved((set) => new Set(set).add(id));
   const unforget = (id) =>
     setRemoved((set) => {
@@ -71,5 +93,5 @@ export function useBookingData({ view, date, span, enabled }) {
       return next;
     });
 
-  return { rooms, bookings, bookingList, isBusy, setExtra, forget, unforget, cancelledKeys };
+  return { rooms, bookings, bookingList, isBusy, setExtra, forget, unforget, patchLocal, cancelledKeys };
 }

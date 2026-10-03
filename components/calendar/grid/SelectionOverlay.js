@@ -14,7 +14,7 @@ export function SelectionSummary({ summary }) {
 // Touch: after the first tap, a bar offers to place the hold or cancel (a second tap on another cell extends it).
 export function TouchBar({ summary, onCancel, onHold }) {
   return (
-    <div className="fixed inset-x-0 bottom-20 z-30 flex justify-center px-4 md:bottom-6">
+    <div className="fixed inset-x-0 bottom-28 z-30 flex justify-center px-4 md:bottom-14">
       <div className="flex w-full max-w-md items-center gap-2 rounded-lg border border-line bg-surface p-2 pl-4 shadow-lg">
         <p className="flex-1 text-sm">
           <span className="font-medium">{summary}</span>

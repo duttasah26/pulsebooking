@@ -5,7 +5,7 @@ import BookingDetails from './BookingDetails';
 //   onDone:       the form finished saving (go back to the details)
 //   onCancelEdit: leave the form without saving
 //   onClose:      the booking was deleted (close the panel or sheet)
-export default function ExistingBooking({ editing, onCancelEdit, onDone, onClose, booking, group, rooms, isBusy, onSaved, onRemove }) {
+export default function ExistingBooking({ editing, onCancelEdit, onDone, onClose, booking, group, rooms, isBusy, onSaved, onRemove, onConfirm, groupCount, onShowGroup }) {
   if (editing) {
     return (
       <BookingForm
@@ -22,5 +22,5 @@ export default function ExistingBooking({ editing, onCancelEdit, onDone, onClose
       />
     );
   }
-  return <BookingDetails booking={booking} group={group} onSaved={onSaved} onDone={onDone} onRemoved={onClose} onRemove={onRemove} />;
+  return <BookingDetails booking={booking} group={group} onSaved={onSaved} onDone={onDone} onRemoved={onClose} onRemove={onRemove} onConfirm={onConfirm} groupCount={groupCount} onShowGroup={onShowGroup} />;
 }

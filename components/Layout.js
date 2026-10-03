@@ -11,7 +11,9 @@ const TABS = [
   { href: '/settings', label: 'Settings', Icon: GearSix },
 ];
 
-export default function Layout({ title, children }) {
+// wide: the calendar uses the full screen width; the other pages stay in a readable column.
+export default function Layout({ title, wide = false, children }) {
+  const max = wide ? 'max-w-none' : 'max-w-[1400px]';
   const { pathname } = useRouter();
 
   return (
@@ -32,7 +34,7 @@ export default function Layout({ title, children }) {
       </a>
 
       <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className="mx-auto flex h-12 max-w-[1400px] items-center justify-between px-4">
+        <div className={`mx-auto flex h-12 ${max} items-center justify-between px-4`}>
           <Link href="/" className="flex shrink-0 items-center gap-2 rounded-lg" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-8 w-auto" />
             <span className="hidden text-sm font-semibold text-muted sm:inline">Rooms</span>
@@ -56,7 +58,7 @@ export default function Layout({ title, children }) {
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-[1400px] px-4 pb-28 pt-3 outline-none md:pb-6">{children}</main>
+      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-32 pt-3 outline-none md:pb-14`}>{children}</main>
 
       <nav
         aria-label="Main"

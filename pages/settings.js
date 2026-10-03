@@ -1,13 +1,11 @@
-import { useState } from 'react';
-import { Bed, Clock, Palette, Plus, SignIn, SignOut } from '@phosphor-icons/react';
+import { Bed, Clock, Palette, SignIn, SignOut } from '@phosphor-icons/react';
 import Layout from '../components/Layout';
-import FieldLabel from '../components/FieldLabel';
 import TimeSelect from '../components/TimeSelect';
 import ColorPicker from '../components/booking/ColorPicker';
 import { useSettings } from '../components/SettingsProvider';
 import { useToast } from '../components/Toast';
 import { floorLabel, floorOf } from '../components/calendar/floors';
-import { floorColor, statusColor } from '../lib/colors';
+import { STATUS_SWATCHES, roomShade, statusColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
 
 const STATUSES = [
@@ -34,8 +32,6 @@ export default function Settings() {
   const { settings, save } = useSettings();
   const toast = useToast();
   const rooms = useApi('/api/rooms?all=1');
-  const [number, setNumber] = useState('');
-  const [adding, setAdding] = useState(false);
 
   const apply = async (change) => {
     try {
@@ -47,20 +43,6 @@ export default function Settings() {
 
   const roomList = rooms.data ?? [];
   const floors = [...new Set(['1', '2', '3', ...roomList.map(floorOf)])].sort();
-
-  const addRoom = async (e) => {
-    e.preventDefault();
-    setAdding(true);
-    try {
-      const room = await api('/api/rooms', { method: 'POST', body: { number: number.trim() } });
-      toast({ message: `Room ${room.number} added`, duration: 3000 });
-      setNumber('');
-      rooms.reload();
-    } catch (err) {
-      toast({ message: err.message });
-    }
-    setAdding(false);
-  };
 
   const setActive = async (room, active) => {
     try {
@@ -79,13 +61,13 @@ export default function Settings() {
         <Section icon={Palette} title="Floor Colours" hint="Each floor's room boxes on the calendar share one colour. The first digit of a room number is its floor.">
           <div className="space-y-5">
             {floors.map((f) => {
-              const tone = floorColor({ number: f }, settings);
+              const tone = roomShade({ number: f }, settings);
               return (
                 <div key={f} className="grid gap-2 sm:grid-cols-[7rem_1fr]">
                   <div>
                     <span
                       className="inline-flex min-h-8 min-w-20 items-center justify-center rounded-lg border px-3 font-mono text-xs font-semibold"
-                      style={{ backgroundColor: tone.bg, borderColor: tone.border }}
+                      style={{ backgroundColor: tone.fill, borderColor: tone.edge }}
                     >
                       {f}01
                     </span>
@@ -94,7 +76,7 @@ export default function Settings() {
                     id={`floor-${f}`}
                     label={floorLabel(f)}
                     autoLabel="Default"
-                    hint={null}
+                    swatches={STATUS_SWATCHES}
                     color={settings.floorColors[f] ?? null}
                     onChange={(color) => apply({ floorColors: { [f]: color } })}
                   />
@@ -122,7 +104,7 @@ export default function Settings() {
                     id={`status-${key}`}
                     label={label}
                     autoLabel="Default"
-                    hint={null}
+                    swatches={STATUS_SWATCHES}
                     color={settings.statusColors[key] ?? null}
                     onChange={(color) => apply({ statusColors: { [key]: color } })}
                   />
@@ -139,10 +121,10 @@ export default function Settings() {
           </div>
         </Section>
 
-        <Section icon={Bed} title="Rooms" hint="Switch a room off to hide it from the calendar. Its past bookings are kept.">
+        <Section icon={Bed} title="Rooms" hint="Switch a room off to hide it from the calendar. Its bookings are kept.">
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {roomList.map((r) => {
-              const tone = floorColor(r, settings);
+              const tone = roomShade(r, settings);
               return (
                 <li key={r.id}>
                   <label className="btn cursor-pointer justify-start gap-2 px-2.5 focus-within:outline-2 focus-within:outline-accent">
@@ -153,31 +135,13 @@ export default function Settings() {
                       checked={r.active}
                       onChange={(e) => setActive(r, e.target.checked)}
                     />
-                    <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-black/20" style={{ backgroundColor: tone.border }} />
+                    <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-black/20" style={{ backgroundColor: tone.fill }} />
                     <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
                   </label>
                 </li>
               );
             })}
           </ul>
-          <form onSubmit={addRoom} className="flex items-end gap-2">
-            <div className="w-40">
-              <FieldLabel icon={Plus} htmlFor="new-room">New Room Number</FieldLabel>
-              <input
-                id="new-room"
-                name="room-number"
-                inputMode="numeric"
-                className="field font-mono"
-                placeholder="107…"
-                value={number}
-                onChange={(e) => setNumber(e.target.value)}
-                autoComplete="off"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" disabled={adding || !number.trim()}>
-              <Plus size={18} aria-hidden="true" /> Add Room
-            </button>
-          </form>
         </Section>
       </div>
     </Layout>

@@ -1,20 +1,33 @@
-import { Check, Palette } from '@phosphor-icons/react';
+import { Check, Eyedropper, Palette } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
-import { COLORS, isCustomColor } from '../../lib/colors';
+import { BOOKING_SWATCHES, COLORS, isCustomColor } from '../../lib/colors';
 
-// A colour choice: Auto (null: whatever the app picks, for example the status colour), 20 pastels, or any colour from the
-// native picker. The selected swatch shows a tick, so the choice never depends on colour alone.
-// id must be unique on the page; label, autoLabel and hint reword it for guests, floors and statuses.
-export default function ColorPicker({ color, onChange, id = 'color-label', label = 'Colour', autoLabel = 'Auto', hint = 'Auto uses the status colour (yellow on hold, green confirmed). The last swatch picks any colour.' }) {
+/*
+  A colour choice kept deliberately small: a "none" button (null: the app picks, for example by status), four quick
+  swatches, and a custom colour from the native picker. The chosen swatch shows a tick, so the choice never depends on
+  colour alone. A colour saved earlier that is not one of the four is still shown, selected, so nothing is lost.
+  id must be unique on the page; label and autoLabel reword it for guests, floors and statuses.
+*/
+export default function ColorPicker({
+  color, onChange, id = 'color-label', label = 'Colour', autoLabel = 'Auto', swatches = BOOKING_SWATCHES, hint,
+}) {
   const custom = isCustomColor(color);
+  const keys = color && !custom && !swatches.includes(color) ? [...swatches, color] : swatches;
+  const list = keys.map((k) => COLORS.find((c) => c.key === k)).filter(Boolean);
+
   return (
     <div>
       <FieldLabel as="span" icon={Palette} id={id}>{label}</FieldLabel>
-      <div role="group" aria-labelledby={id} className="flex flex-wrap gap-2">
-        <button type="button" aria-pressed={color === null} onClick={() => onChange(null)} className={`btn px-3 ${color === null ? 'border-ink' : ''}`}>
+      <div role="group" aria-labelledby={id} className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          aria-pressed={color === null}
+          onClick={() => onChange(null)}
+          className={`btn min-h-9 px-3 lg:min-h-8 ${color === null ? 'border-ink bg-surface-2' : ''}`}
+        >
           {autoLabel}
         </button>
-        {COLORS.map((c) => (
+        {list.map((c) => (
           <button
             key={c.key}
             type="button"
@@ -22,24 +35,20 @@ export default function ColorPicker({ color, onChange, id = 'color-label', label
             title={c.name}
             aria-pressed={color === c.key}
             onClick={() => onChange(c.key)}
-            className={`cell flex size-10 items-center justify-center rounded-lg border-2 transition-transform active:scale-95 lg:size-7 ${color === c.key ? 'border-ink' : ''}`}
+            className={`cell grid size-9 place-items-center rounded-lg border-2 transition-transform active:scale-95 lg:size-8 ${color === c.key ? 'border-ink' : ''}`}
             style={{ backgroundColor: c.bg, borderColor: color === c.key ? undefined : c.border }}
           >
             {color === c.key && <Check size={16} weight="bold" />}
           </button>
         ))}
-        {/* Any colour you like: the native colour picker sits invisibly over this swatch. */}
+        {/* Any colour: the native colour picker sits invisibly over this swatch. */}
         <label
           title="Pick any colour"
-          className={`cell relative flex size-10 cursor-pointer items-center justify-center rounded-lg border-2 transition-transform active:scale-95 focus-within:outline-2 focus-within:outline-accent lg:size-7 ${custom ? 'border-ink' : 'border-line'}`}
-          style={{
-            background: custom
-              ? `color-mix(in srgb, ${color} 28%, white)`
-              : 'conic-gradient(from 0deg, #f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)',
-          }}
+          className={`cell relative flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border-2 px-2.5 text-sm font-medium transition-transform active:scale-95 focus-within:outline-2 focus-within:outline-accent lg:h-8 ${custom ? 'border-ink' : 'border-line bg-surface'}`}
+          style={custom ? { backgroundColor: `color-mix(in srgb, ${color} 28%, white)` } : undefined}
         >
-          {custom && <Check size={16} weight="bold" />}
-          <span className="sr-only">Custom colour</span>
+          {custom ? <Check size={16} weight="bold" /> : <Eyedropper size={16} />}
+          Custom
           <input
             type="color"
             aria-label="Custom colour"

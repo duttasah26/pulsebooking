@@ -1,39 +1,49 @@
 import { api } from '../../lib/useApi';
-import { addDays, diffDays } from '../../lib/dates';
+import { NeedGuestError, confirmHolds, reholdAll } from '../../lib/holds';
+import { addDays, diffDays, fmtShort } from '../../lib/dates';
 
 /*
   Everything you can do to holds on the calendar. They all feel instant: the screen changes first, the server is told
-  in the background, and a message with Undo appears at the same moment.
+  in the background, and a message with Undo appears at the same moment. Each action is also recorded in `history`
+  (useHistory), so the Undo and Redo buttons and Ctrl+Z work for it too.
     placeHold       a drag or tap on free nights
     removeMany      the X on a hold, or Delete in the panel
     toggleRoom      click a room number to put another room on the open hold (or take it off)
   data: from useBookingData. panelState: { panel, setPanel, panelBooking, group, wide }. rooms: the room list.
 */
-export function useHoldActions({ data, panelState, rooms, toast }) {
-  const { bookings, isBusy, setExtra, forget, unforget, cancelledKeys } = data;
+export function useHoldActions({ data, panelState, rooms, toast, history }) {
+  const { bookings, isBusy, setExtra, forget, unforget, patchLocal, cancelledKeys } = data;
   const { panel, setPanel, panelBooking, group, wide } = panelState;
 
-  // Remove bookings. They disappear the moment you click AND the message with Undo appears at the same moment; the
-  // server is told in parallel. Undo waits for the server's answer so it knows whether to recreate a hold (the server
-  // removes holds for good) or restore a booking (anything else is soft-deleted). If the server refuses, they come back.
-  const removeMany = async (list) => {
-    const real = list.filter((b) => b.id > 0);
-    if (real.length === 0) return;
-    real.forEach((b) => forget(b.id));
-    setExtra((items) => items.filter((x) => !real.some((b) => b.id === x.id)));
-    setPanel((p) => (p && real.some((b) => b.id === p.booking.id) ? null : p));
-
-    const deleting = Promise.allSettled(real.map((b) => api(`/api/bookings/${b.id}`, { method: 'DELETE' })));
-    toast({
-      message: real.length > 1 ? `${real.length} bookings removed` : real[0].status === 'on_hold' ? 'Hold removed' : 'Booking removed',
-      actionLabel: 'Undo',
-      onAction: async () => {
-        const settled = await deleting;
-        const again = [];
-        for (const [i, b] of real.entries()) {
+  // Deleting is an undoable entry. Rows leave the screen at once; the server is told in parallel. Undo waits for the
+  // server's answer so it knows whether to recreate a hold (the server removes holds for good) or restore a booking
+  // (anything else is soft-deleted). If the server refuses, the row simply comes back. Redo deletes the rows again.
+  const removalEntry = (real) => {
+    let rows = real;
+    let pending = null;
+    const deleteRows = () => {
+      const gone = rows;
+      gone.forEach((b) => forget(b.id));
+      setExtra((items) => items.filter((x) => !gone.some((b) => b.id === x.id)));
+      setPanel((p) => (p && gone.some((b) => b.id === p.booking.id) ? null : p));
+      pending = Promise.allSettled(gone.map((b) => api(`/api/bookings/${b.id}`, { method: 'DELETE' })));
+      return pending;
+    };
+    return {
+      label: real.length > 1 ? `${real.length} bookings removed` : real[0].status === 'on_hold' ? 'Hold removed' : 'Booking removed',
+      start: deleteRows,
+      redo: async () => {
+        await deleteRows();
+        bookings.reload();
+      },
+      undo: async () => {
+        const settled = await pending;
+        const next = [];
+        for (const [i, b] of rows.entries()) {
           const r = settled[i];
           if (r.status === 'rejected') {
             unforget(b.id); // it was never deleted, so there is nothing to undo
+            next.push(b);
           } else if (r.value.hold) {
             const [made] = await api('/api/bookings', {
               method: 'POST',
@@ -43,18 +53,28 @@ export function useHoldActions({ data, panelState, rooms, toast }) {
                 check_in_time: b.check_in_time, check_out_time: b.check_out_time,
               },
             });
-            again.push(made);
-          } else if (!r.value.gone) {
-            await api(`/api/bookings/${b.id}/restore`, { method: 'POST' });
+            next.push(made);
+          } else {
+            if (!r.value.gone) await api(`/api/bookings/${b.id}/restore`, { method: 'POST' });
             unforget(b.id);
+            next.push(b);
           }
         }
-        setExtra((items) => [...items, ...again]);
+        setExtra((items) => [...items, ...next.filter((n) => !rows.some((b) => b.id === n.id))]); // recreated holds
+        rows = next;
         bookings.reload();
       },
-    });
+    };
+  };
 
-    const settled = await deleting;
+  const removeMany = async (list) => {
+    const real = list.filter((b) => b.id > 0);
+    if (real.length === 0) return;
+    const entry = removalEntry(real);
+    history.push(entry);
+    toast({ message: entry.label, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+
+    const settled = await entry.start();
     const failed = real.filter((_, i) => settled[i].status === 'rejected');
     if (failed.length) {
       failed.forEach((b) => unforget(b.id));
@@ -62,6 +82,69 @@ export function useHoldActions({ data, panelState, rooms, toast }) {
     } else {
       bookings.reload();
     }
+  };
+
+  // One click on a hold: confirm it (every room of the hold). It turns green at once; Undo puts it back on hold. A hold
+  // with no guest and no name to use opens its form instead, so the guest can be added.
+  // opts.targets: exactly these holds; opts.grouped: every room of its hold; otherwise just this one.
+  const confirmHold = async (b, opts = {}) => {
+    const holds = opts.targets ?? (opts.grouped && b.group_id ? data.bookingList.filter((x) => x.group_id === b.group_id && x.status === 'on_hold') : [b]);
+    const targets = holds.length ? holds : [b];
+    if (targets.some((t) => t.id < 0)) return toast({ message: 'Still saving this hold, try again in a moment', duration: 3000 });
+    const ids = targets.map((t) => t.id);
+    patchLocal(ids, { status: 'confirmed' });
+    try {
+      const guestId = await confirmHolds(targets);
+      patchLocal(ids, { status: 'confirmed', guest_id: guestId });
+      bookings.reload();
+      const entry = {
+        label: 'Hold confirmed',
+        undo: async () => {
+          patchLocal(ids, { status: 'on_hold' });
+          await reholdAll(targets);
+          bookings.reload();
+        },
+        redo: async () => {
+          patchLocal(ids, { status: 'confirmed' });
+          await confirmHolds(targets);
+          bookings.reload();
+        },
+      };
+      history.push(entry);
+      toast({ message: targets.length > 1 ? `${targets.length} rooms confirmed` : 'Hold confirmed', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+    } catch (err) {
+      patchLocal(ids, null);
+      if (err instanceof NeedGuestError) {
+        setPanel({ booking: b, editing: true });
+        toast({ message: err.message, duration: 4000 });
+      } else {
+        toast({ message: err.message });
+      }
+    }
+  };
+
+  // Pencil tool: a booking's dates were stretched on the grid. It changes on screen at once, the server is told after,
+  // and it can be undone (a refusal, such as an overlap, puts the old dates back).
+  const resizeBooking = async (b, checkIn, checkOut, roomId = b.room_id) => {
+    if (b.id < 0) return;
+    const roomNumber = (rooms ?? []).find((r) => r.id === roomId)?.number ?? b.room_number;
+    const before = { check_in: b.check_in, check_out: b.check_out, nights: b.nights, room_id: b.room_id, room_number: b.room_number };
+    const after = { check_in: checkIn, check_out: checkOut, nights: diffDays(checkIn, checkOut), room_id: roomId, room_number: roomNumber };
+    const apply = async (to) => {
+      patchLocal([b.id], to);
+      await api(`/api/bookings/${b.id}`, { method: 'PATCH', body: { check_in: to.check_in, check_out: to.check_out, room_id: to.room_id } });
+      bookings.reload();
+    };
+    try {
+      await apply(after);
+    } catch (err) {
+      patchLocal([b.id], null);
+      return toast({ message: err.message });
+    }
+    const entry = { label: 'Dates changed', undo: () => apply(before), redo: () => apply(after) };
+    history.push(entry);
+    const roomNote = roomId !== b.room_id ? `Room ${roomNumber}, ` : '';
+    toast({ message: `${b.name}: ${roomNote}${fmtShort(checkIn)} to ${fmtShort(checkOut)}`, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
   };
 
   const removeBooking = (b) => {
@@ -114,6 +197,19 @@ export function useHoldActions({ data, panelState, rooms, toast }) {
         bookings.reload();
       }
     };
+    const body = {
+      room_ids: roomIds, check_in: checkIn, check_out: checkOut, status: 'on_hold', group_id: groupId,
+      color: copy.color ?? null, label: copy.label ?? null, organization: copy.organization ?? null,
+      check_in_time: copy.check_in_time ?? null, check_out_time: copy.check_out_time ?? null,
+    };
+    const redo = async () => {
+      const created = await api('/api/bookings', { method: 'POST', body });
+      job.created = created;
+      setExtra((list) => [...list.filter((b) => !created.some((c) => c.id === b.id)), ...created]);
+      bookings.reload();
+    };
+    const entry = { label: message, undo, redo };
+    history.push(entry);
     // Narrow screens: no pop-up over the calendar; the message offers the details form instead (tap the hold any time).
     if (!opts.keepPanel && !wide) {
       toast({
@@ -122,18 +218,11 @@ export function useHoldActions({ data, panelState, rooms, toast }) {
         onAction: () => setPanel({ booking: job.created[0] ?? temps[0], key: temps[0].clientKey, editing: true }),
       });
     } else {
-      toast({ message, actionLabel: 'Undo', onAction: undo });
+      toast({ message, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
     }
 
     try {
-      const created = await api('/api/bookings', {
-        method: 'POST',
-        body: {
-          room_ids: roomIds, check_in: checkIn, check_out: checkOut, status: 'on_hold', group_id: groupId,
-          color: copy.color ?? null, label: copy.label ?? null, organization: copy.organization ?? null,
-          check_in_time: copy.check_in_time ?? null, check_out_time: copy.check_out_time ?? null,
-        },
-      });
+      const created = await api('/api/bookings', { method: 'POST', body });
       job.created = created;
       // Holds the user already removed (or undid) while they were saving are deleted straight away.
       const dropped = created.filter((_, i) => cancelledKeys.current.has(temps[i]?.clientKey));
@@ -146,6 +235,7 @@ export function useHoldActions({ data, panelState, rooms, toast }) {
       if (real.length > 0) setPanel((p) => (p && p.key === temps[0].clientKey ? { ...p, booking: real[0] } : p));
       bookings.reload();
     } catch (err) {
+      history.drop(entry);
       setExtra((list) => list.filter((b) => !isTemp(b)));
       setPanel((p) => (ownsPanel(p) ? null : p));
       toast({ message: err.message });
@@ -180,5 +270,5 @@ export function useHoldActions({ data, panelState, rooms, toast }) {
     );
   };
 
-  return { placeHold, removeMany, removeBooking, toggleRoom };
+  return { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, resizeBooking };
 }

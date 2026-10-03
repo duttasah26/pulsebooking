@@ -8,7 +8,6 @@ export const HEAD = 38; // header row in the timeline
 export const DATE_LABEL = 92; // date column in the month sheet (one line: "Thu 1 Oct")
 export const MONTH_HEAD = 30; // room header row in the month sheet
 const GAP = 3; // space around a bar
-const OVERLAP = 3; // how far a bar reaches past the middle of its arrival or departure day
 
 // Minimum cell width (cells stretch to fill the width) and fixed cell height. Short rows fit a month with little scrolling.
 export const cellSize = (rows) => ({ cellW: rows ? 40 : 56, cellH: rows ? 40 : 28 });
@@ -29,9 +28,19 @@ export function gridTemplate({ rows, n, rooms, cellW, cellH }) {
 // used to let one long name stretch every column, so the calendar looked zoomed in on a few rooms.)
 export const gridMinWidth = ({ rows, n, rooms, cellW }) => (rows ? LABEL + n * cellW : DATE_LABEL + rooms.length * cellW);
 
-// Where a stay is drawn: from the middle of the arrival day to the middle of the departure day, so a guest leaving on
-// the 5th and another arriving on the 5th share that day with a slight overlap. Returns null when it is off screen.
-export function barGeometry({ rows, start, n, cellH }, checkIn, checkOut) {
+// "14:30" as a share of the day (0 to 1), or `fallback` when there is no time.
+export const dayFraction = (time, fallback) => {
+  const m = /^(\d{1,2}):(\d{2})/.exec(time ?? '');
+  return m ? Math.min(1, (Number(m[1]) * 60 + Number(m[2])) / 1440) : fallback;
+};
+
+const MIN_LEN = 0.4; // a bar is never shorter than this share of a cell
+
+// Where a stay is drawn: from the check-in time on the arrival day to the check-out time on the departure day (a share
+// of each day's cell), so a bar's length shows how long the stay really is, and a guest leaving at 11:00 and another
+// arriving at 14:00 leave a small gap on the turnover day. fIn and fOut are those times as shares of the day.
+// Returns null when the stay is off screen.
+export function barGeometry({ rows, start, n, cellH }, checkIn, checkOut, fIn = 0.5, fOut = 0.5) {
   const first = diffDays(start, checkIn);
   const out = diffDays(start, checkOut);
   if (out < 0 || first >= n) return null;
@@ -40,9 +49,12 @@ export function barGeometry({ rows, start, n, cellH }, checkIn, checkOut) {
   const len = e - a + 1;
   const halfStart = first >= 0;
   const halfEnd = out <= n - 1;
-  const half = rows ? `calc(${50 / len}% - ${OVERLAP}px)` : `${cellH / 2 - OVERLAP}px`;
-  const before = halfStart ? half : `${GAP}px`;
-  const after = halfEnd ? half : `${GAP}px`;
+  let from = halfStart ? fIn : 0;
+  const to = halfEnd ? fOut : 1;
+  if (len - 1 + to - from < MIN_LEN) from = Math.max(0, len - 1 + to - MIN_LEN); // keep very short stays visible
+  // `before` and `after` are how far the bar starts after the cell edge and ends before the other edge.
+  const before = !halfStart ? `${GAP}px` : rows ? `calc(${(from * 100) / len}% + 1px)` : `${cellH * from + 1}px`;
+  const after = !halfEnd ? `${GAP}px` : rows ? `calc(${((1 - to) * 100) / len}% + 1px)` : `${cellH * (1 - to) + 1}px`;
   const margin = rows
     ? { margin: GAP, marginLeft: before, marginRight: after }
     : { margin: GAP, marginTop: before, marginBottom: after };

@@ -32,6 +32,9 @@ export default function BookingSheet({ onClose, editing: editingProp, onEditingC
           isBusy={props.isBusy}
           onSaved={props.onSaved}
           onRemove={props.onRemove}
+          onConfirm={props.onConfirm}
+          groupCount={props.groupCount}
+          onShowGroup={props.onShowGroup}
         />
       ) : (
         <BookingForm {...props} onDone={onClose} onCancel={onClose} />

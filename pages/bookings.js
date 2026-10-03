@@ -12,6 +12,7 @@ import { SORTS, TABS } from '../components/bookings/bookingTabs';
 import { useToast } from '../components/Toast';
 import { STATUS_OPTIONS } from '../lib/status';
 import { api, useApi } from '../lib/useApi';
+import { NeedGuestError, confirmHolds } from '../lib/holds';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import { useQueryParams } from '../lib/useQueryState';
 import { useStoredState } from '../lib/useStoredState';
@@ -51,6 +52,44 @@ export default function Bookings() {
       list.reload();
     } catch (err) {
       toast({ message: `Could not restore: ${err.message}` });
+    }
+  };
+  // One-click hold actions. Confirming turns every room of the hold into a booking (the hold needs a guest, or a label
+  // to name one after; otherwise its form opens). Cancelling removes the hold, and Undo puts it back.
+  const confirmHold = async (b) => {
+    try {
+      await confirmHolds([b]);
+      toast({ message: 'Hold confirmed', duration: 3000 });
+      list.reload();
+    } catch (err) {
+      if (err instanceof NeedGuestError) {
+        setSheet({ mode: 'edit', booking: b });
+        toast({ message: err.message, duration: 4000 });
+      } else {
+        toast({ message: err.message });
+      }
+    }
+  };
+  const cancelHold = async (b) => {
+    try {
+      await api(`/api/bookings/${b.id}`, { method: 'DELETE' });
+      list.reload();
+      toast({
+        message: 'Hold cancelled',
+        actionLabel: 'Undo',
+        onAction: async () => {
+          await api('/api/bookings', {
+            method: 'POST',
+            body: {
+              room_ids: [b.room_id], check_in: b.check_in, check_out: b.check_out, status: 'on_hold', group_id: b.group_id,
+              color: b.color, label: b.label, organization: b.organization, check_in_time: b.check_in_time, check_out_time: b.check_out_time,
+            },
+          });
+          list.reload();
+        },
+      });
+    } catch (err) {
+      toast({ message: err.message });
     }
   };
   const saved = (message) => {
@@ -133,7 +172,7 @@ export default function Bookings() {
           ) : (
             <ul className={`divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface ${list.loading ? 'opacity-70' : ''}`}>
               {rows.map((b) => (
-                <BookingRow key={b.id} b={b} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} />
+                <BookingRow key={b.id} b={b} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
               ))}
             </ul>
           )}
@@ -149,6 +188,7 @@ export default function Bookings() {
           rooms={rooms.data ?? []}
           onClose={() => setSheet(null)}
           onSaved={saved}
+          onConfirm={(b) => { setSheet(null); confirmHold(b); }}
         />
       )}
     </Layout>
