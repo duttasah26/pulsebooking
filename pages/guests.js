@@ -99,7 +99,6 @@ function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
     e.preventDefault();
     setError('');
     if (!form.name.trim()) return setError('Name is required.');
-    if (!form.phone.trim() && !form.email.trim()) return setError('Add a phone or email so guests with the same name can be told apart.');
     setBusy(true);
     try {
       const body = { name: form.name.trim(), phone: form.phone.trim() || null, email: form.email.trim() || null, organization: form.organization.trim() || null, notes: form.notes.trim() || null };

@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import sql from '../../../lib/db';
-import { bookingColumns, bookingJoins, getBooking } from '../../../lib/bookings';
-import { HttpError, actor, parseColor, parseId, parseDate, parseStay, route } from '../../../lib/api';
+import { bookingColumns, bookingJoins } from '../../../lib/bookings';
+import { HttpError, actor, parseColor, parseId, parseDate, parseStay, parseTime, parseUuid, route } from '../../../lib/api';
 
 const SORTS = {
   check_in: sql`lower(b.stay)`,
   check_out: sql`upper(b.stay)`,
   room: sql`r.number`,
-  guest: sql`lower(COALESCE(g.name, b.label, ''))`,
+  guest: sql`lower(COALESCE(g.name, b.label, b.organization, ''))`,
   created: sql`b.created_at`,
 };
 const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hold'];
@@ -18,6 +18,7 @@ const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hol
 //   from=YYYY-MM-DD&to=YYYY-MM-DD  (bookings overlapping that range, to is exclusive)
 //   room_id, guest_id, q (guest name, organization or hold label contains), sort=check_in|check_out|room|guest|created, dir=asc|desc
 //   year & month (1-12) still work for the current calendar.
+// deleted=only never lists on-hold bookings: removing a hold deletes it for good, so old ones are not "deleted records".
 async function list(req, res) {
   const { when = 'all', deleted = 'hide', status, room_id, guest_id, q, sort = 'check_in', dir = 'desc' } = req.query;
   let { from, to } = req.query;
@@ -33,7 +34,7 @@ async function list(req, res) {
 
   const where = [];
   if (deleted === 'hide') where.push(sql`b.deleted_at IS NULL`);
-  else if (deleted === 'only') where.push(sql`b.deleted_at IS NOT NULL`);
+  else if (deleted === 'only') where.push(sql`b.deleted_at IS NOT NULL AND b.status <> 'on_hold'`);
   else if (deleted !== 'show') throw new HttpError(400, 'deleted must be hide, show or only');
 
   if (when === 'past') where.push(sql`upper(b.stay) <= CURRENT_DATE`);
@@ -89,32 +90,29 @@ async function resolveRoomIds(body) {
   throw new HttpError(400, 'room_id, room_ids or room_number is required');
 }
 
-// A booking points at an existing guest (guest_id) or creates a new one.
-// For a new guest, name plus a phone or email is required. Names are not unique.
-// An on-hold booking may have no guest at all.
-async function resolveGuestId(tx, body, isHold) {
-  if (body.guest_id) return parseId(body.guest_id, 'guest_id');
+// An existing guest (guest_id), a new guest (a name; phone and email are optional), or none.
+// Only an on-hold booking may have no guest.
+function resolveGuest(body, isHold) {
+  if (body.guest_id) return { id: parseId(body.guest_id, 'guest_id') };
   const g = body.guest ?? body;
   const name = g.name?.toString().trim();
   if (!name) {
     if (isHold) return null;
     throw new HttpError(400, 'Guest name is required');
   }
-  const phone = g.phone?.toString().trim() || null;
-  const email = g.email?.toString().trim() || null;
-  if (!phone && !email) {
-    if (isHold) return null;
-    throw new HttpError(400, 'A new guest needs a phone number or email');
-  }
-  const [guest] = await tx`
-    INSERT INTO guests (name, phone, email, organization)
-    VALUES (${name}, ${phone}, ${email}, ${g.organization?.toString().trim() || null}) RETURNING id
-  `;
-  return guest.id;
+  return {
+    newGuest: {
+      name,
+      phone: g.phone?.toString().trim() || null,
+      email: g.email?.toString().trim() || null,
+      organization: g.organization?.toString().trim() || null,
+    },
+  };
 }
 
 // POST /api/bookings
-// Several rooms are booked together in one transaction: if any room is taken, none are booked.
+// Several rooms are booked together in ONE statement, so it is a single database round trip and all-or-nothing:
+// if any room is taken, none are booked (409). A new guest is created in the same statement.
 // Returns the booking, or an array of bookings when room_ids is used.
 async function create(req, res) {
   const body = req.body ?? {};
@@ -123,32 +121,47 @@ async function create(req, res) {
   const roomIds = await resolveRoomIds(body);
   const status = body.status ?? 'confirmed';
   if (!STATUSES.includes(status)) throw new HttpError(400, `status must be one of ${STATUSES.join(', ')}`);
-  const isHold = status === 'on_hold';
-  const groupId = roomIds.length > 1 ? randomUUID() : null;
+  const guest = resolveGuest(body, status === 'on_hold');
+  // Rooms booked together share a group. A caller can pass group_id to add rooms to an existing group.
+  const groupId = parseUuid(body.group_id, 'group_id') ?? (roomIds.length > 1 ? randomUUID() : null);
+  const adults = Number.isInteger(body.adults) ? body.adults : Number.isInteger(body.guests) ? body.guests : 1;
+  const children = Number.isInteger(body.children) ? body.children : 0;
 
-  const ids = await sql.begin(async (tx) => {
-    const guestId = await resolveGuestId(tx, body, isHold);
-    const out = [];
-    for (const roomId of roomIds) {
-      const [row] = await tx`
-        INSERT INTO bookings (room_id, guest_id, stay, status, channel, rate_plan, adults, children, notes, color,
-                              organization, label, group_id, created_by)
-        VALUES (
-          ${roomId}, ${guestId}, ${stay}, ${status}, ${body.channel ?? 'Direct'}, ${body.rate_plan ?? 'EP'},
-          ${Number.isInteger(body.adults) ? body.adults : Number.isInteger(body.guests) ? body.guests : 1},
-          ${Number.isInteger(body.children) ? body.children : 0},
-          ${body.notes ?? null}, ${parseColor(body.color)},
-          ${body.organization?.toString().trim() || null}, ${body.label?.toString().trim() || null}, ${groupId}, ${by}
-        )
-        RETURNING id
-      `;
-      out.push(row.id);
-    }
-    return out;
-  });
+  // A new guest is inserted in the same statement. A statement cannot read rows it is inserting from the table itself,
+  // so the result joins the new guest from the CTE as well as the existing guests.
+  const newGuestCte = guest?.newGuest
+    ? sql`new_guest AS (
+        INSERT INTO guests (name, phone, email, organization)
+        VALUES (${guest.newGuest.name}, ${guest.newGuest.phone}::text, ${guest.newGuest.email}::text, ${guest.newGuest.organization}::text)
+        RETURNING id, name, phone, email
+      ),`
+    : sql``;
+  const guestId = guest?.newGuest ? sql`(SELECT id FROM new_guest)` : sql`${guest?.id ?? null}::int`;
+  const guestRows = guest?.newGuest
+    ? sql`SELECT id, name, phone, email FROM guests UNION ALL SELECT id, name, phone, email FROM new_guest`
+    : sql`SELECT id, name, phone, email FROM guests`;
 
-  const created = await Promise.all(ids.map((id) => getBooking(id)));
-  res.status(201).json(Array.isArray(body.room_ids) ? created : created[0]);
+  const rows = await sql`
+    WITH ${newGuestCte}
+    ins AS (
+      INSERT INTO bookings (room_id, guest_id, stay, status, channel, rate_plan, adults, children, notes, color,
+                            organization, label, group_id, check_in_time, check_out_time, created_by)
+      SELECT room, ${guestId}, ${stay}::daterange, ${status}::booking_status, ${body.channel ?? 'Direct'}::text,
+             ${body.rate_plan ?? 'EP'}::text, ${adults}::int, ${children}::int, ${body.notes ?? null}::text,
+             ${parseColor(body.color)}::text, ${body.organization?.toString().trim() || null}::text,
+             ${body.label?.toString().trim() || null}::text, ${groupId}::uuid,
+             ${parseTime(body.check_in_time, 'check_in_time')}::time, ${parseTime(body.check_out_time, 'check_out_time')}::time,
+             ${by}::text
+      FROM unnest(${roomIds}::int[]) AS room
+      RETURNING *
+    )
+    SELECT ${bookingColumns}
+    FROM ins b
+    JOIN rooms r ON r.id = b.room_id
+    LEFT JOIN (${guestRows}) g ON g.id = b.guest_id
+    ORDER BY b.id
+  `;
+  res.status(201).json(Array.isArray(body.room_ids) ? rows : rows[0]);
 }
 
 export default route({ GET: list, POST: create });

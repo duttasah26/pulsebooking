@@ -39,12 +39,12 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate }) {
     <div className="grid gap-4 lg:grid-cols-2">
       <Section title="Arriving" count={arriving.length} icon={ArrowDownLeft} empty="No arrivals.">
         {arriving.map((b) => (
-          <Row key={b.id} b={b} onOpen={onOpen} detail={`${nightsLabel(b.nights)}, leaves ${fmtDayMonth(b.check_out)}`} />
+          <Row key={b.id} b={b} onOpen={onOpen} detail={`${nightsLabel(b.nights)}${b.check_in_time ? `, arrives ${b.check_in_time}` : ''}, leaves ${fmtDayMonth(b.check_out)}`} />
         ))}
       </Section>
       <Section title="Departing" count={departing.length} icon={ArrowUpRight} empty="No departures.">
         {departing.map((b) => (
-          <Row key={b.id} b={b} onOpen={onOpen} detail={`Arrived ${fmtDayMonth(b.check_in)}`} />
+          <Row key={b.id} b={b} onOpen={onOpen} detail={`Arrived ${fmtDayMonth(b.check_in)}${b.check_out_time ? `, leaves by ${b.check_out_time}` : ''}`} />
         ))}
       </Section>
       <Section title="In house tonight" count={inHouse.length} icon={Bed} empty="Nobody is staying tonight.">
@@ -61,7 +61,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate }) {
               className="flex min-h-14 w-full items-center justify-between px-4 py-2 text-left hover:bg-surface-2"
             >
               <span className="font-mono font-semibold">Room {r.number}</span>
-              <span className="flex items-center gap-1 text-sm font-medium text-accent"><Plus size={16} /> Book</span>
+              <span className="flex items-center gap-1 text-sm font-medium text-accent-text"><Plus size={16} /> Hold</span>
             </button>
           </li>
         ))}

@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
 /*
-  Design tokens. One neutral scale, one accent (emerald), one radius (8px, rounded-lg).
+  Design tokens. Neutrals from the brand palette (dimgray, gainsboro, near black), one emerald accent, one radius (8px, rounded-lg).
   Light mode only.
   Layers: app nav 30, sheet 40, toast 50. Inside the room grid: bars 1, labels and headers 2, corner 3.
 */
 :root {
   color-scheme: light;
-  --canvas: #f4f4f5;
+  --canvas: #f3f3ef;
   --surface: #ffffff;
-  --surface-2: #f4f4f5;
-  --line: #e0e0e4;
-  --ink: #18181b;
-  --muted: #52525b;
-  --accent: #047857;
-  --accent-ink: #fafafa;
+  --surface-2: #ecece6;
+  --line: #deded5;        /* gainsboro */
+  --ink: #261f1c;         /* near black */
+  --muted: #6f655c;       /* dimgray */
+  --accent: #047857;      /* emerald: fills, borders, selected states */
+  --accent-ink: #fafafa;  /* text on an emerald fill */
   --accent-soft: #d8f0e6;
+  --accent-text: #047857; /* emerald as text on white (5.5:1) */
   --danger: #b42318;
 }
 
@@ -29,6 +30,7 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
   --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -47,8 +49,9 @@ body {
 }
 
 @layer components {
+  /* Touch size on phones, denser on desktop (24px minimum target, 8px+ between targets). */
   .field {
-    @apply block min-h-11 w-full rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted;
+    @apply block min-h-11 w-full rounded-lg border border-line bg-surface px-3 py-2 text-base text-ink placeholder:text-muted lg:min-h-9 lg:py-1 lg:text-sm;
   }
   .field:focus-visible,
   .btn:focus-visible,
@@ -57,10 +60,10 @@ body {
     outline-offset: 2px;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-ink;
+    @apply mb-1.5 block text-sm font-medium text-ink lg:mb-1;
   }
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50 lg:min-h-9;
   }
   .btn-primary {
     @apply border-transparent bg-accent text-accent-ink hover:bg-accent hover:opacity-90;
@@ -69,12 +72,16 @@ body {
     @apply text-danger;
   }
   .btn-icon {
-    @apply min-h-11 min-w-11 px-0;
+    @apply min-h-11 min-w-11 px-0 lg:min-h-9 lg:min-w-9;
   }
   .badge {
     @apply inline-flex items-center rounded-lg border border-line px-2 py-0.5 text-xs font-medium text-muted;
   }
 }
+
+/* Scrolls normally but shows no scrollbar (the booking form panel). */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Booked or on-hold nights: diagonal hatching. */
 .hatch {

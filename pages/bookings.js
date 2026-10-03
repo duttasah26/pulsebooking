@@ -144,7 +144,7 @@ export default function Bookings() {
                     </span>
                     <span className="font-mono text-sm font-semibold md:order-none">Room {b.room_number}</span>
                     <span className="col-span-2 text-sm md:col-span-1">
-                      {fmtShort(b.check_in)} to {fmtShort(b.check_out)}
+                      {fmtShort(b.check_in)}{b.check_in_time ? ` ${b.check_in_time}` : ''} to {fmtShort(b.check_out)}{b.check_out_time ? ` ${b.check_out_time}` : ''}
                       <span className="text-muted">, {nightsLabel(b.nights)}</span>
                     </span>
                     <span className="col-span-2 md:col-span-1">

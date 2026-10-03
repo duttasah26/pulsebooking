@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CheckCircle, Clock } from '@phosphor-icons/react';
-import { COLORS, colorFor } from '../../lib/colors';
+import { CheckCircle, Clock, X } from '@phosphor-icons/react';
+import { colorFor, resolveColor } from '../../lib/colors';
 import {
   addDays, dayOfMonth, diffDays, fmtDayMonth, fmtMonthShort, fmtShort, fmtWeekday, isWeekend, nightsLabel, today,
 } from '../../lib/dates';
 
-const LABEL = 88; // px, label column in the timeline
-const HEAD = 52; // px, header row in the timeline
+const LABEL = 80; // px, label column in the timeline
+const HEAD = 46; // px, header row in the timeline
 const GAP = 3; // px, space around a bar
 const OVERLAP = 3; // px a bar reaches past the middle of its arrival or departure day
 
@@ -24,13 +24,15 @@ const OVERLAP = 3; // px a bar reaches past the middle of its arrival or departu
   Bars run from the middle of the arrival day to the middle of the departure day, so a guest leaving on the
   5th and another arriving on the 5th share that day, with a slight overlap.
 */
-export default function RoomGrid({ rooms, days, bookings, orientation, onCreate, onOpen, draft }) {
+export default function RoomGrid({
+  rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, draft,
+}) {
   const rows = orientation === 'rows';
   const n = days.length;
   const start = days[0];
   const todayStr = today();
-  const cellW = rows ? 48 : 60;
-  const cellH = rows ? 56 : 48;
+  const cellW = rows ? 40 : 56; // minimum width; cells stretch to fill the available width
+  const cellH = rows ? 48 : 40;
 
   const [sel, setSel] = useState(null); // { rA, rB, a, b, dragging?, pending? }
   const pointerType = useRef('mouse');
@@ -85,9 +87,9 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
   const dragging = Boolean(sel?.dragging);
   useEffect(() => {
     if (!dragging) return;
-    const up = () => {
+    const up = (e) => {
       const s = selRef.current;
-      if (s?.dragging) finish(s);
+      if (s?.dragging) finish(s, { invert: s.invert || e.shiftKey || e.ctrlKey || e.metaKey });
     };
     const cancel = () => setSel(null);
     window.addEventListener('pointerup', up);
@@ -116,7 +118,7 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
     pointerType.current = e.pointerType;
     if (e.pointerType === 'touch' || e.button !== 0 || !isFree(r, i)) return;
     e.currentTarget.releasePointerCapture?.(e.pointerId);
-    set({ rA: r, rB: r, a: i, b: i, dragging: true });
+    set({ rA: r, rB: r, a: i, b: i, dragging: true, invert: e.shiftKey || e.ctrlKey || e.metaKey });
   };
 
   const onPointerMove = (e) => {
@@ -186,18 +188,18 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
     if (!draft) return [];
     const g = geometry(draft.checkIn, draft.checkOut);
     if (!g) return [];
-    const color = COLORS.find((c) => c.key === draft.color);
+    const color = resolveColor(draft.color);
     return draft.roomIds
       .map((id) => roomIndex.get(id))
       .filter((r) => r !== undefined)
-      .map((r) => ({ r, g, color, key: `${rooms[r].id}-${draft.checkIn}-${draft.checkOut}-${draft.color}` }));
+      .map((r) => ({ r, g, color: color ?? resolveColor(rooms[r].color), key: `${rooms[r].id}-${draft.checkIn}-${draft.checkOut}-${draft.color}` }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, roomIndex, rooms, start, n, rows]);
   const draftNights = draft ? diffDays(draft.checkIn, draft.checkOut) : 0;
 
   const template = rows
     ? { gridTemplateColumns: `${LABEL}px repeat(${n}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD}px repeat(${rooms.length}, ${cellH}px)` }
-    : { gridTemplateColumns: `80px repeat(${rooms.length}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD - 8}px repeat(${n}, ${cellH}px)` };
+    : { gridTemplateColumns: `76px repeat(${rooms.length}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD - 14}px repeat(${n}, ${cellH}px)` };
 
   // A short description of the selection in progress (drag or tap).
   const summary = useMemo(() => {
@@ -209,6 +211,34 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
     return `${rr}, ${when}, ${nightsLabel(diffDays(checkIn, checkOut))}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel, rooms, days]);
+
+  // Room header (month sheet) or room label (timeline): the room's colour, and, while a booking is being made,
+  // a button that adds the room to it or takes it out. That is how rooms that are not next to each other are picked.
+  const roomHead = (room, r) => {
+    const tone = resolveColor(room.color)?.border ?? 'var(--line)';
+    const inDraft = (activeRoomIds ?? draft?.roomIds)?.includes(room.id);
+    const cls = rows
+      ? 'sticky left-0 z-[2] flex items-center gap-2 border-r border-t border-line px-3 font-mono text-sm font-semibold'
+      : 'sticky top-0 z-[2] flex items-center justify-center gap-1.5 border-b border-l border-line font-mono text-sm font-semibold';
+    const style = rows
+      ? { gridRow: r + 2, gridColumn: 1, borderLeft: `4px solid ${tone}` }
+      : { gridRow: 1, gridColumn: r + 2, borderTop: `3px solid ${tone}` };
+    const bg = inDraft ? 'bg-accent-soft' : 'bg-surface';
+    if (!onToggleRoom) return <div key={room.id} className={`${cls} ${bg}`} style={style}>{room.number}</div>;
+    return (
+      <button
+        key={room.id}
+        type="button"
+        aria-pressed={inDraft}
+        title={inDraft ? `Take Room ${room.number} off this hold` : `Hold Room ${room.number} too`}
+        onClick={() => onToggleRoom(room.id)}
+        className={`${cls} ${bg} cursor-pointer hover:bg-accent-soft`}
+        style={style}
+      >
+        {room.number}
+      </button>
+    );
+  };
 
   const cornerR = sel ? sel.rB : -1;
   const roomCount = sel ? Math.abs(sel.rB - sel.rA) + 1 : 0;
@@ -231,40 +261,24 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
                   key={d}
                   className={`sticky top-0 z-[2] flex flex-col items-center justify-center border-b border-line text-xs ${
                     isWeekend(d) ? 'bg-surface-2' : 'bg-surface'
-                  } ${d === todayStr ? 'font-semibold text-accent' : 'text-muted'}`}
+                  } ${d === todayStr ? 'font-semibold text-accent-text' : 'text-muted'}`}
                   style={{ gridRow: 1, gridColumn: i + 2 }}
                 >
                   <span>{i === 0 || dayOfMonth(d) === 1 ? fmtMonthShort(d) : fmtWeekday(d)}</span>
                   <span className="font-mono text-sm text-ink">{dayOfMonth(d)}</span>
                 </div>
               ))
-            : rooms.map((room, r) => (
-                <div
-                  key={room.id}
-                  className="sticky top-0 z-[2] flex items-center justify-center border-b border-l border-line bg-surface font-mono text-sm font-semibold"
-                  style={{ gridRow: 1, gridColumn: r + 2 }}
-                >
-                  {room.number}
-                </div>
-              ))}
+            : rooms.map(roomHead)}
 
           {/* labels down the side */}
           {rows
-            ? rooms.map((room, r) => (
-                <div
-                  key={room.id}
-                  className="sticky left-0 z-[2] flex items-center border-r border-t border-line bg-surface px-3 font-mono text-sm font-semibold"
-                  style={{ gridRow: r + 2, gridColumn: 1 }}
-                >
-                  {room.number}
-                </div>
-              ))
+            ? rooms.map(roomHead)
             : days.map((d, i) => (
                 <div
                   key={d}
                   className={`sticky left-0 z-[2] flex flex-col justify-center border-r border-t border-line px-2 text-xs ${
                     isWeekend(d) ? 'bg-surface-2' : 'bg-surface'
-                  } ${d === todayStr ? 'font-semibold text-accent' : 'text-muted'}`}
+                  } ${d === todayStr ? 'font-semibold text-accent-text' : 'text-muted'}`}
                   style={{ gridRow: i + 2, gridColumn: 1 }}
                 >
                   <span>{fmtWeekday(d)}</span>
@@ -312,34 +326,62 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
           {bars.map(({ b, r, g }) => {
             const c = colorFor(b);
             const hold = b.status === 'on_hold';
-            const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}`;
-            return (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => onOpen(b)}
-                title={label}
-                aria-label={`${label}, ${b.status.replace('_', ' ')}`}
-                className={`animate-bar-in relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border px-2 text-left text-xs font-medium text-ink transition-transform active:scale-[0.98] ${
-                  hold ? 'border-dashed' : ''
-                } ${b.status === 'checked_out' ? 'opacity-60' : ''} ${
-                  g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
-                } ${g.cutEnd ? (rows ? 'rounded-r-none border-r-0' : 'rounded-b-none border-b-0') : ''}`}
-                style={{
-                  ...place(r, g.a, g.len),
-                  ...g.margin,
-                  backgroundColor: c.bg,
-                  borderColor: c.border,
-                  boxShadow: '0 0 0 1.5px var(--surface)',
-                  ...(hold
-                    ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' }
-                    : {}),
-                }}
-              >
+            const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
+            const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
+            const shape = `animate-bar-in relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border text-left text-xs font-medium text-ink ${
+              hold ? 'border-dashed' : ''
+            } ${b.status === 'checked_out' ? 'opacity-60' : ''} ${
+              g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
+            } ${g.cutEnd ? (rows ? 'rounded-r-none border-r-0' : 'rounded-b-none border-b-0') : ''}`;
+            const style = {
+              ...place(r, g.a, g.len),
+              ...g.margin,
+              backgroundColor: c.bg,
+              borderColor: c.border,
+              boxShadow: '0 0 0 1.5px var(--surface)',
+              ...(activeIds?.has(b.id) ? { outline: '2px solid var(--ink)', outlineOffset: '1px' } : {}),
+              ...(hold
+                ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' }
+                : {}),
+            };
+            const inner = (
+              <>
                 {b.status === 'checked_in' && <CheckCircle size={14} weight="fill" className="shrink-0" />}
                 {hold && <Clock size={14} className="shrink-0" />}
                 <span className="truncate">{b.name}</span>
-              </button>
+              </>
+            );
+            if (!hold) {
+              return (
+                <button
+                  key={b.clientKey ?? b.id}
+                  type="button"
+                  onClick={() => onOpen(b)}
+                  title={label}
+                  aria-label={`${label}, ${b.status.replace('_', ' ')}`}
+                  className={`${shape} px-2 transition-transform active:scale-[0.98]`}
+                  style={style}
+                >
+                  {inner}
+                </button>
+              );
+            }
+            // A hold carries its own remove button, so it is a group of two buttons rather than one.
+            return (
+              <div key={b.clientKey ?? b.id} role="group" aria-label={`${label}, on hold`} className={`${shape} pl-2 pr-0.5`} style={style}>
+                <button type="button" onClick={() => onOpen(b)} title={label} className="flex min-w-0 flex-1 items-center gap-1 self-stretch text-left">
+                  {inner}
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Remove hold, ${label}`}
+                  title="Remove hold"
+                  onClick={() => onDelete?.(b)}
+                  className="grid size-6 shrink-0 place-items-center rounded-lg hover:bg-white/70 active:scale-90"
+                >
+                  <X size={14} weight="bold" />
+                </button>
+              </div>
             );
           })}
 
@@ -381,8 +423,7 @@ export default function RoomGrid({ rooms, days, bookings, orientation, onCreate,
               <span className="block text-muted">Tap the opposite corner to extend</span>
             </p>
             <button type="button" className="btn" onClick={() => setSel(null)}>Cancel</button>
-            <button type="button" className="btn" onClick={() => finish(sel, { hold: true })}>Hold</button>
-            <button type="button" className="btn btn-primary" onClick={() => finish(sel)}>Book</button>
+            <button type="button" className="btn btn-primary" onClick={() => finish(sel)}>Hold</button>
           </div>
         </div>
       )}

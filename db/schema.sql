@@ -7,7 +7,8 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE TABLE rooms (
   id      serial PRIMARY KEY,
   number  text NOT NULL UNIQUE,
-  active  boolean NOT NULL DEFAULT true
+  active  boolean NOT NULL DEFAULT true,
+  color   text                       -- palette key or #hex; bookings without their own colour use it
 );
 
 -- Names are not unique: two guests can share a name. Bookings link by id.
@@ -18,8 +19,7 @@ CREATE TABLE guests (
   email       text,
   notes       text,
   organization text,                       -- default organization for this guest
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  CHECK (phone IS NOT NULL OR email IS NOT NULL)
+  created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX guests_name_idx ON guests (lower(name));
 
@@ -40,6 +40,8 @@ CREATE TABLE bookings (
   organization text,
   label       text,                        -- short title, mainly for holds
   group_id    uuid,                        -- shared by rooms booked together
+  check_in_time  time,                     -- NULL = not set
+  check_out_time time,
   created_at  timestamptz NOT NULL DEFAULT now(),
   created_by  text,
   updated_at  timestamptz NOT NULL DEFAULT now(),

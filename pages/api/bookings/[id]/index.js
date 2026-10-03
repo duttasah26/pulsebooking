@@ -1,6 +1,6 @@
 import sql from '../../../../lib/db';
 import { getBooking } from '../../../../lib/bookings';
-import { HttpError, actor, parseColor, parseId, parseStay, route } from '../../../../lib/api';
+import { HttpError, actor, parseColor, parseId, parseStay, parseTime, parseUuid, route } from '../../../../lib/api';
 
 async function get(req, res) {
   const booking = await getBooking(parseId(req.query.id));
@@ -14,6 +14,7 @@ async function get(req, res) {
 
 const EDITABLE = [
   'room_id', 'guest_id', 'status', 'channel', 'rate_plan', 'adults', 'children', 'notes', 'color', 'organization', 'label',
+  'check_in_time', 'check_out_time', 'group_id',
 ];
 const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hold'];
 
@@ -29,6 +30,10 @@ async function patch(req, res) {
   const updates = { updated_by: actor(req) };
   for (const key of EDITABLE) if (body[key] !== undefined) updates[key] = body[key];
   if ('color' in updates) updates.color = parseColor(updates.color);
+  if ('group_id' in updates) updates.group_id = parseUuid(updates.group_id, 'group_id');
+  for (const key of ['check_in_time', 'check_out_time']) {
+    if (key in updates) updates[key] = parseTime(updates[key], key);
+  }
   for (const key of ['organization', 'label']) {
     if (key in updates) updates[key] = updates[key]?.toString().trim() || null;
   }
@@ -49,15 +54,22 @@ async function patch(req, res) {
   res.status(200).json(await getBooking(id));
 }
 
-// DELETE is a soft delete. The booking stays in the database and can be restored.
+// DELETE in a single statement (one database round trip).
+//   an on-hold booking is removed for good (it is a placeholder, not a record), so it never shows under "Deleted";
+//   any other booking is soft-deleted and can be restored.
 async function remove(req, res) {
   const id = parseId(req.query.id);
   const [row] = await sql`
-    UPDATE bookings SET deleted_at = now(), deleted_by = ${actor(req)}
-    WHERE id = ${id} AND deleted_at IS NULL RETURNING id
+    WITH hold AS (
+      DELETE FROM bookings WHERE id = ${id} AND status = 'on_hold' RETURNING id
+    ), soft AS (
+      UPDATE bookings SET deleted_at = now(), deleted_by = ${actor(req)}::text
+      WHERE id = ${id} AND deleted_at IS NULL AND status <> 'on_hold' RETURNING id
+    )
+    SELECT id, true AS hold FROM hold UNION ALL SELECT id, false AS hold FROM soft
   `;
   if (!row) throw new HttpError(404, 'Booking not found or already deleted');
-  res.status(200).json(await getBooking(id));
+  res.status(200).json(row);
 }
 
 export default route({ GET: get, PATCH: patch, DELETE: remove });

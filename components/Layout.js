@@ -55,7 +55,7 @@ export default function Layout({ title, children }) {
               href={href}
               aria-current={active ? 'page' : undefined}
               className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
-                active ? 'text-accent' : 'text-muted'
+                active ? 'text-accent-text' : 'text-muted'
               }`}
             >
               <Icon size={22} weight={active ? 'fill' : 'regular'} />

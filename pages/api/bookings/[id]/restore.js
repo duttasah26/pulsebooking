@@ -1,5 +1,4 @@
 import sql from '../../../../lib/db';
-import { getBooking } from '../../../../lib/bookings';
 import { HttpError, actor, parseId, route } from '../../../../lib/api';
 
 // POST /api/bookings/:id/restore: undo a delete.
@@ -11,7 +10,7 @@ async function restore(req, res) {
     WHERE id = ${id} AND deleted_at IS NOT NULL RETURNING id
   `;
   if (!row) throw new HttpError(404, 'Booking not found or not deleted');
-  res.status(200).json(await getBooking(id));
+  res.status(200).json(row);
 }
 
 export default route({ POST: restore });

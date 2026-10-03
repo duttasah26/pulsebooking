@@ -24,7 +24,6 @@ async function list(req, res) {
 async function create(req, res) {
   const { name, phone, email, notes, organization } = req.body ?? {};
   if (!name?.trim()) throw new HttpError(400, 'Guest name is required');
-  if (!phone?.trim() && !email?.trim()) throw new HttpError(400, 'A guest needs a phone number or email');
   const [guest] = await sql`
     INSERT INTO guests (name, phone, email, notes, organization)
     VALUES (${name.trim()}, ${phone?.trim() || null}, ${email?.trim() || null}, ${notes ?? null}, ${organization?.trim() || null})

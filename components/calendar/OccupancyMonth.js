@@ -43,7 +43,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay }) {
               }`}
               style={{ backgroundColor: `color-mix(in srgb, var(--accent) ${Math.round(ratio * 38)}%, var(--surface))` }}
             >
-              <span className={`font-mono text-sm ${d === todayStr ? 'font-semibold text-accent' : ''}`}>{dayOfMonth(d)}</span>
+              <span className={`font-mono text-sm ${d === todayStr ? 'font-semibold text-accent-text' : ''}`}>{dayOfMonth(d)}</span>
               <span className="font-mono text-xs text-muted">{occupied[i]}/{rooms.length}</span>
             </button>
           );

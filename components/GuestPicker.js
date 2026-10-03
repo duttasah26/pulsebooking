@@ -11,7 +11,7 @@ const contact = (g) => [g.phone, g.email].filter(Boolean).join(', ');
   onChange receives { guestId, guest } for an existing guest, { newGuest: {name, phone, email, organization} } for a new one,
   or null while nothing valid is chosen.
 */
-export default function GuestPicker({ initial, onChange }) {
+export default function GuestPicker({ initial, onChange, onQuery }) {
   const [selected, setSelected] = useState(initial ?? null);
   const [query, setQuery] = useState('');
   const [adding, setAdding] = useState(false);
@@ -21,9 +21,15 @@ export default function GuestPicker({ initial, onChange }) {
   const search = useApi(!selected && !adding && debounced.length >= 2 ? `/api/guests?q=${encodeURIComponent(debounced)}` : null);
   const matches = (search.data ?? []).slice(0, 6);
 
+  // Lets a hold use whatever was typed here as its label, even if no guest was picked.
+  useEffect(() => {
+    onQuery?.(selected ? '' : adding ? draft.name : query.trim());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, selected, adding, draft.name]);
+
   useEffect(() => {
     if (selected) onChange({ guestId: selected.id, guest: selected });
-    else if (adding && draft.name.trim() && (draft.phone.trim() || draft.email.trim())) onChange({ newGuest: draft });
+    else if (adding && draft.name.trim()) onChange({ newGuest: draft });
     else onChange(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, adding, draft]);
@@ -71,7 +77,7 @@ export default function GuestPicker({ initial, onChange }) {
           <label className="label" htmlFor="ng-org">Organization (optional)</label>
           <input id="ng-org" className="field" value={draft.organization} onChange={set('organization')} autoComplete="off" />
         </div>
-        <p className="text-sm text-muted">Phone or email is needed so guests with the same name can be told apart.</p>
+        <p className="text-sm text-muted">Phone and email are optional. Add one if two guests share a name.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
           Back to search
         </button>
@@ -111,7 +117,7 @@ export default function GuestPicker({ initial, onChange }) {
           <li>
             <button
               type="button"
-              className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium text-accent hover:bg-surface-2"
+              className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium text-accent-text hover:bg-surface-2"
               onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '' }); }}
             >
               <Plus size={18} /> Add &ldquo;{query.trim()}&rdquo; as a new guest
