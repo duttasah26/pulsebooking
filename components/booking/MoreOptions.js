@@ -6,9 +6,9 @@ import { CHANNELS, RATE_PLANS } from './bookingOptions';
 import { STATUS_OPTIONS } from '../../lib/status';
 
 // Everything that is not needed for most bookings, folded away so the form fits on screen.
-export default function MoreOptions({ f }) {
+export default function MoreOptions({ f, defaultOpen = false }) {
   return (
-    <details className="group rounded-lg border border-line">
+    <details className="group rounded-lg border border-line" open={defaultOpen || undefined}>
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-3 text-sm font-medium lg:min-h-8">
         <span className="flex items-center gap-1.5"><SlidersHorizontal size={16} aria-hidden="true" /> More Options</span>
         <CaretDown size={16} aria-hidden="true" className="transition-transform group-open:rotate-180" />

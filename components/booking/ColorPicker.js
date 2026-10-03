@@ -2,16 +2,17 @@ import { Check, Palette } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import { COLORS, isCustomColor } from '../../lib/colors';
 
-// Booking colour: Auto (the room's colour), 20 pastels, or any colour from the native picker.
-// The selected swatch shows a tick, so the choice never depends on colour alone.
-export default function ColorPicker({ color, onChange }) {
+// A colour choice: Auto (null: whatever the app picks, for example the status colour), 20 pastels, or any colour from the
+// native picker. The selected swatch shows a tick, so the choice never depends on colour alone.
+// id must be unique on the page; label, autoLabel and hint reword it for guests, floors and statuses.
+export default function ColorPicker({ color, onChange, id = 'color-label', label = 'Colour', autoLabel = 'Auto', hint = 'Auto uses the status colour (yellow on hold, green confirmed). The last swatch picks any colour.' }) {
   const custom = isCustomColor(color);
   return (
     <div>
-      <FieldLabel as="span" icon={Palette} id="color-label">Colour</FieldLabel>
-      <div role="group" aria-labelledby="color-label" className="flex flex-wrap gap-2">
+      <FieldLabel as="span" icon={Palette} id={id}>{label}</FieldLabel>
+      <div role="group" aria-labelledby={id} className="flex flex-wrap gap-2">
         <button type="button" aria-pressed={color === null} onClick={() => onChange(null)} className={`btn px-3 ${color === null ? 'border-ink' : ''}`}>
-          Auto
+          {autoLabel}
         </button>
         {COLORS.map((c) => (
           <button
@@ -48,7 +49,7 @@ export default function ColorPicker({ color, onChange }) {
           />
         </label>
       </div>
-      <p className="mt-1.5 text-sm text-muted">Auto uses the room&apos;s colour. The last swatch picks any colour.</p>
+      {hint && <p className="mt-1.5 text-sm text-muted">{hint}</p>}
     </div>
   );
 }

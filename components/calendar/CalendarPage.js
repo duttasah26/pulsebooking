@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Trash, X } from '@phosphor-icons/react';
 import { useRouter } from 'next/router';
 import RoomGrid from './RoomGrid';
 import OccupancyMonth from './OccupancyMonth';
@@ -33,6 +34,8 @@ export default function CalendarPage() {
   const wide = useMediaQuery('(min-width: 1024px)');
   const { view, date, span, floors, set } = useCalendarParams();
 
+  const [selectMode, setSelectMode] = useState(false); // drag a box to tick bookings, then delete them together
+  const [picked, setPicked] = useState(() => new Set());
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
@@ -59,6 +62,17 @@ export default function CalendarPage() {
   });
 
   const closePanel = () => setPanel(null);
+  const stopSelecting = () => {
+    setSelectMode(false);
+    setPicked(new Set());
+  };
+  // Escape leaves select mode.
+  useEffect(() => {
+    if (!selectMode) return;
+    const onKey = (e) => e.key === 'Escape' && stopSelecting();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectMode]);
   const openEdit = (booking) => {
     setPanel({ booking, editing: false });
     setFormOpen(true);
@@ -82,6 +96,12 @@ export default function CalendarPage() {
 
   const failed = rooms.error || bookings.error;
   const showGrid = view === 'timeline' || view === 'month';
+  const selecting = selectMode && showGrid;
+  const pickedBookings = bookingList.filter((b) => picked.has(b.id) && visibleIds.has(b.room_id)); // never delete what a floor filter hides
+  const deletePicked = () => {
+    removeMany(pickedBookings);
+    setPicked(new Set());
+  };
   const blank = roomList.length
     ? { mode: 'create', defaults: { roomIds: [roomList[0].id], checkIn: today(), checkOut: addDays(today(), 1) } }
     : null;
@@ -100,7 +120,26 @@ export default function CalendarPage() {
           floorKeys={floorKeys}
           shownFloors={shownFloors}
           onToggleFloor={toggleFloor}
+          canSelect={showGrid}
+          selectMode={selecting}
+          onToggleSelect={() => (selectMode ? stopSelecting() : setSelectMode(true))}
         />
+
+        {selecting && (
+          <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft px-3 py-1.5 text-sm">
+            <span className="min-w-0 flex-1 font-medium">
+              {pickedBookings.length === 0
+                ? 'Select mode: drag a box over bookings or holds, or tap them'
+                : `${pickedBookings.length} selected`}
+            </span>
+            <button type="button" className="btn btn-danger" disabled={pickedBookings.length === 0} onClick={deletePicked}>
+              <Trash size={16} /> Delete{pickedBookings.length > 0 ? ` ${pickedBookings.length}` : ''}
+            </button>
+            <button type="button" className="btn" onClick={stopSelecting}>
+              <X size={16} /> Done
+            </button>
+          </div>
+        )}
 
         {failed && (
           <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
@@ -127,6 +166,9 @@ export default function CalendarPage() {
                 onDelete={removeBooking}
                 onToggleRoom={isHoldOpen ? toggleRoom : undefined}
                 zoom={zoom}
+                selectMode={selecting}
+                picked={picked}
+                onPick={setPicked}
                 activeIds={group ? new Set(group.map((b) => b.id)) : undefined}
                 activeRoomIds={group ? group.map((b) => b.room_id) : undefined}
               />

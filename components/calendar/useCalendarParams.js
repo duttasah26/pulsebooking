@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import { CalendarDots, GridFour, Rows, Sun } from '@phosphor-icons/react';
 import { isDate, today } from '../../lib/dates';
 
-// 'month' is the default: rooms across, dates down. 'timeline' flips it: rooms down, dates across.
+// 'timeline' is the default: rooms down, dates across. 'month' flips it: rooms across, dates down.
 export const VIEWS = [
-  { key: 'month', label: 'Month', Icon: GridFour },
   { key: 'timeline', label: 'Timeline', Icon: Rows },
+  { key: 'month', label: 'Month', Icon: GridFour },
   { key: 'calendar', label: 'Occupancy', Icon: CalendarDots },
   { key: 'day', label: 'Day', Icon: Sun },
 ];
@@ -17,7 +17,7 @@ export const SPANS = [7, 14, 30];
 export function useCalendarParams() {
   const router = useRouter();
   const q = router.query;
-  const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'month';
+  const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'timeline';
   const date = isDate(q.date) ? q.date : today();
   const span = SPANS.includes(Number(q.span)) ? Number(q.span) : typeof window !== 'undefined' && window.innerWidth < 640 ? 7 : 14;
   const floorsParam = typeof q.floors === 'string' && q.floors ? q.floors : '';

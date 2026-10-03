@@ -14,13 +14,13 @@ const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hol
 
 // GET /api/bookings
 //   when=past|current|upcoming|all (default all)    deleted=hide|show|only (default hide)
-//   status=confirmed|checked_in|checked_out|cancelled|on_hold
+//   status=confirmed|checked_in|checked_out|cancelled|on_hold    holds=hide leaves on-hold bookings out
 //   from=YYYY-MM-DD&to=YYYY-MM-DD  (bookings overlapping that range, to is exclusive)
 //   room_id, guest_id, q (guest name, organization or hold label contains), sort=check_in|check_out|room|guest|created, dir=asc|desc
 //   year & month (1-12) still work for the current calendar.
 // deleted=only never lists on-hold bookings: removing a hold deletes it for good, so old ones are not "deleted records".
 async function list(req, res) {
-  const { when = 'all', deleted = 'hide', status, room_id, guest_id, q, sort = 'check_in', dir = 'desc' } = req.query;
+  const { when = 'all', deleted = 'hide', status, holds, room_id, guest_id, q, sort = 'check_in', dir = 'desc' } = req.query;
   let { from, to } = req.query;
 
   if (req.query.year && req.query.month) {
@@ -46,6 +46,7 @@ async function list(req, res) {
     if (!STATUSES.includes(status)) throw new HttpError(400, `status must be one of ${STATUSES.join(', ')}`);
     where.push(sql`b.status = ${status}`);
   }
+  if (holds === 'hide') where.push(sql`b.status <> 'on_hold'`);
   if (from || to) {
     const a = from ? parseDate(from, 'from') : '-infinity';
     const b = to ? parseDate(to, 'to') : 'infinity';
@@ -106,6 +107,7 @@ function resolveGuest(body, isHold) {
       phone: g.phone?.toString().trim() || null,
       email: g.email?.toString().trim() || null,
       organization: g.organization?.toString().trim() || null,
+      color: parseColor(g.color),
     },
   };
 }
@@ -131,15 +133,15 @@ async function create(req, res) {
   // so the result joins the new guest from the CTE as well as the existing guests.
   const newGuestCte = guest?.newGuest
     ? sql`new_guest AS (
-        INSERT INTO guests (name, phone, email, organization)
-        VALUES (${guest.newGuest.name}, ${guest.newGuest.phone}::text, ${guest.newGuest.email}::text, ${guest.newGuest.organization}::text)
-        RETURNING id, name, phone, email
+        INSERT INTO guests (name, phone, email, organization, color)
+        VALUES (${guest.newGuest.name}, ${guest.newGuest.phone}::text, ${guest.newGuest.email}::text, ${guest.newGuest.organization}::text, ${guest.newGuest.color}::text)
+        RETURNING id, name, phone, email, color
       ),`
     : sql``;
   const guestId = guest?.newGuest ? sql`(SELECT id FROM new_guest)` : sql`${guest?.id ?? null}::int`;
   const guestRows = guest?.newGuest
-    ? sql`SELECT id, name, phone, email FROM guests UNION ALL SELECT id, name, phone, email FROM new_guest`
-    : sql`SELECT id, name, phone, email FROM guests`;
+    ? sql`SELECT id, name, phone, email, color FROM guests UNION ALL SELECT id, name, phone, email, color FROM new_guest`
+    : sql`SELECT id, name, phone, email, color FROM guests`;
 
   const rows = await sql`
     WITH ${newGuestCte}

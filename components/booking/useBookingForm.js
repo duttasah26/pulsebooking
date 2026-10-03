@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRemoveBooking } from './useRemoveBooking';
 import { api, useApi } from '../../lib/useApi';
-import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from '../../lib/defaults';
+import { useSettings } from '../SettingsProvider';
 import { addDays, diffDays } from '../../lib/dates';
 
 const NEVER_BUSY = () => false;
@@ -21,6 +21,7 @@ export function useBookingForm({
   roomIds: controlledRoomIds, onRoomIdsChange, group, onRemove,
 }) {
   const edit = mode === 'edit';
+  const { settings } = useSettings();
 
   const [ownRoomIds, setOwnRoomIds] = useState(edit ? [booking.room_id] : defaults.roomIds);
   const roomIds = controlledRoomIds ?? ownRoomIds;
@@ -32,8 +33,8 @@ export function useBookingForm({
 
   const [checkIn, setCheckIn] = useState(edit ? booking.check_in : defaults.checkIn);
   const [checkOut, setCheckOut] = useState(edit ? booking.check_out : defaults.checkOut);
-  const [checkInTime, setCheckInTime] = useState(edit ? booking.check_in_time ?? '' : DEFAULT_CHECK_IN_TIME);
-  const [checkOutTime, setCheckOutTime] = useState(edit ? booking.check_out_time ?? '' : DEFAULT_CHECK_OUT_TIME);
+  const [checkInTime, setCheckInTime] = useState(edit ? booking.check_in_time ?? '' : settings.checkInTime);
+  const [checkOutTime, setCheckOutTime] = useState(edit ? booking.check_out_time ?? '' : settings.checkOutTime);
   const [status, setStatus] = useState(edit ? booking.status : 'confirmed');
   const [channel, setChannel] = useState(edit ? booking.channel : 'Direct');
   const [ratePlan, setRatePlan] = useState(edit ? booking.rate_plan : 'EP');
@@ -48,6 +49,14 @@ export function useBookingForm({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const orgTouched = useRef(edit);
+  const timesTouched = useRef(edit);
+
+  // The saved default times can arrive after a blank form is already showing: follow them until a time is picked by hand.
+  useEffect(() => {
+    if (timesTouched.current) return;
+    setCheckInTime(settings.checkInTime);
+    setCheckOutTime(settings.checkOutTime);
+  }, [settings.checkInTime, settings.checkOutTime]);
 
   const initialGuest = edit && booking.guest_id
     ? { id: booking.guest_id, name: booking.name, phone: booking.phone, email: booking.email }
@@ -136,10 +145,12 @@ export function useBookingForm({
   return {
     edit, booking, targets, unconfirmed, isHold, isHoldEdit, initialGuest, history, error: error || removeError, busy: busy || removing,
     roomIds, setRoomIds, toggleRoom, roomTaken, nightBusy,
-    checkIn, checkOut, setDates: (a, b) => { setCheckIn(a); setCheckOut(b); },
-    checkInTime, setCheckInTime, checkOutTime, setCheckOutTime,
+    checkIn, checkOut, nights, setDates: (a, b) => { setCheckIn(a); setCheckOut(b); },
+    checkInTime, checkOutTime,
+    setCheckInTime: (v) => { timesTouched.current = true; setCheckInTime(v); },
+    setCheckOutTime: (v) => { timesTouched.current = true; setCheckOutTime(v); },
     status, setStatus, channel, setChannel, ratePlan, setRatePlan, adults, setAdults, children, setChildren,
     notes, setNotes, color, setColor, organization, editOrganization, label, setLabel,
-    setGuestChoice, setTypedGuest, submit, remove,
+    guestChoice, setGuestChoice, typedGuest, setTypedGuest, submit, remove,
   };
 }

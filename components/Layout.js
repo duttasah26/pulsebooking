@@ -2,12 +2,13 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { CalendarBlank, ListBullets, Users } from '@phosphor-icons/react';
+import { CalendarBlank, GearSix, ListBullets, Users } from '@phosphor-icons/react';
 
 const TABS = [
   { href: '/', label: 'Calendar', Icon: CalendarBlank },
   { href: '/bookings', label: 'Bookings', Icon: ListBullets },
   { href: '/guests', label: 'Guests', Icon: Users },
+  { href: '/settings', label: 'Settings', Icon: GearSix },
 ];
 
 export default function Layout({ title, children }) {
@@ -59,7 +60,7 @@ export default function Layout({ title, children }) {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname === href;

@@ -1,12 +1,14 @@
-import { ArrowDown, ArrowUp, ArrowsDownUp, Funnel } from '@phosphor-icons/react';
+import { ArrowDown, ArrowUp, ArrowsDownUp, Clock, Funnel } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 
 /*
   The contents of a filter and sort dock: a list of filters (each with an icon), a "sort by" list and the direction.
   Used by the Bookings page (and the Guests page, with its own filters and sorts).
     filters: [{ key, label, Icon }]   sorts: [[value, label]]
+    extra: more controls shown under the filters (the Bookings page puts its room and status choosers there)
+    showHolds / onShowHolds: optional "show on-hold bookings" switch (leave out to hide it)
 */
-export default function FilterSortPanel({ filters, filter, onFilter, sorts, sort, onSort, direction, onDirection }) {
+export default function FilterSortPanel({ filters, filter, onFilter, extra, showHolds, onShowHolds, sorts, sort, onSort, direction, onDirection }) {
   return (
     <div className="space-y-4 pb-4">
       {filters && (
@@ -27,6 +29,16 @@ export default function FilterSortPanel({ filters, filter, onFilter, sorts, sort
             ))}
           </div>
         </fieldset>
+      )}
+
+      {extra}
+
+      {onShowHolds && (
+        <label className="btn cursor-pointer justify-start gap-2 px-2.5 focus-within:outline-2 focus-within:outline-accent">
+          <input type="checkbox" name="show-holds" className="size-4 accent-[var(--accent)]" checked={showHolds} onChange={(e) => onShowHolds(e.target.checked)} />
+          <Clock size={16} aria-hidden="true" className="shrink-0" />
+          Show On Hold
+        </label>
       )}
 
       <div>

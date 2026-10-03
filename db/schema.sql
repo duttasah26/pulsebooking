@@ -19,9 +19,17 @@ CREATE TABLE guests (
   email       text,
   notes       text,
   organization text,                       -- default organization for this guest
+  color       text,                        -- palette key or #hex; shown on this guest's bookings
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX guests_name_idx ON guests (lower(name));
+
+-- App settings as JSON under the key 'app' (floor colours, status colours, default times).
+CREATE TABLE settings (
+  key        text PRIMARY KEY,
+  value      jsonb NOT NULL DEFAULT '{}',
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
 CREATE TYPE booking_status AS ENUM ('confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hold');
 

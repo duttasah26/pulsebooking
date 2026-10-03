@@ -2,6 +2,7 @@ import {
   Baby, Bed, Buildings, CalendarBlank, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Trash, Users,
 } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import { useSettings } from '../SettingsProvider';
 import HistoryList from './HistoryList';
 import { useRemoveBooking } from './useRemoveBooking';
 import { formatTime } from '../TimeSelect';
@@ -24,7 +25,8 @@ export default function BookingDetails({ booking: b, group, onRemove, onSaved, o
   const targets = group && group.length > 1 ? group : [b];
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
   const history = useApi(b.id > 0 ? `/api/bookings/${b.id}` : null).data?.history ?? [];
-  const c = colorFor(b);
+  const { settings } = useSettings();
+  const c = colorFor(b, settings);
   const times = [b.check_in_time && `in ${formatTime(b.check_in_time)}`, b.check_out_time && `out ${formatTime(b.check_out_time)}`].filter(Boolean);
 
   return (

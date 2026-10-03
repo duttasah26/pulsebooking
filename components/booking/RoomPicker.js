@@ -1,6 +1,7 @@
 import { Bed } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
-import { resolveColor } from '../../lib/colors';
+import { useSettings } from '../SettingsProvider';
+import { floorColor } from '../../lib/colors';
 
 // Rooms grouped by floor (the first digit of the number): one row of chips per floor.
 function byFloor(rooms) {
@@ -14,6 +15,7 @@ function byFloor(rooms) {
 
 // Create mode: tick one or several rooms to book them together. A room already booked on the chosen dates is hatched.
 export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
+  const { settings } = useSettings();
   return (
     <fieldset>
       <FieldLabel as="legend" icon={Bed}>
@@ -35,7 +37,7 @@ export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
                   onClick={() => onToggle(r.id)}
                   className={`btn gap-1.5 px-2.5 font-mono lg:min-h-6 lg:px-2 lg:text-xs ${on ? 'border-accent bg-accent text-accent-ink hover:bg-accent' : ''} ${taken && !on ? 'hatch' : ''}`}
                 >
-                  <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-black/20" style={{ backgroundColor: resolveColor(r.color)?.border ?? 'transparent' }} />
+                  <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-black/20" style={{ backgroundColor: floorColor(r, settings).border }} />
                   {r.number}
                 </button>
               );

@@ -1,4 +1,4 @@
-import { CalendarBlank, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CalendarBlank, CaretLeft, CaretRight, Selection } from '@phosphor-icons/react';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
 import { SPANS } from './useCalendarParams';
@@ -6,7 +6,7 @@ import { isDate, today } from '../../lib/dates';
 
 // One slim row: previous / next / today / go to a date, the heading, the view tabs, the floor toggle and (timeline) the
 // number of days. Labels turn into icons when the column is narrow, so nothing is squeezed or hidden.
-export default function CalendarToolbar({ view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor }) {
+export default function CalendarToolbar({ view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor, canSelect, selectMode, onToggleSelect }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(-1)} aria-label="Previous">
@@ -31,6 +31,18 @@ export default function CalendarToolbar({ view, date, span, title, onStep, set, 
 
       <ViewTabs view={view} onChange={(v) => set({ view: v })} />
       <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
+      {canSelect && (
+        <button
+          type="button"
+          aria-pressed={selectMode}
+          title="Select several bookings or holds to delete them together"
+          onClick={onToggleSelect}
+          className={`btn shrink-0 gap-1.5 px-2.5 ${selectMode ? 'border-accent bg-accent text-accent-ink hover:bg-accent' : ''}`}
+        >
+          <Selection size={16} />
+          <span className="sr-only @[44rem]:not-sr-only">Select</span>
+        </button>
+      )}
       {view === 'timeline' && (
         <select aria-label="Days shown" className="field !w-auto shrink-0" value={span} onChange={(e) => set({ span: Number(e.target.value) })}>
           {SPANS.map((n) => <option key={n} value={n}>{n} days</option>)}

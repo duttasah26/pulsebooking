@@ -1,4 +1,5 @@
-import { resolveColor } from '../../../lib/colors';
+import { useSettings } from '../../SettingsProvider';
+import { floorColor } from '../../../lib/colors';
 import { dayOfMonth, fmtDayMonth, fmtMonthShort, fmtWeekday, isWeekend } from '../../../lib/dates';
 
 const tint = (d) => (isWeekend(d) ? 'bg-surface-2' : 'bg-surface');
@@ -35,25 +36,29 @@ export function DayLabel({ d, i, isToday }) {
   );
 }
 
-// Room header (month sheet) or room label (timeline) with the room's colour. While a hold is open it is also a button
-// that puts the room on the hold or takes it off: that is how rooms that are not next to each other are picked.
+// Room header (month sheet) or room label (timeline): a box in its floor's colour (set in Settings). While a hold is
+// open it is also a button that puts the room on the hold or takes it off: that is how rooms that are not next to each
+// other are picked; a room on the hold shows a dark outline.
 export function RoomHead({ room, r, rows, active, onToggle }) {
-  const tone = resolveColor(room.color)?.border ?? 'var(--line)';
+  const { settings } = useSettings();
+  const tone = floorColor(room, settings);
   const cls = rows
-    ? 'sticky left-0 z-[2] flex items-center gap-2 border-r border-t border-line px-3 font-mono text-xs font-semibold'
-    : 'sticky top-0 z-[2] flex items-center justify-center gap-1.5 border-b border-l border-line font-mono text-xs font-semibold';
-  const style = rows
-    ? { gridRow: r + 2, gridColumn: 1, borderLeft: `4px solid ${tone}` }
-    : { gridRow: 1, gridColumn: r + 2, borderTop: `3px solid ${tone}` };
-  const bg = active ? 'bg-accent-soft' : 'bg-surface';
-  if (!onToggle) return <div className={`${cls} ${bg}`} style={style}>{room.number}</div>;
+    ? 'sticky left-0 z-[2] flex items-center gap-2 border-r border-t px-3 font-mono text-xs font-semibold'
+    : 'sticky top-0 z-[2] flex items-center justify-center gap-1.5 border-b border-l font-mono text-xs font-semibold';
+  const style = {
+    ...(rows ? { gridRow: r + 2, gridColumn: 1 } : { gridRow: 1, gridColumn: r + 2 }),
+    backgroundColor: tone.bg,
+    borderColor: tone.border,
+    ...(active ? { boxShadow: 'inset 0 0 0 2px var(--ink)' } : {}),
+  };
+  if (!onToggle) return <div className={cls} style={style}>{room.number}</div>;
   return (
     <button
       type="button"
       aria-pressed={active}
       title={active ? `Take Room ${room.number} off this hold` : `Hold Room ${room.number} too`}
       onClick={() => onToggle(room.id)}
-      className={`${cls} ${bg} cursor-pointer hover:bg-accent-soft`}
+      className={`${cls} cursor-pointer hover:brightness-95`}
       style={style}
     >
       {room.number}

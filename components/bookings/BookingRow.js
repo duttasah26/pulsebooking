@@ -1,16 +1,18 @@
 import { ArrowUUpLeft, Bed, Buildings, CalendarBlank, Phone } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import { useSettings } from '../SettingsProvider';
 import { colorFor } from '../../lib/colors';
 import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
 
 // One booking in the list: colour stripe, guest and contact, room, dates and status. A deleted booking offers Restore.
 export default function BookingRow({ b, onOpen, onRestore }) {
+  const { settings } = useSettings();
   const isDeleted = Boolean(b.deleted_at);
   const contact = b.guest_id ? b.phone || b.email : null;
   return (
     // content-visibility keeps long lists cheap: rows far off screen are not painted
     <li className="flex items-stretch [contain-intrinsic-size:auto_3rem] [content-visibility:auto]">
-      <span className="w-1.5 shrink-0" style={{ backgroundColor: colorFor(b).border }} aria-hidden="true" />
+      <span className="w-1.5 shrink-0" style={{ backgroundColor: colorFor(b, settings).border }} aria-hidden="true" />
       <button
         type="button"
         disabled={isDeleted}

@@ -1,5 +1,5 @@
 import sql from '../../../lib/db';
-import { HttpError, route } from '../../../lib/api';
+import { HttpError, parseColor, route } from '../../../lib/api';
 
 // sort=name (default, A to Z), stays (most stays first) or recent (latest stay first). dir=asc|desc overrides the order.
 const SORTS = {
@@ -18,7 +18,7 @@ async function list(req, res) {
   if (!sort) throw new HttpError(400, `sort must be one of ${Object.keys(SORTS).join(', ')}`);
   const direction = (req.query.dir ?? sort.dir) === 'asc' ? sql`ASC` : sql`DESC`;
   const rows = await sql`
-    SELECT g.id, g.name, g.phone, g.email, g.notes, g.organization,
+    SELECT g.id, g.name, g.phone, g.email, g.notes, g.organization, g.color,
            count(b.id) FILTER (WHERE b.deleted_at IS NULL) AS stays,
            max(lower(b.stay))::text AS last_check_in
     FROM guests g
@@ -32,12 +32,12 @@ async function list(req, res) {
 }
 
 async function create(req, res) {
-  const { name, phone, email, notes, organization } = req.body ?? {};
+  const { name, phone, email, notes, organization, color } = req.body ?? {};
   if (!name?.trim()) throw new HttpError(400, 'Guest name is required');
   const [guest] = await sql`
-    INSERT INTO guests (name, phone, email, notes, organization)
-    VALUES (${name.trim()}, ${phone?.trim() || null}, ${email?.trim() || null}, ${notes ?? null}, ${organization?.trim() || null})
-    RETURNING id, name, phone, email, notes, organization
+    INSERT INTO guests (name, phone, email, notes, organization, color)
+    VALUES (${name.trim()}, ${phone?.trim() || null}, ${email?.trim() || null}, ${notes ?? null}, ${organization?.trim() || null}, ${parseColor(color)})
+    RETURNING id, name, phone, email, notes, organization, color
   `;
   res.status(201).json(guest);
 }

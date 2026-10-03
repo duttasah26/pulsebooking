@@ -40,10 +40,12 @@ export function useBookingData({ view, date, span, enabled }) {
     });
   }, [fetched]);
 
-  const bookingList = useMemo(
-    () => [...(fetched ?? []), ...extra].filter((b) => !removed.has(b.id)),
-    [fetched, extra, removed],
-  );
+  // A booking the server already lists wins over its on-screen copy, so nothing is ever drawn twice (for example a
+  // recreated hold, after Undo, that is in both lists for a moment).
+  const bookingList = useMemo(() => {
+    const listed = new Set((fetched ?? []).map((b) => b.id));
+    return [...(fetched ?? []), ...extra.filter((b) => !listed.has(b.id))].filter((b) => !removed.has(b.id));
+  }, [fetched, extra, removed]);
 
   const busyNights = useMemo(() => {
     const map = new Map();

@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Buildings, Envelope, MagnifyingGlass, Phone, Plus, User, UserCircle } from '@phosphor-icons/react';
 import FieldLabel from './FieldLabel';
+import ColorPicker from './booking/ColorPicker';
 import { useApi, useDebounced } from '../lib/useApi';
 import { fmtDayMonthYear } from '../lib/dates';
+import { resolveColor } from '../lib/colors';
 
 const contact = (g) => [g.phone, g.email].filter(Boolean).join(', ');
 
 /*
   Pick an existing guest or add a new one.
   Names are not unique, so matches show phone / email and the last stay.
-  onChange receives { guestId, guest } for an existing guest, { newGuest: {name, phone, email, organization} } for a new one,
+  onChange receives { guestId, guest } for an existing guest, { newGuest: {name, phone, email, organization, color} } for a new one,
   or null while nothing valid is chosen.
 */
 export default function GuestPicker({ initial, onChange, onQuery, tone }) {
   const [selected, setSelected] = useState(initial ?? null);
   const [query, setQuery] = useState('');
   const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState({ name: '', phone: '', email: '', organization: '' });
+  const [draft, setDraft] = useState({ name: '', phone: '', email: '', organization: '', color: null });
 
   const debounced = useDebounced(query.trim());
   const search = useApi(!selected && !adding && debounced.length >= 2 ? `/api/guests?q=${encodeURIComponent(debounced)}` : null);
@@ -41,7 +43,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
         <FieldLabel as="span" icon={User}>Guest</FieldLabel>
         <div
           className="flex items-center gap-3 rounded-lg border border-line p-3"
-          style={tone ? { backgroundColor: tone.bg, borderColor: tone.border } : undefined}
+          style={(tone ?? resolveColor(selected.color)) ? { backgroundColor: (tone ?? resolveColor(selected.color)).bg, borderColor: (tone ?? resolveColor(selected.color)).border } : undefined}
         >
           <UserCircle size={28} className="shrink-0 text-muted" />
           <div className="min-w-0 flex-1">
@@ -81,6 +83,14 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
           <FieldLabel icon={Buildings} htmlFor="ng-org">Organization (optional)</FieldLabel>
           <input id="ng-org" name="guest-organization" className="field" value={draft.organization} onChange={set('organization')} autoComplete="off" />
         </div>
+        <ColorPicker
+          id="ng-color-label"
+          label="Guest Colour (optional)"
+          autoLabel="None"
+          hint="Their bookings use this colour on the calendar. None uses the status colour."
+          color={draft.color}
+          onChange={(color) => setDraft({ ...draft, color })}
+        />
         <p className="text-sm text-muted">Phone and email are optional. Add one if two guests share a name.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
           Back to Search
@@ -125,7 +135,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
             <button
               type="button"
               className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium text-accent-text hover:bg-surface-2"
-              onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '' }); }}
+              onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '', color: null }); }}
             >
               <Plus size={18} aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest
             </button>

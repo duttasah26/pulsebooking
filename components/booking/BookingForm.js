@@ -7,16 +7,24 @@ import RoomPicker from './RoomPicker';
 import EditRoomRow from './EditRoomRow';
 import MoreOptions from './MoreOptions';
 import FormFooter from './FormFooter';
+import { useSettings } from '../SettingsProvider';
+import BookingWizard from './BookingWizard';
 import { useBookingForm } from './useBookingForm';
 import { colorFor } from '../../lib/colors';
 
 /*
-  The booking form. The essentials are always visible (guest, organization, rooms, dates, times); everything else
+  A new booking is the three-step wizard (BookingWizard). This file is the form for an existing booking (mode="edit").
+  The essentials are always visible (guest, organization, rooms, dates, times); everything else
   sits under "More Options" so the form fits on screen without scrolling. The state lives in useBookingForm.
   Props: see useBookingForm, plus rooms (all rooms) and onCancel.
 */
-export default function BookingForm({ rooms, onCancel, ...rest }) {
+export default function BookingForm(props) {
+  return props.mode === 'edit' ? <EditForm {...props} /> : <BookingWizard {...props} />;
+}
+
+function EditForm({ rooms, onCancel, ...rest }) {
   const f = useBookingForm(rest);
+  const { settings } = useSettings();
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); f.submit(false); }} className="space-y-4 lg:space-y-2.5">
@@ -25,7 +33,7 @@ export default function BookingForm({ rooms, onCancel, ...rest }) {
         initial={f.initialGuest}
         onChange={f.setGuestChoice}
         onQuery={f.setTypedGuest}
-        tone={f.edit ? colorFor({ ...f.booking, color: f.color }) : undefined}
+        tone={f.edit ? colorFor({ ...f.booking, color: f.color, status: f.status }, settings) : undefined}
       />
 
       {f.isHold && (
