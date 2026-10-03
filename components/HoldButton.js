@@ -18,7 +18,7 @@ export default function HoldButton({ onConfirm, duration = 700, className = '', 
     clearTimeout(timer.current);
     timer.current = null;
     setHolding(false);
-    if (Date.now() - startedAt.current < 250) toast({ message: 'Hold the button to delete', duration: 1600 }); // a tap, not a hold
+    if (Date.now() - startedAt.current < 250) toast({ message: 'Hold the button to delete', important: true }); // a tap, not a hold
   };
   const start = () => {
     if (disabled || timer.current !== null) return;

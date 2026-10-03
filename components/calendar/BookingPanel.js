@@ -16,21 +16,43 @@ import EditButton from '../booking/EditButton';
   selection: the bookings picked in select mode to look at together (2 or more); it takes the place of everything else.
 */
 export default function BookingPanel({
-  wide, formOpen, onToggle, panel, setPanel, panelBooking, group, rooms, isBusy, blank, onSaved, onRemove, onConfirm, closePanel, groupCount, onShowGroup,
+  wide, formOpen, onToggle, panel, setPanel, panelBooking, group, rooms, isBusy, blank, onSaved, onRemove, onConfirm, onPutOnHold, closePanel, groupCount, onShowGroup,
   selection, onOpenFromSelection, onConfirmAll, onDeleteAll, onCloseSelection,
+  pending, onSavePending, onCancelPending, editSelection, onEditSelection, onSaveNames, onUnpick,
 }) {
   const setEditing = (editing) => setPanel((p) => (p ? { ...p, editing } : p));
   const title = panel ? panelBooking.name : 'New Booking';
 
   const selectionView = selection && (
-    <SelectionPanel bookings={selection} onOpen={onOpenFromSelection} onConfirmAll={onConfirmAll} onDeleteAll={onDeleteAll} />
+    <SelectionPanel
+      bookings={selection}
+      rooms={rooms}
+      onOpen={onOpenFromSelection}
+      onUnpick={onUnpick}
+      onConfirmAll={onConfirmAll}
+      onDeleteAll={onDeleteAll}
+      pending={pending}
+      onSavePending={onSavePending}
+      onCancelPending={onCancelPending}
+      editing={editSelection}
+      onCancelEdit={() => onEditSelection(false)}
+      onSaveNames={onSaveNames}
+    />
   );
   if (selection && !wide) {
     return <Sheet title={`${selection.length} Selected`} onClose={onCloseSelection}>{selectionView}</Sheet>;
   }
   if (selection) {
     return (
-      <Dock open={formOpen} onToggle={onToggle} label="Selected bookings" title={`${selection.length} Selected`} tab={`${selection.length} selected`} tabMark>
+      <Dock
+        open={formOpen}
+        onToggle={onToggle}
+        label="Selected bookings"
+        title={`${selection.length} Selected`}
+        actions={!editSelection && <EditButton onClick={() => onEditSelection(true)} label="Edit the names of the selected bookings" />}
+        tab={`${selection.length} selected`}
+        tabMark
+      >
         {selectionView}
       </Dock>
     );
@@ -52,8 +74,12 @@ export default function BookingPanel({
         onSaved={onSaved}
         onRemove={onRemove}
         onConfirm={onConfirm}
+        onPutOnHold={onPutOnHold}
         groupCount={groupCount}
         onShowGroup={onShowGroup}
+        pending={pending}
+        onSavePending={onSavePending}
+        onCancelPending={onCancelPending}
       />
     );
   }
@@ -94,8 +120,12 @@ export default function BookingPanel({
           onSaved={onSaved}
           onRemove={onRemove}
           onConfirm={onConfirm}
+          onPutOnHold={onPutOnHold}
           groupCount={groupCount}
           onShowGroup={onShowGroup}
+          pending={pending}
+          onSavePending={onSavePending}
+          onCancelPending={onCancelPending}
         />
       ) : (
         <BookingForm key="blank" {...blank} rooms={rooms} isBusy={isBusy} onSaved={onSaved} onDone={() => {}} />

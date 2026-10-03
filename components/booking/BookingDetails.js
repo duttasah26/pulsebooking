@@ -1,8 +1,9 @@
 import {
-  Baby, Bed, Buildings, Check, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Trash, Users,
+  Baby, Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Trash, Users,
 } from '@phosphor-icons/react';
 import { STATUS_ICON } from '../StatusBadge';
 import HoldButton from '../HoldButton';
+import PendingBanner from '../calendar/PendingBanner';
 import RoomChips from '../RoomChips';
 import { partyOf, partyText } from '../../lib/party';
 import { useSettings } from '../SettingsProvider';
@@ -40,7 +41,9 @@ function Line({ icon: Icon, children }) {
 
 // A booking as plain details. The contact card takes the booking's colour, so it matches its bar on the calendar.
 // The pencil in the panel header switches to the form.
-export default function BookingDetails({ booking: b, group, onRemove, onSaved, onDone, onRemoved, onConfirm, groupCount = 0, onShowGroup }) {
+export default function BookingDetails({
+  booking: b, group, rooms = [], onRemove, onSaved, onDone, onRemoved, onConfirm, onPutOnHold, groupCount = 0, onShowGroup, pending, onSavePending, onCancelPending,
+}) {
   const targets = group && group.length > 1 ? group : [b];
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
   const { settings } = useSettings();
@@ -50,6 +53,11 @@ export default function BookingDetails({ booking: b, group, onRemove, onSaved, o
 
   return (
     <div className="space-y-3 pb-4">
+      {/* A change made by dragging waits here for Save. */}
+      {pending?.items.some((i) => i.original.id === b.id) && (
+        <PendingBanner items={pending.items} rooms={rooms} onSave={onSavePending} onCancel={onCancelPending} />
+      )}
+
       {/* The status first, in its own colour: ON HOLD (dashed, like its bar on the calendar), Confirmed, Checked in... */}
       <div
         className={`flex items-center justify-between gap-2 rounded-lg border-2 px-3 py-2 ${b.status === 'on_hold' ? 'border-dashed' : ''}`}
@@ -67,7 +75,7 @@ export default function BookingDetails({ booking: b, group, onRemove, onSaved, o
           {b.phone && <Line icon={Phone}>{b.phone}</Line>}
           {b.email && <Line icon={Envelope}>{b.email}</Line>}
           {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
-          {!b.guest_id && <li>No guest yet. Use the pencil to add one.</li>}
+          {!b.guest_id && <li>No guest yet. Press Edit to add one.</li>}
         </ul>
       </div>
 
@@ -99,14 +107,20 @@ export default function BookingDetails({ booking: b, group, onRemove, onSaved, o
         {b.notes && <Line icon={Note}>{b.notes}</Line>}
       </ul>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {b.status === 'on_hold' && onConfirm && (
           <button type="button" className="btn btn-primary flex-1" onClick={() => onConfirm(b)} disabled={b.id < 0}>
             <Check size={18} aria-hidden="true" /> Confirm
           </button>
         )}
+        {/* A confirmed booking can go back on hold (the guest stays on it): right beside Delete. */}
+        {(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold && (
+          <button type="button" className="btn flex-1 border-amber-400 bg-amber-50 hover:bg-amber-100" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
+            <Clock size={18} aria-hidden="true" className="text-amber-600" /> Change to On Hold
+          </button>
+        )}
         <HoldButton
-          className={`btn btn-danger ${b.status === 'on_hold' && onConfirm ? 'flex-1' : ''}`}
+          className="btn btn-danger flex-1"
           title={b.status === 'on_hold' ? 'Hold to cancel this hold' : 'Hold to delete'}
           onConfirm={remove}
           disabled={removing || b.id < 0}

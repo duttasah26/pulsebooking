@@ -10,7 +10,6 @@ const LIMIT = 50;
 */
 export function useHistory({ onError }) {
   const stacks = useRef({ past: [], future: [] });
-  const running = useRef(false);
   const [, bump] = useState(0);
   const refresh = () => bump((n) => n + 1);
 
@@ -21,37 +20,36 @@ export function useHistory({ onError }) {
     refresh();
   }, []);
 
-  const run = useCallback(async (from, to, entry, direction) => {
-    if (running.current) return;
-    running.current = true;
-    const s = stacks.current;
-    s[from] = s[from].filter((e) => e !== entry);
-    refresh();
-    try {
-      await entry[direction]();
-      s[to] = [...s[to], entry];
-    } catch (err) {
-      s[from] = [...s[from], entry]; // it did not work, so it stays where it was
-      onError?.(err);
-    }
-    running.current = false;
-    refresh();
+  // Undo and redo wait their turn: pressing Undo three times quickly undoes three things, one after the other (a press is
+  // never dropped because the one before it is still talking to the server). The entry is chosen when its turn comes.
+  const queue = useRef(Promise.resolve());
+  const step = useCallback((from, to, direction, only) => {
+    queue.current = queue.current.then(async () => {
+      const s = stacks.current;
+      const entry = only ?? s[from].at(-1);
+      if (!entry || !s[from].includes(entry)) return;
+      s[from] = s[from].filter((e) => e !== entry);
+      refresh();
+      try {
+        await entry[direction]();
+        s[to] = [...s[to], entry];
+      } catch (err) {
+        s[from] = [...s[from], entry]; // it did not work, so it stays where it was
+        onError?.(err);
+      }
+      refresh();
+    });
+    return queue.current;
   }, [onError]);
 
-  const undo = useCallback(() => {
-    const entry = stacks.current.past.at(-1);
-    return entry && run('past', 'future', entry, 'undo');
-  }, [run]);
-  const redo = useCallback(() => {
-    const entry = stacks.current.future.at(-1);
-    return entry && run('future', 'past', entry, 'redo');
-  }, [run]);
+  const undo = useCallback(() => step('past', 'future', 'undo'), [step]);
+  const redo = useCallback(() => step('future', 'past', 'redo'), [step]);
   // An action that failed outright leaves no history behind.
   const drop = useCallback((entry) => {
     stacks.current.past = stacks.current.past.filter((e) => e !== entry);
     refresh();
   }, []);
-  const undoEntry = useCallback((entry) => stacks.current.past.includes(entry) && run('past', 'future', entry, 'undo'), [run]);
+  const undoEntry = useCallback((entry) => step('past', 'future', 'undo', entry), [step]);
 
   const { past, future } = stacks.current;
   return { push, drop, undo, redo, undoEntry, canUndo: past.length > 0, canRedo: future.length > 0, undoLabel: past.at(-1)?.label, redoLabel: future.at(-1)?.label };

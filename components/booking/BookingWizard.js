@@ -1,21 +1,30 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Baby, Bed, Buildings, CalendarBlank, Check, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Tag, User, Users, WarningCircle, X,
+  ArrowLeft, ArrowRight, Baby, Plus, Suitcase, Bed, Buildings, CalendarBlank, Check, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Tag, User, Users, WarningCircle, X,
 } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import DateRangePicker from '../DateRangePicker';
-import TimeSelect, { formatTime } from '../TimeSelect';
+import { formatTime } from '../TimeSelect';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import RoomPicker from './RoomPicker';
+import StatusPicker from './StatusPicker';
+import { Card, Moment, MomentPair, Stepper } from './formParts';
 import MoreOptions from './MoreOptions';
 import { RATE_PLANS } from './bookingOptions';
 import { useBookingForm } from './useBookingForm';
 import { resolveColor, statusColor } from '../../lib/colors';
-import { fmtShort, nightsLabel } from '../../lib/dates';
+import { addDays, fmtShort, nightsLabel } from '../../lib/dates';
 
-const STEPS = ['Guest', 'Dates', 'Confirm'];
+const STEPS = ['Guest', 'Room', 'Confirm'];
+
+// What each step asks, as a plain question with one line of help.
+const ASKS = [
+  { title: 'Who is staying?', help: 'Search for a past guest, or add a new one.' },
+  { title: 'Which room, and which days?', help: 'Tap a room, then the day they arrive and the day they leave.' },
+  { title: 'Check and confirm', help: 'Look over everything. Then press the green button at the bottom.' },
+];
 
 // A line of the confirmation box.
 function Row({ icon: Icon, label, children }) {
@@ -42,7 +51,7 @@ function StepList({ step, done, onGo }) {
               type="button"
               onClick={() => onGo(i)}
               aria-current={current ? 'step' : undefined}
-              className={`btn w-full min-h-8 gap-1.5 px-2 text-xs ${
+              className={`btn w-full min-h-10 gap-1.5 px-2 text-sm lg:min-h-10 ${
                 current ? 'border-accent bg-accent-soft text-accent-text' : done[i] ? 'bg-surface-2' : 'text-muted'
               }`}
             >
@@ -50,7 +59,7 @@ function StepList({ step, done, onGo }) {
               {missing ? (
                 <WarningCircle size={20} weight="fill" className="shrink-0 text-amber-500" />
               ) : (
-                <span className={`grid size-5 place-items-center rounded-full text-[11px] ${current ? 'bg-accent text-accent-ink' : 'bg-surface-2'}`}>
+                <span className={`grid size-6 place-items-center rounded-full text-xs ${current ? 'bg-accent text-accent-ink' : 'bg-surface-2'}`}>
                   {done[i] && !current ? <Check size={12} weight="bold" /> : i + 1}
                 </span>
               )}
@@ -85,11 +94,11 @@ function Steps({ rooms, onCancel, onClear, onPreview, ...rest }) {
 
   const guest = f.guestChoice?.guest ?? f.guestChoice?.newGuest ?? null;
   const takenRoom = f.roomIds.map((id) => rooms.find((r) => r.id === id)).find((r) => r && f.roomTaken(r.id));
-  const guestProblem = !guest && !f.typedGuest.trim() && !(f.isHold && (f.label.trim() || f.organization.trim())) ? 'Enter the guest’s name (step 1).' : '';
+  const guestProblem = !guest && !f.typedGuest.trim() && !(f.isHold && (f.label.trim() || f.organization.trim())) ? 'Please type the guest’s name first (step 1).' : '';
   const stayProblem =
-    f.roomIds.length === 0 ? 'Choose at least one room (step 2).'
-    : f.nights < 1 ? 'Check-out must be after check-in (step 2).'
-    : takenRoom ? `Room ${takenRoom.number} is booked on those dates (step 2).` : '';
+    f.roomIds.length === 0 ? 'Please tap at least one room (step 2).'
+    : f.nights < 1 ? 'The day they leave must come after the day they arrive (step 2).'
+    : takenRoom ? `Room ${takenRoom.number} is already booked on those days. Please choose another room or other days (step 2).` : '';
   const done = [!guestProblem, !stayProblem, null]; // null: nothing is required on step 3
   const [hint, setHint] = useState('');
   const go = (i) => { setHint(''); setStep(i); setReached((r) => Math.max(r, i)); };
@@ -127,57 +136,80 @@ function Steps({ rooms, onCancel, onClear, onPreview, ...rest }) {
       }}
       className="space-y-4 lg:space-y-3"
     >
-      <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <StepList step={step} done={done} onGo={go} />
-        </div>
-        {/* Cancels the new booking: closes the pop-up, or clears everything entered and removes the ghost from the calendar. */}
-        <button
-          type="button"
-          className="btn btn-icon min-h-8 min-w-8 shrink-0 lg:min-h-8"
-          aria-label="Cancel new booking"
-          title="Cancel new booking"
-          onClick={() => (onCancel ? onCancel() : onClear())}
-          disabled={f.busy}
-        >
-          <X size={16} aria-hidden="true" />
-        </button>
+      <StepList step={step} done={done} onGo={go} />
+
+      <div>
+        <h2 className="text-lg font-semibold leading-tight">{ASKS[step].title}</h2>
+        <p className="text-sm leading-snug text-ink/70">{ASKS[step].help}</p>
       </div>
 
       {/* Step 1: the guest (and organization). */}
       <div className={`space-y-3 ${step === 0 ? '' : 'hidden'}`}>
-        <GuestPicker initial={f.initialGuest} onChange={f.setGuestChoice} onQuery={f.setTypedGuest} />
-        <div>
-          <FieldLabel icon={Buildings} htmlFor="b-org">Organization (optional)</FieldLabel>
-          <input id="b-org" name="organization" className="field" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel icon={Users} htmlFor="b-adults">Adults</FieldLabel>
-            <input id="b-adults" name="adults" autoComplete="off" type="number" inputMode="numeric" min="1" className="field" value={f.adults} onChange={(e) => f.setAdults(e.target.value)} />
+        <Card icon={User} title="Guest">
+          <GuestPicker initial={f.initialGuest} onChange={f.setGuestChoice} onQuery={f.setTypedGuest} />
+        </Card>
+        <Card icon={Buildings} title="Company or group (optional)">
+          <input id="b-org" name="organization" aria-label="Company or group" className="field" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        </Card>
+        <Card icon={Users} title="How many people?">
+          <div className="grid grid-cols-2 gap-3">
+            <Stepper icon={Users} label="Adults" value={f.adults} min={1} onChange={f.setAdults} />
+            <Stepper icon={Baby} label="Children" value={f.children} onChange={f.setChildren} />
           </div>
-          <div>
-            <FieldLabel icon={Baby} htmlFor="b-children">Children</FieldLabel>
-            <input id="b-children" name="children" autoComplete="off" type="number" inputMode="numeric" min="0" className="field" value={f.children} onChange={(e) => f.setChildren(e.target.value)} />
-          </div>
-        </div>
+          {f.roomIds.length > 1 && <p className="text-xs text-muted">The total for all {f.roomIds.length} rooms, shared out between them.</p>}
+        </Card>
       </div>
 
       {/* Step 2: rooms, dates and times. */}
       <div className={`space-y-3 ${step === 1 ? '' : 'hidden'}`}>
-        <RoomPicker rooms={rooms} roomIds={f.roomIds} roomTaken={f.roomTaken} onToggle={f.toggleRoom} />
-        <div>
-          <span className="sr-only">Dates</span>
+        <Card icon={Bed} title={f.roomIds.length > 1 ? `Rooms (${f.roomIds.length} chosen)` : 'Room'}>
+          <RoomPicker rooms={rooms} roomIds={f.roomIds} roomTaken={f.roomTaken} onToggle={f.toggleRoom} />
+        </Card>
+        <Card icon={CalendarBlank} title="Days">
           <DateRangePicker checkIn={f.checkIn} checkOut={f.checkOut} onChange={f.setDates} isBusy={f.nightBusy} />
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <TimeSelect id="b-in-time" name="check_in_time" icon={SignIn} label="Check-in time" value={f.checkInTime} onChange={f.setCheckInTime} />
-            <TimeSelect id="b-out-time" name="check_out_time" icon={SignOut} label="Check-out time" value={f.checkOutTime} onChange={f.setCheckOutTime} />
-          </div>
+        </Card>
+        <div>
+          <MomentPair>
+            <Moment icon={SignIn} label="Check-in time" id="b-in" time={f.checkInTime} onTime={f.setCheckInTime} />
+            <Moment icon={SignOut} label="Check-out time" id="b-out" time={f.checkOutTime} onTime={f.setCheckOutTime} />
+          </MomentPair>
         </div>
+        {f.nights >= 3 && (
+          <Card icon={Suitcase} title="Going away for a few days?">
+            {f.away ? (
+              <>
+                <p className="text-sm leading-snug text-ink/70">The room is kept for them. It is saved as two stays for the same guest.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label htmlFor="away-from" className="text-xs font-medium text-muted">They leave on</label>
+                    <input id="away-from" type="date" className="field min-w-0 px-2 text-sm font-semibold" value={f.away.from} min={addDays(f.checkIn, 1)} max={addDays(f.checkOut, -2)} onChange={(e) => e.target.value && f.setAway({ from: e.target.value, to: f.away.to > e.target.value ? f.away.to : addDays(e.target.value, 1) })} />
+                  </div>
+                  <div>
+                    <label htmlFor="away-to" className="text-xs font-medium text-muted">They come back on</label>
+                    <input id="away-to" type="date" className="field min-w-0 px-2 text-sm font-semibold" value={f.away.to} min={addDays(f.away.from, 1)} max={addDays(f.checkOut, -1)} onChange={(e) => e.target.value && f.setAway({ ...f.away, to: e.target.value })} />
+                  </div>
+                </div>
+                <button type="button" className="btn min-h-10 w-full lg:min-h-10" onClick={() => f.setAway(null)}>
+                  <X size={16} aria-hidden="true" /> No break
+                </button>
+              </>
+            ) : (
+              <button type="button" className="btn min-h-11 w-full lg:min-h-11" onClick={() => f.setAway({ from: addDays(f.checkIn, 1), to: addDays(f.checkIn, 2) })}>
+                <Plus size={16} aria-hidden="true" /> Add a break
+              </button>
+            )}
+          </Card>
+        )}
       </div>
 
       {/* Step 3: the box with everything to check, then the more options. */}
       <div className={`space-y-3 ${step === 2 ? '' : 'hidden'}`}>
+        <Card icon={Tag} title="Is it confirmed?">
+          <StatusPicker value={f.status} onChange={f.setStatus} hideLabel />
+          <p className="text-sm leading-snug text-ink/70">
+            <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> keeps the room for them for now, without confirming.
+          </p>
+        </Card>
         {f.isHold && (
           <div>
             <FieldLabel icon={Tag} htmlFor="b-label">Hold Label (optional)</FieldLabel>
@@ -202,6 +234,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, ...rest }) {
               <span className="text-muted">, {nightsLabel(f.nights)}</span>
               {times.length > 0 && <span className="text-muted">, {times.join(', ')}</span>}
             </Row>
+            {f.away && <Row icon={Suitcase} label="Break">Away from {fmtShort(f.away.from)}, back on {fmtShort(f.away.to)} (two stays)</Row>}
             <Row icon={Users} label="Guests">
               {f.adults} {Number(f.adults) === 1 ? 'adult' : 'adults'}
               {Number(f.children) > 0 && (
@@ -216,7 +249,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, ...rest }) {
           </dl>
         </section>
 
-        <MoreOptions f={f} defaultOpen hideParty />
+        <MoreOptions f={f} hideParty hideStatus />
       </div>
 
       {hint ? <p className="flex items-center gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm" role="alert"><WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
@@ -224,24 +257,22 @@ function Steps({ rooms, onCancel, onClear, onPreview, ...rest }) {
 
       <div className="sticky bottom-0 -mx-4 flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-2 lg:pt-2">
         {step > 0 ? (
-          <button type="button" className="btn" onClick={() => go(step - 1)} disabled={f.busy}>
-            <ArrowLeft size={16} aria-hidden="true" /> Back
+          <button type="button" className="btn min-h-12 px-4 text-base lg:min-h-12" onClick={() => go(step - 1)} disabled={f.busy}>
+            <ArrowLeft size={18} aria-hidden="true" /> Back
           </button>
         ) : (
-          onCancel && (
-            <button type="button" className="btn" onClick={onCancel} disabled={f.busy}>
-              <X size={16} aria-hidden="true" /> Cancel
-            </button>
-          )
+          <button type="button" className="btn min-h-12 px-4 text-base lg:min-h-12" onClick={() => (onCancel ? onCancel() : onClear())} disabled={f.busy}>
+            <X size={18} aria-hidden="true" /> {onCancel ? 'Cancel' : 'Clear'}
+          </button>
         )}
         {/* Different keys: with one shared button React would turn Next into a submit button mid-click and submit the form. */}
         {step < 2 ? (
-          <button key="next" type="button" className="btn btn-primary flex-1" onClick={() => go(step + 1)}>
-            Next <ArrowRight size={16} aria-hidden="true" />
+          <button key="next" type="button" className="btn btn-primary min-h-12 flex-1 text-base lg:min-h-12" onClick={() => go(step + 1)}>
+            Next: {STEPS[step + 1]} <ArrowRight size={18} aria-hidden="true" />
           </button>
         ) : (
-          <button key="confirm" type="submit" className="btn btn-primary flex-1" disabled={f.busy}>
-            {f.busy ? 'Saving…' : <><Check size={18} aria-hidden="true" /> {confirmLabel}</>}
+          <button key="confirm" type="submit" className="btn btn-primary min-h-12 flex-1 text-base lg:min-h-12" disabled={f.busy}>
+            {f.busy ? 'Saving…' : <><Check size={20} weight="bold" aria-hidden="true" /> {confirmLabel}</>}
           </button>
         )}
       </div>

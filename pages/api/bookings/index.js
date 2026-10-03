@@ -1,6 +1,8 @@
+import { nameMatch } from '../../../lib/search';
 import { randomUUID } from 'node:crypto';
 import sql from '../../../lib/db';
 import { bookingColumns, bookingJoins } from '../../../lib/bookings';
+import { shareOut } from '../../../lib/party';
 import { HttpError, actor, parseColor, parseId, parseDate, parseStay, parseTime, parseUuid, route } from '../../../lib/api';
 
 const SORTS = {
@@ -55,8 +57,7 @@ async function list(req, res) {
   if (room_id) where.push(sql`b.room_id = ${parseId(room_id, 'room_id')}`);
   if (guest_id) where.push(sql`b.guest_id = ${parseId(guest_id, 'guest_id')}`);
   if (q) {
-    const like = '%' + q + '%';
-    where.push(sql`(g.name ILIKE ${like} OR b.organization ILIKE ${like} OR b.label ILIKE ${like})`);
+    where.push(sql`(${nameMatch(q, [sql`g.name`, sql`b.organization`, sql`b.label`])})`);
   }
 
   const orderBy = SORTS[sort];
@@ -126,8 +127,11 @@ async function create(req, res) {
   const guest = resolveGuest(body, status === 'on_hold');
   // Rooms booked together share a group. A caller can pass group_id to add rooms to an existing group.
   const groupId = parseUuid(body.group_id, 'group_id') ?? (roomIds.length > 1 ? randomUUID() : null);
-  const adults = Number.isInteger(body.adults) ? body.adults : Number.isInteger(body.guests) ? body.guests : 1;
-  const children = Number.isInteger(body.children) ? body.children : 0;
+  // adults and children are the TOTAL for the booking, shared out over its rooms (at least one adult per room). Without
+  // adults, every room gets one (a hold on 4 rooms is 4 adults).
+  const adultTotal = Number.isInteger(body.adults) ? body.adults : Number.isInteger(body.guests) ? body.guests : roomIds.length;
+  const adultsPer = shareOut(adultTotal, roomIds.length, 1);
+  const childrenPer = shareOut(Number.isInteger(body.children) ? body.children : 0, roomIds.length, 0);
 
   // A new guest is inserted in the same statement. A statement cannot read rows it is inserting from the table itself,
   // so the result joins the new guest from the CTE as well as the existing guests.
@@ -148,13 +152,13 @@ async function create(req, res) {
     ins AS (
       INSERT INTO bookings (room_id, guest_id, stay, status, channel, rate_plan, adults, children, notes, color,
                             organization, label, group_id, check_in_time, check_out_time, created_by)
-      SELECT room, ${guestId}, ${stay}::daterange, ${status}::booking_status, ${body.channel ?? 'Direct'}::text,
-             ${body.rate_plan ?? 'EP'}::text, ${adults}::int, ${children}::int, ${body.notes ?? null}::text,
+      SELECT u.room, ${guestId}, ${stay}::daterange, ${status}::booking_status, ${body.channel ?? 'Direct'}::text,
+             ${body.rate_plan ?? 'EP'}::text, u.a, u.c, ${body.notes ?? null}::text,
              ${parseColor(body.color)}::text, ${body.organization?.toString().trim() || null}::text,
              ${body.label?.toString().trim() || null}::text, ${groupId}::uuid,
              ${parseTime(body.check_in_time, 'check_in_time')}::time, ${parseTime(body.check_out_time, 'check_out_time')}::time,
              ${by}::text
-      FROM unnest(${roomIds}::int[]) AS room
+      FROM unnest(${roomIds}::int[], ${adultsPer}::int[], ${childrenPer}::int[]) AS u(room, a, c)
       RETURNING *
     )
     SELECT ${bookingColumns}

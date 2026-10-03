@@ -1,10 +1,10 @@
 import { PencilSimple } from '@phosphor-icons/react';
 
-// The pencil that turns a booking's details into the form.
-export default function EditButton({ onClick, disabled }) {
+// Turns a booking's details (or the selection) into a form. A plain button: the pencil icon and the word Edit.
+export default function EditButton({ onClick, disabled, label = 'Edit booking' }) {
   return (
-    <button type="button" className="btn btn-icon border-amber-300 bg-amber-50 hover:bg-amber-100" aria-label="Edit booking" title="Edit" onClick={onClick} disabled={disabled}>
-      <PencilSimple size={18} weight="fill" aria-hidden="true" className="text-amber-600" />
+    <button type="button" className="btn gap-1.5 px-3" aria-label={label} title={label} onClick={onClick} disabled={disabled}>
+      <PencilSimple size={16} aria-hidden="true" /> Edit
     </button>
   );
 }

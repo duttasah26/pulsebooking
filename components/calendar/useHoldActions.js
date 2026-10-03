@@ -15,6 +15,40 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
   const { bookings, isBusy, setExtra, forget, unforget, patchLocal, cancelledKeys } = data;
   const { panel, setPanel, panelBooking, group, wide } = panelState;
 
+  // The other way round: a confirmed (or checked-in) booking goes back on hold. The guest stays attached. Undo puts each
+  // room back to the status it had. opts.grouped: every room booked together with it, otherwise just this one.
+  const putOnHold = async (b, opts = {}) => {
+    const mates = opts.grouped && b.group_id ? data.bookingList.filter((x) => x.group_id === b.group_id && x.status === b.status) : [b];
+    const targets = mates.length ? mates : [b];
+    if (targets.some((t) => t.id < 0)) return toast({ message: 'Still saving, try again in a moment', important: true });
+    const ids = targets.map((t) => t.id);
+    const patch = (to) =>
+      Promise.all(targets.map((t) => api(`/api/bookings/${t.id}`, { method: 'PATCH', body: { status: to(t) } })));
+    patchLocal(ids, { status: 'on_hold' });
+    try {
+      await patch(() => 'on_hold');
+      bookings.reload();
+    } catch (err) {
+      patchLocal(ids, null);
+      return toast({ message: err.message });
+    }
+    const entry = {
+      label: 'Put on hold',
+      undo: async () => {
+        targets.forEach((t) => patchLocal([t.id], { status: t.status }));
+        await patch((t) => t.status);
+        bookings.reload();
+      },
+      redo: async () => {
+        patchLocal(ids, { status: 'on_hold' });
+        await patch(() => 'on_hold');
+        bookings.reload();
+      },
+    };
+    history.push(entry);
+    toast({ message: targets.length > 1 ? `${targets.length} rooms put on hold` : 'Put on hold', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+  };
+
   // Deleting is an undoable entry. Rows leave the screen at once; the server is told in parallel. Undo waits for the
   // server's answer so it knows whether to recreate a hold (the server removes holds for good) or restore a booking
   // (anything else is soft-deleted). If the server refuses, the row simply comes back. Redo deletes the rows again.
@@ -90,7 +124,7 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
   const confirmHold = async (b, opts = {}) => {
     const holds = opts.targets ?? (opts.grouped && b.group_id ? data.bookingList.filter((x) => x.group_id === b.group_id && x.status === 'on_hold') : [b]);
     const targets = holds.length ? holds : [b];
-    if (targets.some((t) => t.id < 0)) return toast({ message: 'Still saving this hold, try again in a moment', duration: 3000 });
+    if (targets.some((t) => t.id < 0)) return toast({ message: 'Still saving this hold, try again in a moment', important: true });
     const ids = targets.map((t) => t.id);
     patchLocal(ids, { status: 'confirmed' });
     try {
@@ -116,35 +150,77 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
       patchLocal(ids, null);
       if (err instanceof NeedGuestError) {
         setPanel({ booking: b, editing: true });
-        toast({ message: err.message, duration: 4000 });
+        toast({ message: err.message, important: true });
       } else {
         toast({ message: err.message });
       }
     }
   };
 
-  // Pencil tool: a booking's dates were stretched on the grid. It changes on screen at once, the server is told after,
-  // and it can be undone (a refusal, such as an overlap, puts the old dates back).
-  const resizeBooking = async (b, checkIn, checkOut, roomId = b.room_id) => {
-    if (b.id < 0) return;
-    const roomNumber = (rooms ?? []).find((r) => r.id === roomId)?.number ?? b.room_number;
-    const before = { check_in: b.check_in, check_out: b.check_out, nights: b.nights, room_id: b.room_id, room_number: b.room_number };
-    const after = { check_in: checkIn, check_out: checkOut, nights: diffDays(checkIn, checkOut), room_id: roomId, room_number: roomNumber };
-    const apply = async (to) => {
-      patchLocal([b.id], to);
-      await api(`/api/bookings/${b.id}`, { method: 'PATCH', body: { check_in: to.check_in, check_out: to.check_out, room_id: to.room_id } });
+  // Pencil tool: dates changed by dragging (one or several bookings at once) are saved with the Save button in the
+  // details. They change on screen at once, the server is told after, and one Undo puts them all back (a refusal, such
+  // as an overlap, puts the old dates back). items: [{ original, checkIn, checkOut, roomId }].
+  const resizeBookings = async (items) => {
+    const real = items.filter((i) => i.original.id > 0);
+    if (!real.length) return;
+    const numberOf = (id, fallback) => (rooms ?? []).find((r) => r.id === id)?.number ?? fallback;
+    const was = (i) => ({ check_in: i.original.check_in, check_out: i.original.check_out, nights: i.original.nights, room_id: i.original.room_id, room_number: i.original.room_number });
+    const now = (i) => ({ check_in: i.checkIn, check_out: i.checkOut, nights: diffDays(i.checkIn, i.checkOut), room_id: i.roomId, room_number: numberOf(i.roomId, i.original.room_number) });
+    const apply = async (pick) => {
+      real.forEach((i) => patchLocal([i.original.id], pick(i)));
+      await Promise.all(real.map((i) => {
+        const to = pick(i);
+        return api(`/api/bookings/${i.original.id}`, { method: 'PATCH', body: { check_in: to.check_in, check_out: to.check_out, room_id: to.room_id } });
+      }));
       bookings.reload();
     };
     try {
-      await apply(after);
+      await apply(now);
     } catch (err) {
-      patchLocal([b.id], null);
+      real.forEach((i) => patchLocal([i.original.id], null));
+      bookings.reload();
       return toast({ message: err.message });
     }
-    const entry = { label: 'Dates changed', undo: () => apply(before), redo: () => apply(after) };
+    const entry = { label: real.length > 1 ? `${real.length} bookings changed` : 'Dates changed', undo: () => apply(was), redo: () => apply(now) };
     history.push(entry);
-    const roomNote = roomId !== b.room_id ? `Room ${roomNumber}, ` : '';
-    toast({ message: `${b.name}: ${roomNote}${fmtShort(checkIn)} to ${fmtShort(checkOut)}`, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+    const one = real[0];
+    toast({
+      message: real.length > 1 ? `${real.length} bookings changed` : `${one.original.name}: ${fmtShort(one.checkIn)} to ${fmtShort(one.checkOut)}`,
+      actionLabel: 'Undo',
+      onAction: () => history.undoEntry(entry),
+    });
+  };
+
+  // Names edited in the selection (like cells in a spreadsheet). A booking with a guest renames the guest (every booking of
+  // that guest shows the new name); a hold with no guest changes its label. changes: [{ booking, name }].
+  const renameBookings = async (changes) => {
+    const todo = changes.filter((c) => c.name.trim() && c.name.trim() !== c.booking.name);
+    if (!todo.length) return;
+    const call = (c, name) =>
+      c.booking.guest_id
+        ? api(`/api/guests/${c.booking.guest_id}`, { method: 'PATCH', body: { name } })
+        : api(`/api/bookings/${c.booking.id}`, { method: 'PATCH', body: { label: name } });
+    // Two bookings of one guest share the name: send it once.
+    const unique = [...new Map(todo.map((c) => [c.booking.guest_id ? 'g' + c.booking.guest_id : 'b' + c.booking.id, c])).values()];
+    try {
+      await Promise.all(unique.map((c) => call(c, c.name.trim())));
+    } catch (err) {
+      return toast({ message: err.message });
+    }
+    bookings.reload();
+    const entry = {
+      label: 'Names changed',
+      undo: async () => {
+        await Promise.all(unique.map((c) => call(c, c.booking.name)));
+        bookings.reload();
+      },
+      redo: async () => {
+        await Promise.all(unique.map((c) => call(c, c.name.trim())));
+        bookings.reload();
+      },
+    };
+    history.push(entry);
+    toast({ message: unique.length > 1 ? `${unique.length} names changed` : 'Name changed', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
   };
 
   const removeBooking = (b) => {
@@ -183,9 +259,9 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     const ownsPanel = (p) => p && (temps.some((t) => t.clientKey === p.key) || job.created.some((c) => c.id === p.booking.id));
 
     setExtra((list) => [...list, ...temps]);
-    // Wide screens: open the panel right away on the temporary hold (in the form, so a name can be typed at once);
-    // Save waits until the server has confirmed it.
-    if (!opts.keepPanel && wide) setPanel({ booking: temps[0], key: temps[0].clientKey, editing: true });
+    // Wide screens: open the panel right away on the hold, as plain details (it is already saved, so there is nothing to
+    // save). Edit opens the form when a name or label is wanted.
+    if (!opts.keepPanel && wide) setPanel({ booking: temps[0], key: temps[0].clientKey, editing: false });
 
     const undo = async () => {
       temps.forEach((t) => cancelledKeys.current.add(t.clientKey)); // the answer handler below deletes what the server made
@@ -252,7 +328,7 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     }
     const number = (rooms ?? []).find((r) => r.id === roomId)?.number;
     for (let d = panelBooking.check_in; d < panelBooking.check_out; d = addDays(d, 1)) {
-      if (isBusy(roomId, d)) return toast({ message: `Room ${number} is already booked on those dates`, duration: 3000 });
+      if (isBusy(roomId, d)) return toast({ message: `Room ${number} is already booked on those dates`, important: true });
     }
     let groupId = panelBooking.group_id;
     if (!groupId) {
@@ -270,5 +346,5 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     );
   };
 
-  return { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, resizeBooking };
+  return { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, putOnHold, resizeBookings, renameBookings };
 }

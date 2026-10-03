@@ -19,8 +19,8 @@ import { SelectionSummary, TouchBar } from './grid/SelectionOverlay';
   The room calendar. One grid, two layouts:
     orientation="rows": rooms down the side, days across (timeline)
     orientation="cols": days down the side, rooms across (the default month sheet)
-  Selecting nights places a hold (see grid/useGridSelection.js). In select mode (selectMode) a drag ticks bookings
-  instead (grid/useMarquee.js) and picked / onPick hold the ticked ids. Bars run from the middle of the arrival day to the
+  Selecting nights places a hold (see grid/useGridSelection.js). With the Mouse tool a drag draws a box that
+  picks bookings (grid/useMarquee.js); picked / onPick hold the picked ids, and while any are picked a click toggles one. Bars run from the middle of the arrival day to the
   middle of the departure day (see grid/gridLayout.js). `zoom` scales the whole grid.
 */
 export const MIN_WIDTH_SCALE = 0.5;
@@ -28,7 +28,7 @@ export const MAX_WIDTH_SCALE = 3;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
-  holdEnabled = true, selectMode = false, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, onResize, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup,
+  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup,
 }) {
   const rows = orientation === 'rows';
   const n = days.length;
@@ -36,7 +36,8 @@ export default function RoomGrid({
   const todayStr = today();
   const scrollRef = useRef(null);
   const gridRef = useRef(null);
-  const placing = holdEnabled && !selectMode; // pencil on: drag free nights to hold, drag a booking's end to stretch it
+  const placing = holdEnabled; // pencil on: drag free nights to hold, drag a booking's end to stretch it
+  const selecting = !placing && Boolean(picked?.size); // something is picked: a click now picks or unpicks a booking
 
   // The grid is sized to the window so the page itself never needs to scroll: `avail` is the height from the top of the
   // grid down to the bottom of the screen (less room for the zoom bar). In the timeline the rows then share that height
@@ -47,7 +48,7 @@ export default function RoomGrid({
     const measure = () => {
       const el = scrollRef.current;
       if (!el) return;
-      const reserve = (window.innerWidth < 768 ? 190 : 140) + (rows ? 22 : 0); // zoom bar, page padding, the status bar (phones: and the bottom nav) and the navigator bar
+      const reserve = (window.innerWidth < 768 ? 170 : 126) + (rows ? 22 : 0); // zoom bar, page padding, the status bar (phones: and the bottom nav) and the navigator bar
       setBoxW(el.clientWidth);
       setAvail(Math.max(240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
     };
@@ -118,35 +119,20 @@ export default function RoomGrid({
   // Bars start and end at the booking's own times, or the default check-in and check-out times when it has none.
   const defaultIn = dayFraction(settings.checkInTime, 0.5);
   const defaultOut = dayFraction(settings.checkOutTime, 0.5);
-  // The booking being stretched with the pencil is drawn with its new dates while the pointer is down.
-  // Letting go of a drag does not save: the booking keeps its new dates as a pending change, with Save and Cancel next
-  // to it. `pending` is { original, checkIn, checkOut, roomId, x, y } (original = the booking as it was saved).
-  const [pending, setPending] = useState(null);
-  const hold = (b, checkIn, checkOut, roomId, at) =>
-    setPending((p) => ({ original: p && p.original.id === b.id ? p.original : bookings.find((x) => x.id === b.id) ?? b, checkIn, checkOut, roomId, ...at }));
-  const resize = useBarResize({ enabled: placing && Boolean(onResize), rows, days, rooms, gridRef, zoom, isBusy, onResize: hold });
-  const savePending = () => {
-    const p = pending;
-    setPending(null);
-    onResize(p.original, p.checkIn, p.checkOut, p.roomId);
-  };
-  useEffect(() => {
-    if (!pending) return;
-    const onKey = (e) => e.key === 'Escape' && setPending(null);
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [pending]);
-  useEffect(() => {
-    if (!placing) setPending(null); // switching tool, or leaving the pencil, drops an unsaved change
-  }, [placing]);
+  // Changes made with the pencil show on the bars at once: the drag in progress, then `pending` (changes waiting for
+  // Save, which lives in the booking details, not here). linkedFor(b) lists the bookings that move together with b.
+  const resize = useBarResize({ enabled: placing && Boolean(onPending), rows, days, rooms, gridRef, zoom, isBusy, linkedFor, onResize: onPending });
+  const changes = resize.drag?.items ?? pending?.items ?? null;
   const drawn = useMemo(() => {
-    const d = resize.drag ?? (pending && { id: pending.original.id, checkIn: pending.checkIn, checkOut: pending.checkOut, roomId: pending.roomId });
-    if (!d) return bookings;
-    const room = rooms.find((r) => r.id === d.roomId);
-    return bookings.map((b) => (b.id === d.id
-      ? { ...b, check_in: d.checkIn, check_out: d.checkOut, nights: diffDays(d.checkIn, d.checkOut), room_id: d.roomId, room_number: room?.number ?? b.room_number }
-      : b));
-  }, [bookings, rooms, resize.drag, pending]);
+    if (!changes) return bookings;
+    const byId = new Map(changes.map((c) => [c.original.id, c]));
+    return bookings.map((b) => {
+      const c = byId.get(b.id);
+      if (!c) return b;
+      const room = rooms.find((r) => r.id === c.roomId);
+      return { ...b, check_in: c.checkIn, check_out: c.checkOut, nights: diffDays(c.checkIn, c.checkOut), room_id: c.roomId, room_number: room?.number ?? b.room_number };
+    });
+  }, [bookings, rooms, changes]);
   const { roomIndex, occupancy } = useOccupancy(rooms, drawn, days);
   const selection = useGridSelection({ rooms, days, occupancy, onCreate });
   const { sel, summary, isFree, selected, cornerR, cornerI, roomCount, nightCount } = selection;
@@ -272,7 +258,7 @@ export default function RoomGrid({
         onClickCapture={marquee.onClickCapture}
       >
         <div
-          className={`grid select-none ${selectMode ? 'cursor-crosshair' : ''}`}
+          className="grid select-none"
           ref={gridRef}
           role="grid"
           aria-label="Room availability"
@@ -308,20 +294,20 @@ export default function RoomGrid({
               rows={rows}
               style={place(r, g.a, g.len)}
               active={Boolean(activeIds?.has(b.id))}
-              selectMode={selectMode}
+              selectMode={selecting}
               picked={Boolean(picked?.has(b.id))}
               onOpen={onOpen}
               onPick={toggleBar}
               onView={onView}
               onOpenGroup={onOpenGroup}
-              movable={placing && Boolean(onResize) && b.id > 0}
+              movable={placing && Boolean(onPending) && b.id > 0}
               onMoveStart={resize.startResize}
-              resizing={resize.drag?.id === b.id || pending?.original.id === b.id}
+              resizing={Boolean(changes?.some((c) => c.original.id === b.id))}
               onDelete={onDelete}
             />
           ))}
 
-          {placing && onResize && bars.map(({ b, r, g }) =>
+          {placing && onPending && bars.map(({ b, r, g }) =>
             b.id > 0 ? <BarHandles key={`h-${b.clientKey ?? b.id}`} b={b} g={g} rows={rows} style={place(r, g.a, g.len)} onStart={resize.startResize} /> : null,
           )}
 
@@ -331,22 +317,6 @@ export default function RoomGrid({
         </div>
       </div>
 
-      {pending && !resize.drag && (
-        <div
-          role="group"
-          aria-label="Unsaved change"
-          className="fixed z-[60] flex items-center gap-2 rounded-lg border border-line bg-surface p-1.5 pl-3 text-sm shadow-lg"
-          style={{ left: Math.max(8, Math.min(pending.x + 12, window.innerWidth - 330)), top: Math.max(8, Math.min(pending.y + 14, window.innerHeight - 56)) }}
-        >
-          <span className="whitespace-nowrap">
-            {rooms.find((r) => r.id === pending.roomId)?.number ? `Room ${rooms.find((r) => r.id === pending.roomId).number}: ` : ''}
-            <strong className="font-semibold">{fmtDayMonth(pending.checkIn)} to {fmtDayMonth(pending.checkOut)}</strong>
-            <span className="text-muted">, {nightsLabel(diffDays(pending.checkIn, pending.checkOut))}</span>
-          </span>
-          <button type="button" className="btn min-h-8 px-3 lg:min-h-8" onClick={() => setPending(null)}>Cancel</button>
-          <button type="button" className="btn btn-primary min-h-8 px-3 lg:min-h-8" onClick={savePending}>Save</button>
-        </div>
-      )}
       {resize.drag && resize.drag.x !== undefined && (
         <p
           aria-live="polite"

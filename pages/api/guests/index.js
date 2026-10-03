@@ -1,5 +1,6 @@
 import sql from '../../../lib/db';
-import { HttpError, parseColor, route } from '../../../lib/api';
+import { HttpError, parseColor, parseDate, parseId, route } from '../../../lib/api';
+import { nameMatch } from '../../../lib/search';
 
 // sort=name (default, A to Z), stays (most stays first) or recent (latest stay first). dir=asc|desc overrides the order.
 const SORTS = {
@@ -8,12 +9,24 @@ const SORTS = {
   recent: { sql: sql`max(lower(b.stay))`, dir: 'desc' },
 };
 
-// GET /api/guests?q=rahul&sort=name|stays|recent&dir=asc|desc
-// Matches by name, phone or email. Each row shows stay count and last stay so that
+// GET /api/guests?q=rahul&room_id=3&from=2026-10-01&to=2026-11-01&sort=name|stays|recent&dir=asc|desc
+// q matches name or organization (initials work: ZB, Z B or Z find Zee Bangla), phone or email. room_id and from/to keep
+// the guests who stayed in that room and/or whose stay overlaps those days (to is the day after the last one). Each row shows stay count and last stay so that
 // guests who share a name can be told apart.
 async function list(req, res) {
   const q = req.query.q?.toString().trim();
-  const like = q ? `%${q}%` : null;
+  const like = q ? `%${q.replace(/[\\%_]/g, (c) => '\\' + c)}%` : null;
+  const { room_id, from, to } = req.query;
+  const stayed = [];
+  if (room_id) stayed.push(sql`x.room_id = ${parseId(room_id, 'room_id')}`);
+  if (from || to) stayed.push(sql`x.stay && daterange(${from ? parseDate(from, 'from') : '-infinity'}::date, ${to ? parseDate(to, 'to') : 'infinity'}::date, '[)')`);
+  const conditions = [];
+  if (like) conditions.push(sql`(${nameMatch(q, [sql`g.name`, sql`g.organization`])} OR g.phone ILIKE ${like} OR g.email ILIKE ${like})`);
+  if (stayed.length) {
+    const all = stayed.reduce((acc, c, i) => (i === 0 ? c : sql`${acc} AND ${c}`));
+    conditions.push(sql`EXISTS (SELECT 1 FROM bookings x WHERE x.guest_id = g.id AND x.deleted_at IS NULL AND ${all})`);
+  }
+  const whereSql = conditions.length ? sql`WHERE ${conditions.reduce((acc, c, i) => (i === 0 ? c : sql`${acc} AND ${c}`))}` : sql``;
   const sort = SORTS[req.query.sort ?? 'name'];
   if (!sort) throw new HttpError(400, `sort must be one of ${Object.keys(SORTS).join(', ')}`);
   const direction = (req.query.dir ?? sort.dir) === 'asc' ? sql`ASC` : sql`DESC`;
@@ -23,7 +36,7 @@ async function list(req, res) {
            max(lower(b.stay))::text AS last_check_in
     FROM guests g
     LEFT JOIN bookings b ON b.guest_id = g.id
-    ${like ? sql`WHERE g.name ILIKE ${like} OR g.phone ILIKE ${like} OR g.email ILIKE ${like} OR g.organization ILIKE ${like}` : sql``}
+    ${whereSql}
     GROUP BY g.id
     ORDER BY ${sort.sql} ${direction} NULLS LAST, lower(g.name), g.id
     LIMIT 100

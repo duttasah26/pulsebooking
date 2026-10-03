@@ -4,6 +4,7 @@ const TONES = {
   amber: { icon: 'text-amber-600', on: 'border-amber-400 bg-amber-100' },
   sky: { icon: 'text-sky-600', on: 'border-sky-400 bg-sky-100' },
   plain: { icon: 'text-ink', on: '' },
+  green: { icon: 'text-accent-text', on: 'border-accent bg-accent-soft' },
   ink: { icon: 'text-ink', on: 'border-ink bg-surface-2' },
 };
 

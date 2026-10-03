@@ -1,4 +1,5 @@
-import { CheckCircle, Clock, X } from '@phosphor-icons/react';
+import { useRef } from 'react';
+import { CheckSquare, Clock, SignIn, X } from '@phosphor-icons/react';
 import { useSettings } from '../../SettingsProvider';
 import { colorFor, roomShade } from '../../../lib/colors';
 import { fmtShort } from '../../../lib/dates';
@@ -12,6 +13,32 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const { settings } = useSettings();
   const c = colorFor(b, settings);
   const hold = b.status === 'on_hold';
+  // A finger has no Ctrl key: pressing and holding a booking for half a second picks it (then taps pick or unpick).
+  const press = useRef({ timer: null, fired: false });
+  const pressStart = (e) => {
+    if (e.pointerType !== 'touch') return;
+    press.current.fired = false;
+    clearTimeout(press.current.timer);
+    press.current.timer = setTimeout(() => {
+      press.current.fired = true;
+      onPick(b);
+    }, 500);
+  };
+  const pressEnd = () => clearTimeout(press.current.timer);
+  const pressProps = {
+    onPointerDown: (e) => (movable ? onMoveStart(e, b, 'move') : pressStart(e)),
+    onPointerUp: pressEnd,
+    onPointerLeave: pressEnd,
+    onPointerCancel: pressEnd,
+    onClickCapture: (e) => {
+      if (press.current.fired) {
+        e.stopPropagation(); // the click that ends a long press must not also open the booking
+        e.preventDefault();
+        press.current.fired = false;
+      }
+    },
+    onContextMenu: (e) => e.preventDefault(),
+  };
   const roomTone = roomShade({ number: b.room_number }, settings);
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
@@ -35,8 +62,8 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
 
   const content = (
     <>
-      {picked && <CheckCircle size={14} weight="fill" className="shrink-0 text-accent" />}
-      {!picked && b.status === 'checked_in' && <CheckCircle size={14} weight="fill" className="hidden shrink-0 @min-[70px]:block" />}
+      {picked && <CheckSquare size={14} weight="fill" className="shrink-0 text-accent" />}
+      {!picked && b.status === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
       {!picked && hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
       {hold && (
         <span
@@ -62,7 +89,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         aria-pressed={selectMode ? Boolean(picked) : undefined}
         title={label}
         aria-label={`${label}, ${b.status.replace('_', ' ')}`}
-        onPointerDown={movable ? (e) => onMoveStart(e, b, 'move') : undefined}
+        {...pressProps}
         className={`${shape} px-1.5 transition-transform @min-[70px]:px-2 ${movable ? 'cursor-grab active:cursor-grabbing' : 'active:scale-[0.98]'}`}
         style={style}
       >
@@ -77,7 +104,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         type="button"
         onClick={(e) => (e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b))}
         onDoubleClick={() => onOpenGroup?.(b)}
-        onPointerDown={movable ? (e) => onMoveStart(e, b, 'move') : undefined}
+        {...pressProps}
         title={label}
         className={`flex min-w-0 flex-1 items-center gap-1 self-stretch text-left ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
       >

@@ -1,40 +1,59 @@
-import { Baby, Bed, Buildings, SignIn, SignOut, Tag, Users } from '@phosphor-icons/react';
+import { Buildings, Check, Minus, Plus, SignIn, SignOut, Tag, Users, Baby, Bed } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import TimeSelect from '../TimeSelect';
+import RoomChips from '../RoomChips';
 import { useSettings } from '../SettingsProvider';
 import StatusPicker from './StatusPicker';
 import MoreOptions from './MoreOptions';
 import FormFooter from './FormFooter';
 import { useBookingForm } from './useBookingForm';
-import { colorFor } from '../../lib/colors';
+import { Card, Moment, MomentPair, Stepper } from './formParts';
+import { colorFor, roomShade } from '../../lib/colors';
 import { addDays, nightsLabel } from '../../lib/dates';
 
-// A titled group of fields, so the form reads as four short parts instead of one long list.
-function Section({ title, children }) {
+// Pick the room by its coloured number, a row for each floor, in the floor's colour (as on the calendar). A room taken
+// on these dates is hatched and cannot be chosen.
+function RoomChoice({ rooms, roomId, taken, onPick }) {
+  const { settings } = useSettings();
+  const floors = new Map();
+  for (const r of rooms) floors.set(String(r.number)[0], [...(floors.get(String(r.number)[0]) ?? []), r]);
   return (
-    <section className="space-y-2.5">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-// One end of the stay: its date and its time side by side, matching the Check-in and Check-out blocks in the details.
-function Moment({ icon: Icon, label, id, date, onDate, min, time, onTime }) {
-  return (
-    <div className="space-y-2 rounded-lg border border-line p-2.5">
-      <FieldLabel icon={Icon} htmlFor={`${id}-date`}>{label}</FieldLabel>
-      <input id={`${id}-date`} name={`${id}-date`} type="date" className="field" value={date} min={min} onChange={(e) => e.target.value && onDate(e.target.value)} />
-      <TimeSelect id={`${id}-time`} name={`${id}-time`} label="Time" value={time} onChange={onTime} />
+    <div className="space-y-1.5" role="radiogroup" aria-label="Room">
+      {[...floors.entries()].map(([floor, list]) => (
+        <div key={floor} className="flex flex-wrap gap-1.5">
+          {list.map((r) => {
+            const on = r.id === roomId;
+            const busy = taken(r.id) && !on;
+            const shade = roomShade(r, settings);
+            return (
+              <button
+                key={r.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                disabled={busy}
+                title={busy ? `Room ${r.number} is booked on these dates` : `Room ${r.number}`}
+                onClick={() => onPick(r.id)}
+                className={`inline-flex min-h-9 min-w-14 items-center justify-center gap-1 rounded-md border px-2 font-mono text-sm font-semibold transition-transform active:scale-95 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-1' : ''}`}
+                style={busy ? undefined : { backgroundColor: shade.fill, borderColor: shade.edge }}
+              >
+                {on && <Check size={14} weight="bold" aria-hidden="true" />}
+                {r.number}
+              </button>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
 
 /*
-  Editing an existing booking or hold. Four parts, top to bottom: Guest, Stay (room, check-in, check-out), Status, and
-  Guests; everything rarely needed (booked via, rate plan, colour, notes) is folded under More. Delete is not here: it
-  is in the details view (hold the button), so this form only has Cancel and Save.
+  Editing an existing booking or hold, laid out like its details so the two feel like one thing: Status, Guest, the stay
+  (Check-in and Check-out side by side, then the room as coloured chips), Guests with plus and minus buttons, and a
+  folded More for what is rarely needed (booked via, rate plan, colour, notes). Delete is not here: it is in the details
+  (hold the button), so this form only has Cancel and Save Changes.
   Props: see useBookingForm, plus rooms and onCancel.
 */
 export default function EditBooking({ rooms, onCancel, ...rest }) {
@@ -43,8 +62,12 @@ export default function EditBooking({ rooms, onCancel, ...rest }) {
   const several = f.targets.length > 1;
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); f.submit(false); }} className="space-y-5">
-      <Section title="Guest">
+    <form onSubmit={(e) => { e.preventDefault(); f.submit(false); }} className="space-y-3 pb-1">
+      <Card icon={Tag} title="Status">
+        <StatusPicker value={f.status} onChange={f.setStatus} hideLabel />
+      </Card>
+
+      <Card icon={Bed} title="Guest">
         <GuestPicker
           initial={f.initialGuest}
           onChange={f.setGuestChoice}
@@ -61,23 +84,10 @@ export default function EditBooking({ rooms, onCancel, ...rest }) {
           <FieldLabel icon={Buildings} htmlFor="b-org">Organization (optional)</FieldLabel>
           <input id="b-org" name="organization" className="field" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
         </div>
-      </Section>
+      </Card>
 
-      <Section title="Stay">
-        {several ? (
-          <p className="flex items-start gap-2 rounded-lg bg-surface-2 px-3 py-2 text-sm">
-            <Bed size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" />
-            <span>Rooms {f.targets.map((t) => t.room_number).sort().join(', ')}. Changes apply to all of them.</span>
-          </p>
-        ) : (
-          <div>
-            <FieldLabel icon={Bed} htmlFor="b-room">Room</FieldLabel>
-            <select id="b-room" name="room" className="field" value={f.roomIds[0]} onChange={(e) => f.setRoomIds([Number(e.target.value)])}>
-              {rooms.map((r) => <option key={r.id} value={r.id}>Room {r.number}</option>)}
-            </select>
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2.5">
+      <div>
+        <MomentPair>
           <Moment
             icon={SignIn}
             label="Check-in"
@@ -97,26 +107,25 @@ export default function EditBooking({ rooms, onCancel, ...rest }) {
             time={f.checkOutTime}
             onTime={f.setCheckOutTime}
           />
-        </div>
-        <p className="text-center text-xs text-muted">{f.nights >= 1 ? nightsLabel(f.nights) : 'Check-out must be after check-in'}</p>
-      </Section>
+        </MomentPair>
+        <p className="mt-1 text-center text-xs text-muted">{f.nights >= 1 ? nightsLabel(f.nights) : 'Check-out must be after check-in'}</p>
+      </div>
 
-      <Section title="Status">
-        <StatusPicker value={f.status} onChange={f.setStatus} hideLabel />
-      </Section>
+      {several ? (
+        <RoomChips numbers={f.targets.map((t) => t.room_number)} note={<p className="mt-2 text-xs text-muted">Changes here apply to all of these rooms.</p>} />
+      ) : (
+        <Card icon={Bed} title="Room">
+          <RoomChoice rooms={rooms} roomId={f.roomIds[0]} taken={f.roomTaken} onPick={(id) => f.setRoomIds([id])} />
+        </Card>
+      )}
 
-      <Section title="Guests">
+      <Card icon={Users} title="Guests">
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <FieldLabel icon={Users} htmlFor="b-adults">Adults</FieldLabel>
-            <input id="b-adults" name="adults" autoComplete="off" type="number" inputMode="numeric" min="1" className="field" value={f.adults} onChange={(e) => f.setAdults(e.target.value)} />
-          </div>
-          <div>
-            <FieldLabel icon={Baby} htmlFor="b-children">Children</FieldLabel>
-            <input id="b-children" name="children" autoComplete="off" type="number" inputMode="numeric" min="0" className="field" value={f.children} onChange={(e) => f.setChildren(e.target.value)} />
-          </div>
+          <Stepper icon={Users} label="Adults" value={f.adults} min={1} onChange={f.setAdults} />
+          <Stepper icon={Baby} label="Children" value={f.children} onChange={f.setChildren} />
         </div>
-      </Section>
+        {several && <p className="text-xs text-muted">The total for all {f.targets.length} rooms, shared out between them.</p>}
+      </Card>
 
       <MoreOptions f={f} hideStatus hideParty />
 

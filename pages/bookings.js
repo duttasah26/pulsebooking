@@ -64,7 +64,7 @@ export default function Bookings() {
     } catch (err) {
       if (err instanceof NeedGuestError) {
         setSheet({ mode: 'edit', booking: b });
-        toast({ message: err.message, duration: 4000 });
+        toast({ message: err.message, important: true });
       } else {
         toast({ message: err.message });
       }
@@ -150,7 +150,7 @@ export default function Bookings() {
           </div>
 
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search guest, organization or label…" />
+          <SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />
 
           {list.error && (
             <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
@@ -159,7 +159,7 @@ export default function Bookings() {
             </p>
           )}
 
-          {list.loading && !list.data ? (
+          {(!ready || list.loading) && !list.data ? (
             <div className="space-y-2" aria-busy="true" aria-label="Loading bookings…">
               {[0, 1, 2].map((i) => <div key={i} className="h-12 rounded-lg bg-surface-2 motion-safe:animate-pulse" />)}
             </div>

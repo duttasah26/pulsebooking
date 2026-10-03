@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, Cursor, PencilSimpleLine, Selection } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, Cursor, PencilSimpleLine, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
@@ -44,7 +44,7 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
 // narrow screens the tools (pencil, select) and undo / redo sit here too; on wide screens they live in the pane on the right.
 export default function CalendarToolbar({
   view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor,
-  monthAligned, onHome, onResetView, wide, canTool, quickHold, onToggleMouse, onToggleHold, selectMode, onToggleSelect, history,
+  monthAligned, onHome, onResetView, wide, canTool, quickHold, onToggleMouse, onToggleHold, history, onNew,
 }) {
   const [rangeOpen, setRangeOpen] = useState(false);
   const show = ({ date: d, span: n }) => {
@@ -76,7 +76,15 @@ export default function CalendarToolbar({
           </button>
           {rangeOpen && <RangePopover date={date} span={span} onShow={show} onClose={() => setRangeOpen(false)} />}
         </div>
-        <h1 className="mx-2 min-w-0 flex-1 basis-48 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl">{title}</h1>
+        <div className="mx-2 flex min-w-0 flex-1 basis-48 items-center gap-2">
+          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl">{title}</h1>
+          {/* Phones only: a compact button (the desktop has the booking panel on the right). */}
+          {onNew && (
+            <button type="button" className="btn btn-primary min-h-10 shrink-0 gap-1 px-3 text-sm lg:min-h-10" onClick={onNew}>
+              <Plus size={16} weight="bold" aria-hidden="true" /> New Booking
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
@@ -91,7 +99,7 @@ export default function CalendarToolbar({
               tone="ink"
               label="Mouse"
               title="Mouse: click a booking to open it, drag a box to select several"
-              on={!quickHold && !selectMode}
+              on={!quickHold}
               onClick={onToggleMouse}
             />
             <ToolButton
@@ -99,16 +107,8 @@ export default function CalendarToolbar({
               tone="amber"
               label="Quick Hold"
               title="Quick hold: drag across free nights to place a hold"
-              on={quickHold && !selectMode}
+              on={quickHold}
               onClick={onToggleHold}
-            />
-            <ToolButton
-              icon={Selection}
-              tone="sky"
-              label="Select"
-              title="Select: drag a box or tap bookings to view or delete several at once"
-              on={selectMode}
-              onClick={onToggleSelect}
             />
           </Strip>
         )}

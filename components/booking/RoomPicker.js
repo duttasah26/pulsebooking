@@ -1,7 +1,6 @@
-import { Bed } from '@phosphor-icons/react';
-import FieldLabel from '../FieldLabel';
+import { Check } from '@phosphor-icons/react';
 import { useSettings } from '../SettingsProvider';
-import { floorColor } from '../../lib/colors';
+import { roomShade } from '../../lib/colors';
 
 // Rooms grouped by floor (the first digit of the number): one row of chips per floor.
 function byFloor(rooms) {
@@ -13,38 +12,43 @@ function byFloor(rooms) {
   return [...floors.entries()];
 }
 
-// Create mode: tick one or several rooms to book them together. A room already booked on the chosen dates is hatched.
+const FLOOR_NAME = { 1: '1st floor', 2: '2nd floor', 3: '3rd floor' };
+
+// Create mode: tap one or several rooms to book them together. Each room is a chip in its floor's colour, the same as on
+// the calendar; a chosen room has a dark ring and a tick; a room already booked on the chosen days is hatched and cannot
+// be tapped.
 export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
   const { settings } = useSettings();
   return (
-    <fieldset>
-      <FieldLabel as="legend" icon={Bed}>
-        Rooms {roomIds.length > 1 && <span className="font-normal text-muted">({roomIds.length} selected)</span>}
-      </FieldLabel>
-      <div className="space-y-1.5">
-        {byFloor(rooms).map(([floor, list]) => (
-          <div key={floor} className="flex flex-wrap gap-1.5">
+    <div className="space-y-2" role="group" aria-label="Rooms">
+      {byFloor(rooms).map(([floor, list]) => (
+        <div key={floor}>
+          <p className="mb-0.5 text-xs font-medium text-muted">{FLOOR_NAME[floor] ?? `Floor ${floor}`}</p>
+          <div className="grid grid-cols-6 gap-1">
             {list.map((r) => {
               const on = roomIds.includes(r.id);
               const taken = roomTaken(r.id);
+              const busy = taken && !on;
+              const shade = roomShade(r, settings);
               return (
                 <button
                   key={r.id}
                   type="button"
                   aria-pressed={on}
-                  disabled={taken && !on}
-                  title={taken ? 'Booked on these dates' : `Room ${r.number}`}
+                  disabled={busy}
+                  title={busy ? `Room ${r.number} is booked on these days` : `Room ${r.number}`}
                   onClick={() => onToggle(r.id)}
-                  className={`btn gap-1.5 px-2.5 font-mono lg:min-h-6 lg:px-2 lg:text-xs ${on ? 'border-accent bg-accent text-accent-ink hover:bg-accent' : ''} ${taken && !on ? 'hatch' : ''}`}
+                  className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-0.5 rounded-md border px-0 font-mono text-sm font-semibold lg:min-h-11 transition-transform active:scale-95 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-1' : ''}`}
+                  style={busy ? undefined : { backgroundColor: shade.fill, borderColor: shade.edge }}
                 >
-                  <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-black/20" style={{ backgroundColor: floorColor(r, settings).border }} />
+                  {on && <Check size={12} weight="bold" aria-hidden="true" />}
                   {r.number}
                 </button>
               );
             })}
           </div>
-        ))}
-      </div>
-    </fieldset>
+        </div>
+      ))}
+    </div>
   );
 }

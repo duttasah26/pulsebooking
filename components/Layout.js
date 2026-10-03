@@ -2,7 +2,10 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { CalendarBlank, GearSix, ListBullets, Users } from '@phosphor-icons/react';
+import AccountMenu from './AccountMenu';
+import IndiaClock from './IndiaClock';
+import { OPEN_ASSISTANT } from './Assistant';
+import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, Users } from '@phosphor-icons/react';
 
 const TABS = [
   { href: '/', label: 'Calendar', Icon: CalendarBlank },
@@ -34,11 +37,13 @@ export default function Layout({ title, wide = false, children }) {
       </a>
 
       <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className={`mx-auto flex h-12 ${max} items-center justify-between px-4`}>
+        <div className={`relative mx-auto flex h-12 ${max} items-center justify-between px-4`}>
           <Link href="/" className="flex shrink-0 items-center gap-2 rounded-lg" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-8 w-auto" />
             <span className="hidden text-sm font-semibold text-muted sm:inline">Rooms</span>
           </Link>
+          <IndiaClock />
+          <div className="flex items-center gap-2">
           <nav className="hidden gap-1 md:flex" aria-label="Main">
             {TABS.map(({ href, label, Icon }) => {
               const active = pathname === href;
@@ -55,10 +60,16 @@ export default function Layout({ title, wide = false, children }) {
               );
             })}
           </nav>
+          {/* Below the desktop width the assistant's button lives here, not floating over the page. */}
+          <button type="button" className="btn btn-icon border-transparent lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
+            <ChatCircleDots size={20} aria-hidden="true" />
+          </button>
+          <AccountMenu />
+          </div>
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-32 pt-3 outline-none md:pb-14`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-24 pt-3 outline-none md:pb-6`}>{children}</main>
 
       <nav
         aria-label="Main"

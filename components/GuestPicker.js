@@ -40,7 +40,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
   if (selected) {
     return (
       <div>
-        <FieldLabel as="span" icon={User}>Guest</FieldLabel>
+        <FieldLabel as="span" icon={User} hidden>Guest</FieldLabel>
         <div
           className="flex items-center gap-3 rounded-lg border border-line p-3"
           style={(tone ?? resolveColor(selected.color)) ? { backgroundColor: (tone ?? resolveColor(selected.color)).bg, borderColor: (tone ?? resolveColor(selected.color)).border } : undefined}
@@ -101,7 +101,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
 
   return (
     <div>
-      <FieldLabel icon={User} htmlFor="guest-search">Guest</FieldLabel>
+      <FieldLabel icon={User} htmlFor="guest-search" hidden>Guest</FieldLabel>
       <div className="relative">
         <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
         <input

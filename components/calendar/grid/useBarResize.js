@@ -3,17 +3,22 @@ import { DATE_LABEL, HEAD, LABEL, MONTH_HEAD } from './gridLayout';
 import { addDays, diffDays } from '../../../lib/dates';
 
 /*
-  Pencil tool: change an existing booking by dragging one of its small arrows.
-    start arrow:  moves check-in (drag outward to start earlier, inward to start later)
-    end arrow:    moves check-out (drag outward to stay longer, inward to leave sooner)
-    move handle:  slides the whole stay to other days, and to another room if you drag up or down
+  Pencil tool: change an existing booking by dragging one of its extenders, or the bar itself.
+    start extender: moves check-in (drag outward to start earlier, inward to start later)
+    end extender:   moves check-out (drag outward to stay longer, inward to leave sooner)
+    the bar:        slides the whole stay to other days, and to another room if you drag up or down
   Dates snap to whole days. The bar stops at the next booked night (a booking can end on the day another begins, but
-  cannot run into it), and a move only goes where every night is free. Letting go calls
-  onResize(booking, checkIn, checkOut, roomId, { x, y }) if anything changed (the grid then asks you to Save). `drag` is the booking as it is being changed, so
-  the grid can draw it live.
+  cannot run into it), and a move only goes where every night is free.
+
+  Group changes: when the booking is one of several selected (or of an open group), every one of them changes by the same
+  number of days; a booking that would run into another booking stays as it is. linkedFor(booking) gives that list.
+
+  Letting go calls onResize(items, { x, y }) if anything changed; the page keeps the change as pending until Save.
+  Each item is { original, checkIn, checkOut, roomId } (original = the booking as saved). `drag` is the same list while the
+  pointer is down, so the grid can draw it live.
   Timeline: days run across, rooms down. Month sheet: days run down, rooms across.
 */
-export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy, onResize }) {
+export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy, linkedFor, onResize }) {
   const [drag, setDrag] = useState(null);
 
   const startResize = (e, b, edge) => {
@@ -24,7 +29,9 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
       e.preventDefault();
     }
     const n = days.length;
-    let cur = { id: b.id, edge, checkIn: b.check_in, checkOut: b.check_out, roomId: b.room_id, x: e.clientX, y: e.clientY };
+    const others = (linkedFor?.(b) ?? []).filter((o) => o.id !== b.id && o.id > 0);
+    const asItem = (o) => ({ original: o, checkIn: o.check_in, checkOut: o.check_out, roomId: o.room_id });
+    let cur = { id: b.id, edge, items: [asItem(b), ...others.map(asItem)], x: e.clientX, y: e.clientY, checkIn: b.check_in, checkOut: b.check_out, roomId: b.room_id };
     let engaged = !moving;
     if (engaged) setDrag(cur);
     const x0 = e.clientX;
@@ -50,6 +57,11 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
     const start = position(e);
     const startRoom = rooms.findIndex((r) => r.id === b.room_id);
 
+    // Every night of a stay free in that room (the booking's own nights do not count)?
+    const free = (roomId, checkIn, checkOut, id) => {
+      for (let d = checkIn; d < checkOut; d = addDays(d, 1)) if (isBusy(roomId, d, id)) return false;
+      return true;
+    };
     const fitEnd = (day) => {
       let out = day <= b.check_in ? addDays(b.check_in, 1) : day;
       for (let d = b.check_out; d < out; d = addDays(d, 1)) {
@@ -58,7 +70,7 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
           break;
         }
       }
-      return { checkOut: out };
+      return { checkIn: b.check_in, checkOut: out, roomId: b.room_id };
     };
     const fitStart = (day) => {
       let inn = day >= b.check_out ? addDays(b.check_out, -1) : day;
@@ -68,12 +80,7 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
           break;
         }
       }
-      return { checkIn: inn };
-    };
-    // Every night of the stay free in that room (the booking's own nights do not count)?
-    const free = (roomId, checkIn, checkOut) => {
-      for (let d = checkIn; d < checkOut; d = addDays(d, 1)) if (isBusy(roomId, d, b.id)) return false;
-      return true;
+      return { checkIn: inn, checkOut: b.check_out, roomId: b.room_id };
     };
     const fitMove = (pos) => {
       const shift = pos.day - start.day;
@@ -82,9 +89,22 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
       for (const [dd, room] of [[shift, targetRoom], [shift, rooms[startRoom]], [0, targetRoom]]) {
         const checkIn = addDays(b.check_in, dd);
         const checkOut = addDays(b.check_out, dd);
-        if (room && free(room.id, checkIn, checkOut)) return { checkIn, checkOut, roomId: room.id };
+        if (room && free(room.id, checkIn, checkOut, b.id)) return { checkIn, checkOut, roomId: room.id };
       }
       return { checkIn: cur.checkIn, checkOut: cur.checkOut, roomId: cur.roomId };
+    };
+    // The others change by the same days as the dragged booking (their room stays); one that would run into another stays put.
+    const withOthers = (main) => {
+      const dIn = diffDays(b.check_in, main.checkIn);
+      const dOut = diffDays(b.check_out, main.checkOut);
+      const rest = others.map((o) => {
+        const checkIn = addDays(o.check_in, dIn);
+        let checkOut = addDays(o.check_out, dOut);
+        if (checkOut <= checkIn) checkOut = addDays(checkIn, 1);
+        if (!free(o.room_id, checkIn, checkOut, o.id)) return asItem(o);
+        return { original: o, checkIn, checkOut, roomId: o.room_id };
+      });
+      return [{ original: b, ...main }, ...rest];
     };
 
     const move = (ev) => {
@@ -93,8 +113,8 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
         engaged = true;
       }
       const pos = position(ev);
-      const next = edge === 'end' ? fitEnd(days[pos.day]) : edge === 'start' ? fitStart(days[pos.day]) : fitMove(pos);
-      cur = { ...cur, ...next, x: ev.clientX, y: ev.clientY };
+      const main = edge === 'end' ? fitEnd(days[pos.day]) : edge === 'start' ? fitStart(days[pos.day]) : fitMove(pos);
+      cur = { ...cur, ...main, items: withOthers(main), x: ev.clientX, y: ev.clientY };
       setDrag(cur);
     };
     const end = () => {
@@ -106,14 +126,13 @@ export function useBarResize({ enabled, rows, days, rooms, gridRef, zoom, isBusy
         // the click that ends a drag must not also open the booking
         window.addEventListener('click', (ev) => ev.stopPropagation(), { capture: true, once: true });
       }
-      if (cur.checkIn !== b.check_in || cur.checkOut !== b.check_out || cur.roomId !== b.room_id) {
-        onResize(b, cur.checkIn, cur.checkOut, cur.roomId, { x: cur.x, y: cur.y });
-      }
+      const changed = cur.items.filter((i) => i.checkIn !== i.original.check_in || i.checkOut !== i.original.check_out || i.roomId !== i.original.room_id);
+      if (changed.length) onResize(changed, { x: cur.x, y: cur.y });
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
   };
 
-  return { drag, startResize, nightsOf: (d) => diffDays(d.checkIn, d.checkOut) };
+  return { drag, startResize };
 }

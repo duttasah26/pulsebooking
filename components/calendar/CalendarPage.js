@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Eye, Trash, X } from '@phosphor-icons/react';
+import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
 import RoomGrid, { MAX_WIDTH_SCALE, MIN_WIDTH_SCALE } from './RoomGrid';
@@ -9,6 +10,7 @@ import CalendarToolbar from './CalendarToolbar';
 import ZoomBar, { clampZoom } from './ZoomBar';
 import BookingPanel from './BookingPanel';
 import ToolRail from './ToolRail';
+import HelpGuide from './HelpGuide';
 
 // Wide screens: the slim tool pane on the left, then the calendar, then the booking dock (written out in full so Tailwind can see them).
 const WITH_TOOLS = { open: 'lg:grid-cols-[4rem_minmax(0,1fr)_23rem]', folded: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]' };
@@ -42,8 +44,11 @@ export default function CalendarPage() {
   const [quickHold, setQuickHold] = useStoredState('pulse.quickHold', false, { parse: (raw) => raw === '1', serialize: (v) => (v ? '1' : '0') }); // off: dragging selects
   const [colScale, setColScale] = useStoredState('pulse.dayWidth', 1, { parse: (raw) => { const v = Number(raw); return v >= MIN_WIDTH_SCALE && v <= MAX_WIDTH_SCALE ? v : undefined; } }); // timeline day width
   const [preview, setPreview] = useState(null); // ghost of the booking being filled in, drawn on the grid
-  const [selectMode, setSelectMode] = useState(false); // drag a box to tick bookings, then delete them together
   const [picked, setPicked] = useState(() => new Set());
+  const [helpOpen, setHelpOpen] = useState(false); // the "How to use" guide (desktop)
+  const [newOpen, setNewOpen] = useState(false); // phones: the New Booking sheet
+  const [pending, setPending] = useState(null); // dates changed by dragging, waiting for Save in the details: { items }
+  const [editSelection, setEditSelection] = useState(false); // the selected bookings' names as editable cells
   const [viewPicked, setViewPicked] = useState(false); // show the details of everything picked, side by side
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
@@ -93,13 +98,12 @@ export default function CalendarPage() {
   const showGroup = () => setPanel((p) => (p ? { ...p, grouped: true } : p));
 
   const history = useHistory({ onError: (err) => toast({ message: err.message }) });
-  const { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, resizeBooking } = useHoldActions({
+  const { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, putOnHold, resizeBookings, renameBookings } = useHoldActions({
     data, panelState: { panel, setPanel, panelBooking, group: fullGroup, wide }, rooms: roomList, toast, history,
   });
 
   const closePanel = () => setPanel(null);
   const stopSelecting = () => {
-    setSelectMode(false);
     setPicked(new Set());
     setViewPicked(false);
   };
@@ -111,6 +115,27 @@ export default function CalendarPage() {
     if (only) setPanel({ booking: only, editing: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [picked, wide]);
+
+  // An unsaved dragged change: Escape cancels it, so does switching tool or opening some other booking.
+  useEffect(() => {
+    if (!pending) return;
+    const onKey = (e) => e.key === 'Escape' && setPending(null);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [pending]);
+  useEffect(() => {
+    if (pending && !quickHold) setPending(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickHold]);
+  useEffect(() => {
+    if (!pending || !panel) return;
+    if (picked.size > 1) return; // the selection panel is showing it
+    if (!pending.items.some((i) => i.original.id === panel.booking.id)) setPending(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panel?.booking.id]);
+  useEffect(() => {
+    if (picked.size < 2) setEditSelection(false);
+  }, [picked.size]);
 
   // Ctrl+Z undoes, Ctrl+Shift+Z (or Ctrl+Y) redoes, unless you are typing in a field.
   useEffect(() => {
@@ -126,25 +151,42 @@ export default function CalendarPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [history.undo, history.redo]);
 
-  // Escape leaves select mode and clears what is picked.
+  // Escape unpicks everything.
   useEffect(() => {
-    if (!selectMode && picked.size === 0) return;
+    if (picked.size === 0) return;
     const onKey = (e) => e.key === 'Escape' && stopSelecting();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectMode, picked.size]);
-  // The pencil and Select tools (in the pane on the right, or the toolbar on narrow screens).
+  }, [picked.size]);
+  // The Mouse and Pencil tools (in the pane on the left, or the toolbar on narrow screens).
   const toggleMouseTool = () => {
     stopSelecting();
     setQuickHold(false);
   };
-  const toggleHoldTool = () => {
-    if (selectMode) {
-      stopSelecting();
-      setQuickHold(true);
-    } else setQuickHold(!quickHold);
+  const toggleHoldTool = () => setQuickHold(!quickHold);
+  // Pencil drags end here: the change is shown on the grid and waits for Save in the details (or in the selection).
+  const holdPending = (items) => {
+    setPending({ items });
+    if (picked.size < 2) {
+      setPanel({ booking: items[0].original, editing: false });
+      setFormOpen(true);
+    }
   };
-  const toggleSelectTool = () => (selectMode ? stopSelecting() : setSelectMode(true));
+  const savePending = () => {
+    const items = pending.items;
+    setPending(null);
+    resizeBookings(items);
+  };
+  // What moves together with a booking that is dragged: everything selected with it, or the open group.
+  const linkedFor = (b) => {
+    if (picked.size > 1 && picked.has(b.id)) return bookingList.filter((x) => picked.has(x.id));
+    if (panel?.grouped && group?.some((g) => g.id === b.id)) return group;
+    return [b];
+  };
+  const saveNames = async (changes) => {
+    setEditSelection(false);
+    await renameBookings(changes);
+  };
   const openGroup = (booking) => {
     setPanel({ booking, editing: false, grouped: true });
     setFormOpen(true);
@@ -153,12 +195,13 @@ export default function CalendarPage() {
     setPanel({ booking, editing: false });
     setFormOpen(true);
   };
-  const reload = (message) => {
+  const reload = (message, entry) => {
     bookings.reload();
+    if (entry) history.push(entry); // a save from the form is undoable too
     if (message) toast({ message, duration: 3000 });
   };
 
-  if (!mounted || !router.isReady) return <Skeleton />;
+  if (!mounted || !router.isReady) return <PageSkeleton />;
 
   const { floorKeys, shownFloors, visibleRooms } = deriveFloors(roomList, floors);
   const visibleIds = new Set(visibleRooms.map((r) => r.id));
@@ -172,8 +215,8 @@ export default function CalendarPage() {
 
   const failed = rooms.error || bookings.error;
   const showGrid = view === 'timeline' || view === 'month';
-  // The strip with View and Delete shows while anything is picked (a drag always picks), or in tap-to-select mode.
-  const selecting = showGrid && (selectMode || picked.size > 0);
+  // The strip with View, Delete and Unselect shows while anything is picked.
+  const selecting = showGrid && picked.size > 0;
   const pickedBookings = bookingList.filter((b) => picked.has(b.id) && visibleIds.has(b.room_id)); // never delete what a floor filter hides
   const deletePicked = () => {
     removeMany(pickedBookings);
@@ -204,7 +247,7 @@ export default function CalendarPage() {
   const selectionStrip = selecting ? (
     <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft px-2 py-1 text-sm">
       <span className="min-w-0 flex-1 px-1 font-medium">
-        {pickedBookings.length === 0 ? 'Tap bookings to pick them, or drag a box over several' : `${pickedBookings.length} selected`}
+        {pickedBookings.length} selected
       </span>
       {!wide && pickedBookings.length > 0 && (
         <button type="button" className="btn min-h-8 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
@@ -220,8 +263,8 @@ export default function CalendarPage() {
           <Trash size={16} /> Delete{pickedBookings.length > 0 ? ` ${pickedBookings.length}` : ''}
         </button>
       )}
-      <button type="button" className="btn min-h-8 lg:min-h-8" onClick={stopSelecting}>
-        <X size={16} /> Done
+      <button type="button" className="btn min-h-8 lg:min-h-8" onClick={stopSelecting} title="Let go of everything picked (or press Esc)">
+        <X size={16} /> Unselect All
       </button>
     </div>
   ) : null;
@@ -251,11 +294,14 @@ export default function CalendarPage() {
           quickHold={quickHold}
           onToggleMouse={toggleMouseTool}
           onToggleHold={toggleHoldTool}
-          selectMode={selectMode && showGrid}
-          onToggleSelect={toggleSelectTool}
           history={history}
+          onNew={!wide && blank ? () => setNewOpen(true) : undefined}
         />
       </div>
+
+      {!wide && newOpen && blank && (
+        <BookingSheet {...blank} rooms={roomList} isBusy={isBusy} onSaved={reload} onClose={() => { setNewOpen(false); setPreview(null); }} />
+      )}
 
       {failed && (
         <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
@@ -269,17 +315,15 @@ export default function CalendarPage() {
           <ToolRail
             canTool={showGrid}
             quickHold={quickHold}
-            selectMode={selectMode && showGrid}
             history={history}
             onToggleMouse={toggleMouseTool}
             onToggleHold={toggleHoldTool}
-            onToggleSelect={toggleSelectTool}
           />
         )}
 
         <div className="@container min-w-0 space-y-2">
-          {rooms.loading && !rooms.data ? (
-            <Skeleton />
+          {rooms.loading || !rooms.data ? (
+            <GridSkeleton />
           ) : roomList.length === 0 ? (
             <p className="rounded-lg border border-line bg-surface p-6 text-center text-muted">No rooms yet. Add rooms in the database to start booking.</p>
           ) : (
@@ -306,8 +350,9 @@ export default function CalendarPage() {
                 homeKey={homeKey}
                 onWidthScale={setColScale}
                   isBusy={isBusy}
-                  onResize={resizeBooking}
-                  selectMode={selectMode && showGrid}
+                  pending={pending}
+                  onPending={holdPending}
+                  linkedFor={linkedFor}
                   picked={picked}
                   onPick={setPicked}
                   onView={openEdit}
@@ -324,7 +369,7 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} quickHold={quickHold && !selectMode} strip={selectionStrip} onChange={(z) => setZoom(clampZoom(z))} />}
+          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} tool={quickHold ? 'pencil' : 'mouse'} strip={selectionStrip} onHelp={wide ? () => setHelpOpen(true) : undefined} onChange={(z) => setZoom(clampZoom(z))} />}
         </div>
 
         <BookingPanel
@@ -343,23 +388,61 @@ export default function CalendarPage() {
           onSaved={reload}
           onRemove={removeMany}
           onConfirm={(b) => confirmHold(b, { grouped: Boolean(group) })}
+          onPutOnHold={(b) => putOnHold(b, { grouped: Boolean(group) })}
           closePanel={closePanel}
           selection={selection}
           onOpenFromSelection={(b) => { setViewPicked(false); openEdit(b); }}
           onConfirmAll={confirmPicked}
           onDeleteAll={deletePicked}
           onCloseSelection={() => setViewPicked(false)}
+          pending={pending}
+          onSavePending={savePending}
+          onCancelPending={() => setPending(null)}
+          editSelection={editSelection}
+          onEditSelection={setEditSelection}
+          onUnpick={(b) => setPicked((p) => { const next = new Set(p); next.delete(b.id); return next; })}
+          onSaveNames={saveNames}
         />
+      </div>
+      {helpOpen && <HelpGuide onClose={() => setHelpOpen(false)} />}
+    </div>
+  );
+}
+
+// Loading looks like the calendar it will become, so nothing jumps when the data arrives.
+function GridSkeleton() {
+  return (
+    <div className="rounded-lg border border-line bg-surface p-2" aria-busy="true" aria-label="Loading calendar…">
+      <div className="mb-2 flex gap-1.5 pl-16">
+        {Array.from({ length: 10 }, (_, i) => <div key={i} className="h-8 flex-1 rounded-md bg-surface-2 motion-safe:animate-pulse" />)}
+      </div>
+      <div className="space-y-1.5">
+        {Array.from({ length: 14 }, (_, i) => (
+          <div key={i} className="flex gap-1.5">
+            <div className="h-5 w-14 shrink-0 rounded-md bg-surface-2 motion-safe:animate-pulse" />
+            <div className="h-5 flex-1 rounded-md bg-surface-2/60 motion-safe:animate-pulse" />
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function Skeleton() {
+// The whole page before it is ready: the toolbar, the tool pane, the calendar and the booking panel as grey blocks.
+function PageSkeleton() {
   return (
     <div className="space-y-3" aria-busy="true" aria-label="Loading calendar…">
-      <div className="h-11 w-full rounded-lg bg-surface-2 motion-safe:animate-pulse sm:w-2/3" />
-      <div className="h-80 rounded-lg border border-line bg-surface motion-safe:animate-pulse" />
+      <div className="flex flex-wrap items-center gap-2">
+        {[10, 14, 20, 28].map((w) => <div key={w} className="h-9 rounded-lg bg-surface-2 motion-safe:animate-pulse" style={{ width: `${w * 4}px` }} />)}
+        <div className="h-7 w-56 rounded-lg bg-surface-2 motion-safe:animate-pulse" />
+      </div>
+      <div className="flex gap-4">
+        <div className="hidden h-60 w-16 rounded-lg bg-surface-2 motion-safe:animate-pulse lg:block" />
+        <div className="min-w-0 flex-1">
+          <GridSkeleton />
+        </div>
+        <div className="hidden h-72 w-[23rem] rounded-lg bg-surface-2 motion-safe:animate-pulse lg:block" />
+      </div>
     </div>
   );
 }

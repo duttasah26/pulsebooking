@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 
 // Column templates for a page that has a dock on the right (use as the page's grid classes, from lg up).
@@ -16,11 +17,35 @@ export const DOCK_GRID = {
     tab:     what the folded tab says (vertical), and tabMark: a small dot on it when something is open
 */
 export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, children }) {
+  // The panel is as tall as the room left below where it starts (the toolbar sits above it), so its own scrolling reaches
+  // everything, including the buttons at the bottom of a long form.
+  const box = useRef(null);
+  const [maxH, setMaxH] = useState(null);
+  useEffect(() => {
+    const measure = () => {
+      const el = box.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - window.scrollY; // where it is now on screen
+      setMaxH(Math.max(240, Math.floor(window.innerHeight - Math.max(top, 72) - 24))); // 24: a margin
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(document.body);
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, { passive: true });
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure);
+    };
+  }, [open]);
   return (
     <>
       <aside
+        ref={box}
         aria-label={label}
-        className={`no-scrollbar sticky top-[4.5rem] max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${open ? '' : 'hidden'}`}
+        style={maxH ? { maxHeight: maxH } : undefined}
+        className={`sticky top-[4.5rem] overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? '' : 'hidden'}`}
       >
         <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-1.5">
           <h2 className="min-w-0 truncate text-base font-semibold">{title}</h2>
