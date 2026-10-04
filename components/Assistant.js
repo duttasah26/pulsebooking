@@ -95,14 +95,14 @@ export default function Assistant() {
         <ChatCircleDots size={20} weight="fill" aria-hidden="true" className="shrink-0 text-accent-text" />
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold leading-tight">Assistant</h2>
-          <p className="truncate text-xs text-muted">Read-only answers from your bookings</p>
+          <p className="truncate text-sm text-muted lg:text-xs">Read-only answers from your bookings</p>
         </div>
         {messages.length > 0 && (
-          <button type="button" className="btn btn-icon min-h-8 min-w-8 border-transparent lg:min-h-8 lg:min-w-8" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">
+          <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:min-h-8 lg:min-w-8" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">
             <ArrowCounterClockwise size={16} aria-hidden="true" />
           </button>
         )}
-        <button type="button" className="btn btn-icon min-h-8 min-w-8 border-transparent lg:min-h-8 lg:min-w-8" onClick={() => setOpen(false)} aria-label="Close the assistant">
+        <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:min-h-8 lg:min-w-8" onClick={() => setOpen(false)} aria-label="Close the assistant">
           <X size={16} aria-hidden="true" />
         </button>
       </header>
@@ -113,7 +113,7 @@ export default function Assistant() {
             <p className="text-sm text-muted">Ask a question, or tap one:</p>
             <div className="flex flex-wrap gap-1.5">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" className="btn min-h-8 whitespace-normal px-2.5 py-1 text-left text-xs lg:min-h-8" onClick={() => send(s)}>
+                <button key={s} type="button" className="btn min-h-11 whitespace-normal px-3 py-1 text-left text-sm lg:min-h-8 lg:px-2.5 lg:text-xs" onClick={() => send(s)}>
                   {s}
                 </button>
               ))}

@@ -45,6 +45,7 @@ export default function CalendarPage() {
   const [colScale, setColScale] = useStoredState('pulse.dayWidth', 1, { parse: (raw) => { const v = Number(raw); return v >= MIN_WIDTH_SCALE && v <= MAX_WIDTH_SCALE ? v : undefined; } }); // timeline day width
   const [preview, setPreview] = useState(null); // ghost of the booking being filled in, drawn on the grid
   const [picked, setPicked] = useState(() => new Set());
+  const [touchSelect, setTouchSelect] = useState(false); // phones: the Select tool, where a tap picks a booking instead of opening it
   const [helpOpen, setHelpOpen] = useState(false); // the "How to use" guide (desktop)
   const [newOpen, setNewOpen] = useState(false); // phones: the New Booking sheet
   const [pending, setPending] = useState(null); // dates changed by dragging, waiting for Save in the details: { items }
@@ -158,13 +159,21 @@ export default function CalendarPage() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [picked.size]);
-  // The Mouse and Pencil tools (in the pane on the left, or the toolbar on narrow screens).
+  // The Select and Hold tools (in the pane on the left, or the toolbar on narrow screens, which also has Open and Select).
   const toggleMouseTool = () => {
     stopSelecting();
+    setTouchSelect(false);
     setQuickHold(false);
   };
-  const toggleHoldTool = () => setQuickHold(!quickHold);
-  // Pencil drags end here: the change is shown on the grid and waits for Save in the details (or in the selection).
+  const toggleSelectTool = () => {
+    setQuickHold(false);
+    setTouchSelect(true);
+  };
+  const toggleHoldTool = () => {
+    setTouchSelect(false);
+    setQuickHold(!quickHold);
+  };
+  // Hold drags end here: the change is shown on the grid and waits for Save in the details (or in the selection).
   const holdPending = (items) => {
     setPending({ items });
     if (picked.size < 2) {
@@ -216,7 +225,7 @@ export default function CalendarPage() {
   const failed = rooms.error || bookings.error;
   const showGrid = view === 'timeline' || view === 'month';
   // The strip with View, Delete and Unselect shows while anything is picked.
-  const selecting = showGrid && picked.size > 0;
+  const selecting = showGrid && (picked.size > 0 || touchSelect);
   const pickedBookings = bookingList.filter((b) => picked.has(b.id) && visibleIds.has(b.room_id)); // never delete what a floor filter hides
   const deletePicked = () => {
     removeMany(pickedBookings);
@@ -247,24 +256,29 @@ export default function CalendarPage() {
   const selectionStrip = selecting ? (
     <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft px-2 py-1 text-sm">
       <span className="min-w-0 flex-1 px-1 font-medium">
-        {pickedBookings.length} selected
+        {pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>
       {!wide && pickedBookings.length > 0 && (
-        <button type="button" className="btn min-h-8 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
+        <button type="button" className="btn min-h-11 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
           <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? ` ${pickedBookings.length}` : ''}
         </button>
       )}
       {pickedHasBookings ? (
-        <HoldButton className="btn btn-danger min-h-8 lg:min-h-8" onConfirm={deletePicked}>
+        <HoldButton className="btn btn-danger min-h-11 lg:min-h-8" onConfirm={deletePicked}>
           <Trash size={16} /> Hold to Delete {pickedBookings.length}
         </HoldButton>
       ) : (
-        <button type="button" className="btn btn-danger min-h-8 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
+        <button type="button" className="btn btn-danger min-h-11 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
           <Trash size={16} /> Delete{pickedBookings.length > 0 ? ` ${pickedBookings.length}` : ''}
         </button>
       )}
-      <button type="button" className="btn min-h-8 lg:min-h-8" onClick={stopSelecting} title="Let go of everything picked (or press Esc)">
-        <X size={16} /> Unselect All
+      <button
+        type="button"
+        className="btn min-h-11 lg:min-h-8"
+        onClick={() => (pickedBookings.length === 0 ? toggleMouseTool() : stopSelecting())}
+        title={pickedBookings.length === 0 ? 'Leave Select' : 'Let go of everything picked (or press Esc)'}
+      >
+        <X size={16} /> {pickedBookings.length === 0 ? 'Done' : 'Unselect All'}
       </button>
     </div>
   ) : null;
@@ -292,7 +306,9 @@ export default function CalendarPage() {
           wide={wide}
           canTool={showGrid}
           quickHold={quickHold}
+          touchSelect={touchSelect}
           onToggleMouse={toggleMouseTool}
+          onToggleSelect={toggleSelectTool}
           onToggleHold={toggleHoldTool}
           history={history}
           onNew={!wide && blank ? () => setNewOpen(true) : undefined}
@@ -355,6 +371,9 @@ export default function CalendarPage() {
                   linkedFor={linkedFor}
                   picked={picked}
                   onPick={setPicked}
+                  tapToPick={touchSelect}
+                  touchUi={!wide}
+                  onZoom={(z) => setZoom(clampZoom(z))}
                   onView={openEdit}
                   preview={preview}
                   activeIds={panelBooking ? new Set((group ?? [panelBooking]).map((b) => b.id)) : undefined}
@@ -369,7 +388,7 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} tool={quickHold ? 'pencil' : 'mouse'} strip={selectionStrip} onHelp={wide ? () => setHelpOpen(true) : undefined} onChange={(z) => setZoom(clampZoom(z))} />}
+          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} tool={quickHold ? 'pencil' : touchSelect ? 'select' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={wide ? () => setHelpOpen(true) : undefined} onChange={(z) => setZoom(clampZoom(z))} />}
         </div>
 
         <BookingPanel

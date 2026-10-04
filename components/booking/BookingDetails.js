@@ -18,13 +18,13 @@ function Moment({ icon: Icon, label, date, time, fallback }) {
   const shown = time || fallback;
   return (
     <div className="bg-surface p-3">
-      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
+      <p className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-muted lg:text-xs">
         <Icon size={14} aria-hidden="true" /> {label}
       </p>
       <p className="mt-1 text-lg font-semibold leading-tight">{fmtShort(date)}</p>
       <p className="font-mono text-base">
         {shown ? formatTime(shown) : 'No time set'}
-        {!time && shown && <span className="ml-1.5 font-sans text-xs text-muted">default</span>}
+        {!time && shown && <span className="ml-1.5 font-sans text-sm text-muted lg:text-xs">default</span>}
       </p>
     </div>
   );
@@ -85,7 +85,7 @@ export default function BookingDetails({
           <Moment icon={SignIn} label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
           <Moment icon={SignOut} label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
         </div>
-        <p className="mt-1 text-center text-xs text-muted">{nightsLabel(b.nights)}</p>
+        <p className="mt-1 text-center text-sm text-muted lg:text-xs">{nightsLabel(b.nights)}</p>
       </div>
 
       {/* The room, or every room of the group after a double-click on its bar, as coloured chips in large type. */}
@@ -93,7 +93,7 @@ export default function BookingDetails({
         numbers={targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number]}
         note={
           groupCount > 1 && onShowGroup ? (
-            <button type="button" className="btn mt-2 min-h-8 px-2.5 text-xs" onClick={onShowGroup}>
+            <button type="button" className="btn mt-2 min-h-11 px-3 text-sm lg:min-h-8 lg:px-2.5 lg:text-xs" onClick={onShowGroup}>
               Booked with {groupCount - 1} other room{groupCount === 2 ? '' : 's'}: show all
             </button>
           ) : null

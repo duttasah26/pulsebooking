@@ -20,6 +20,9 @@
   --danger: #b42318;
 }
 
+/* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
+@custom-variant short (@media (orientation: landscape) and (max-height: 500px));
+
 @theme inline {
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
@@ -59,6 +62,7 @@ body {
 
 body {
   margin: 0;
+  overflow-x: clip; /* nothing may push the page sideways; clip (not hidden) keeps sticky headers working */
   min-height: 100dvh;
 }
 
@@ -89,7 +93,7 @@ body {
     @apply min-h-11 min-w-11 px-0 lg:min-h-8 lg:min-w-8;
   }
   .badge {
-    @apply inline-flex items-center rounded-lg border border-line px-2 py-0.5 text-xs font-medium text-muted;
+    @apply inline-flex items-center rounded-lg border border-line px-2 py-0.5 text-sm font-medium text-muted lg:text-xs;
   }
 }
 

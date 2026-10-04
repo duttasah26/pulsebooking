@@ -42,11 +42,11 @@ export default function HelpGuide({ onClose }) {
         </p>
 
         <Group title="Booking a room">
-          <Step icon={PencilSimpleLine} tone="amber" title="To book a room, choose the pencil">
+          <Step icon={PencilSimpleLine} tone="amber" title="To book a room, choose Hold">
             Press the <PencilPill /> on the left. Then press on an empty day and drag across the days the guest will stay. A yellow bar appears. This is a <strong>hold</strong>: the room is kept, but it has no name yet.
           </Step>
           <Step icon={Check} tone="green" title="Turn the hold into a real booking">
-            Choose the <MousePill />, click the yellow bar, and press <ConfirmPill /> on the right.
+            Choose <MousePill />, click the yellow bar, and press <ConfirmPill /> on the right.
           </Step>
           <Step icon={X} tone="red" title="Cancel a hold">
             Press the small <XPill /> on the yellow bar. If it was a mistake, press <UndoPill />.
@@ -58,7 +58,7 @@ export default function HelpGuide({ onClose }) {
 
         <Group title="Looking">
           <Step icon={Cursor} title="See a booking">
-            Choose the <MousePill />. Click a coloured bar. Its details open on the right.
+            Choose <MousePill />. Click a coloured bar. Its details open on the right.
           </Step>
           <Step icon={Cursor} title="Pick several bookings">
             With the <MousePill />, press on an empty spot and drag a box over the bars. Everything the box touches is picked. You can also hold the <strong>Ctrl</strong> key and click each booking. On a phone, press and hold a booking for a moment.

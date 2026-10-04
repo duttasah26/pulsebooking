@@ -24,7 +24,7 @@ export default function StatusPicker({ value, onChange, hideLabel = false }) {
               type="button"
               aria-pressed={on}
               onClick={() => onChange(key)}
-              className={`btn min-h-9 justify-start gap-2 border-2 px-2.5 lg:min-h-8 ${key === 'on_hold' ? 'border-dashed' : ''} ${on ? 'font-semibold' : ''}`}
+              className={`btn min-h-11 justify-start gap-2 border-2 px-2.5 lg:min-h-8 ${key === 'on_hold' ? 'border-dashed' : ''} ${on ? 'font-semibold' : ''}`}
               style={{ backgroundColor: c.bg, borderColor: on ? 'var(--ink)' : c.border }}
             >
               <Icon size={15} weight="bold" aria-hidden="true" className="shrink-0" />

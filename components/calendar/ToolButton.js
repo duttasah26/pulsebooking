@@ -1,5 +1,5 @@
 // One tool button. `tone` is the colour of its icon (and of its fill while it is on). `vertical` stacks the label under
-// the icon, for the tool pane on the right edge; otherwise the label sits beside it and shows only on wide screens.
+// the icon, for the tool pane on the right edge; otherwise the label sits beside it (iconOnly hides it, for Undo and Redo).
 const TONES = {
   amber: { icon: 'text-amber-600', on: 'border-amber-400 bg-amber-100' },
   sky: { icon: 'text-sky-600', on: 'border-sky-400 bg-sky-100' },
@@ -8,7 +8,7 @@ const TONES = {
   ink: { icon: 'text-ink', on: 'border-ink bg-surface-2' },
 };
 
-export default function ToolButton({ icon: Icon, label, title, on, onClick, disabled, tone = 'plain', vertical = false }) {
+export default function ToolButton({ icon: Icon, label, title, on, onClick, disabled, tone = 'plain', vertical = false, iconOnly = false }) {
   const t = TONES[tone];
   return (
     <button
@@ -19,11 +19,11 @@ export default function ToolButton({ icon: Icon, label, title, on, onClick, disa
       disabled={disabled}
       onClick={onClick}
       className={`btn ${
-        vertical ? 'h-auto min-h-12 w-full flex-col gap-0.5 px-1 py-1.5 lg:min-h-12' : 'min-h-8 gap-1.5 px-2.5 lg:min-h-7'
+        vertical ? 'h-auto min-h-12 w-full flex-col gap-0.5 px-1 py-1.5 lg:min-h-12' : 'min-h-11 gap-1.5 px-3 text-sm lg:min-h-7 lg:px-2.5'
       } ${on ? t.on : 'border-transparent'}`}
     >
-      <Icon size={vertical ? 20 : 17} weight={on ? 'fill' : 'regular'} className={`shrink-0 ${t.icon}`} />
-      <span className={vertical ? 'text-[10px] font-medium leading-none' : 'sr-only @[60rem]:not-sr-only'}>{label}</span>
+      <Icon size={vertical ? 20 : 18} weight={on ? 'fill' : 'regular'} className={`shrink-0 ${t.icon}`} />
+      <span className={vertical ? 'text-xs font-medium leading-none' : iconOnly ? 'sr-only' : ''}>{label}</span>
     </button>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, Cursor, PencilSimpleLine, Plus } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, PencilSimpleLine, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
@@ -41,10 +41,12 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
 }
 
 // Top row: step buttons, Today, Go to, and the heading in large type. Second row: the view tabs, floors and range. On
-// narrow screens the tools (pencil, select) and undo / redo sit here too; on wide screens they live in the pane on the right.
+// narrow screens the New booking button, the tools (Open, Select, Hold) and undo / redo sit here too; on wide screens they
+// live in the pane on the left. A phone held sideways has no height to spare, so both rows become one: the second row
+// scrolls sideways beside the first.
 export default function CalendarToolbar({
   view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor,
-  monthAligned, onHome, onResetView, wide, canTool, quickHold, onToggleMouse, onToggleHold, history, onNew,
+  monthAligned, onHome, onResetView, wide, canTool, quickHold, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, history, onNew,
 }) {
   const [rangeOpen, setRangeOpen] = useState(false);
   const show = ({ date: d, span: n }) => {
@@ -53,8 +55,8 @@ export default function CalendarToolbar({
     set(n === 1 ? { date: d } : { date: d, span: n, view: 'timeline' }); // one day just jumps; more opens the timeline for those days
   };
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-1.5">
+    <div className="space-y-2 short:flex short:items-center short:gap-1.5 short:space-y-0">
+      <div className="flex flex-wrap items-center gap-1.5 short:shrink-0 short:flex-nowrap">
         <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(-1)} aria-label="Previous">
           <CaretLeft size={18} />
         </button>
@@ -76,18 +78,18 @@ export default function CalendarToolbar({
           </button>
           {rangeOpen && <RangePopover date={date} span={span} onShow={show} onClose={() => setRangeOpen(false)} />}
         </div>
-        <div className="mx-2 flex min-w-0 flex-1 basis-48 items-center gap-2">
-          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl">{title}</h1>
-          {/* Phones only: a compact button (the desktop has the booking panel on the right). */}
-          {onNew && (
-            <button type="button" className="btn btn-primary min-h-10 shrink-0 gap-1 px-3 text-sm lg:min-h-10" onClick={onNew}>
-              <Plus size={16} weight="bold" aria-hidden="true" /> New Booking
-            </button>
-          )}
+        <div className="mx-2 flex min-w-0 flex-1 basis-48 items-center gap-2 short:flex-none short:basis-auto">
+          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl short:max-w-36 short:truncate short:text-base">{title}</h1>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
+        {/* Phones only (the desktop has the booking panel on the right): the one filled button, first in this row. */}
+        {onNew && (
+          <button type="button" className="btn btn-primary shrink-0 gap-1.5 px-3" onClick={onNew}>
+            <Plus size={18} weight="bold" aria-hidden="true" /> New Booking
+          </button>
+        )}
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
@@ -97,16 +99,24 @@ export default function CalendarToolbar({
             <ToolButton
               icon={Cursor}
               tone="ink"
-              label="Mouse"
-              title="Mouse: click a booking to open it, drag a box to select several"
-              on={!quickHold}
+              label="Open"
+              title="Open: tap a booking to see it"
+              on={!quickHold && !touchSelect}
               onClick={onToggleMouse}
+            />
+            <ToolButton
+              icon={CheckSquare}
+              tone="green"
+              label="Select"
+              title="Select: tap bookings to pick several, then delete them together"
+              on={touchSelect}
+              onClick={onToggleSelect}
             />
             <ToolButton
               icon={PencilSimpleLine}
               tone="amber"
-              label="Quick Hold"
-              title="Quick hold: drag across free nights to place a hold"
+              label="Hold"
+              title="Hold: tap the first and last free night to place a hold, or drag a booking to move it"
               on={quickHold}
               onClick={onToggleHold}
             />
@@ -115,8 +125,8 @@ export default function CalendarToolbar({
 
         {!wide && (
         <Strip label="History">
-          <ToolButton icon={ArrowUUpLeft} label="Undo" title={history.canUndo ? `Undo: ${history.undoLabel} (Ctrl+Z)` : 'Nothing to undo'} disabled={!history.canUndo} onClick={history.undo} />
-          <ToolButton icon={ArrowUUpRight} label="Redo" title={history.canRedo ? `Redo: ${history.redoLabel} (Ctrl+Shift+Z)` : 'Nothing to redo'} disabled={!history.canRedo} onClick={history.redo} />
+          <ToolButton iconOnly icon={ArrowUUpLeft} label="Undo" title={history.canUndo ? `Undo: ${history.undoLabel} (Ctrl+Z)` : 'Nothing to undo'} disabled={!history.canUndo} onClick={history.undo} />
+          <ToolButton iconOnly icon={ArrowUUpRight} label="Redo" title={history.canRedo ? `Redo: ${history.redoLabel} (Ctrl+Shift+Z)` : 'Nothing to redo'} disabled={!history.canRedo} onClick={history.redo} />
         </Strip>
         )}
       </div>

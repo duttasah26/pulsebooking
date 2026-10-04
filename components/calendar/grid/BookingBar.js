@@ -13,7 +13,8 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const { settings } = useSettings();
   const c = colorFor(b, settings);
   const hold = b.status === 'on_hold';
-  // A finger has no Ctrl key: pressing and holding a booking for half a second picks it (then taps pick or unpick).
+  // A finger has no Ctrl key: on phones the Select tool makes a tap pick a booking; pressing and holding one for half a
+  // second also picks it (then taps pick or unpick). With the Hold tool a finger drags the bar (touch-none stops the page scrolling instead).
   const press = useRef({ timer: null, fired: false });
   const pressStart = (e) => {
     if (e.pointerType !== 'touch') return;
@@ -90,7 +91,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         title={label}
         aria-label={`${label}, ${b.status.replace('_', ' ')}`}
         {...pressProps}
-        className={`${shape} px-1.5 transition-transform @min-[70px]:px-2 ${movable ? 'cursor-grab active:cursor-grabbing' : 'active:scale-[0.98]'}`}
+        className={`${shape} px-1.5 transition-transform @min-[70px]:px-2 ${movable ? 'cursor-grab touch-none active:cursor-grabbing' : 'active:scale-[0.98]'}`}
         style={style}
       >
         {content}
@@ -106,7 +107,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         onDoubleClick={() => onOpenGroup?.(b)}
         {...pressProps}
         title={label}
-        className={`flex min-w-0 flex-1 items-center gap-1 self-stretch text-left ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        className={`flex min-w-0 flex-1 items-center gap-1 self-stretch text-left ${movable ? 'cursor-grab touch-none active:cursor-grabbing' : ''}`}
       >
         {content}
       </button>

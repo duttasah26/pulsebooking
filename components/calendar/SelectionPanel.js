@@ -41,11 +41,11 @@ export default function SelectionPanel({
       {pending && <PendingBanner items={pending.items} rooms={rooms} onSave={onSavePending} onCancel={onCancelPending} />}
 
       {/* Every room that was picked, at once, as coloured chips in large type. */}
-      <RoomChips numbers={numbers} note={<p className="mt-2 text-xs text-muted">{bookings.length} bookings selected</p>} />
+      <RoomChips numbers={numbers} note={<p className="mt-2 text-sm text-muted lg:text-xs">{bookings.length} bookings selected</p>} />
 
       {/* Everyone in the selection: rooms booked together count once. */}
       <div className="rounded-lg border border-line bg-surface p-3">
-        <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
+        <p className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-muted lg:text-xs">
           <Users size={14} aria-hidden="true" /> Total guests
         </p>
         <p className="mt-1 text-lg font-semibold leading-tight">{partyText(party)}</p>

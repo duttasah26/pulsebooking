@@ -51,7 +51,7 @@ function StepList({ step, done, onGo }) {
               type="button"
               onClick={() => onGo(i)}
               aria-current={current ? 'step' : undefined}
-              className={`btn w-full min-h-10 gap-1.5 px-2 text-sm lg:min-h-10 ${
+              className={`btn w-full min-h-11 gap-1.5 px-2 text-sm lg:min-h-10 ${
                 current ? 'border-accent bg-accent-soft text-accent-text' : done[i] ? 'bg-surface-2' : 'text-muted'
               }`}
             >

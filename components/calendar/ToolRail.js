@@ -2,8 +2,8 @@ import { ArrowUUpLeft, ArrowUUpRight, ChatCircleDots, Cursor, PencilSimpleLine }
 import { OPEN_ASSISTANT } from '../Assistant';
 import ToolButton from './ToolButton';
 
-// The tools in a slim vertical pane on the left edge of the page (wide screens). Mouse (the default): click opens a
-// booking, drag draws a box to pick several. Pencil places holds by dragging over free nights and stretches a booking
+// The tools in a slim vertical pane on the left edge of the page (wide screens). Select (the default): click opens a
+// booking, drag draws a box to pick several. Hold places holds by dragging over free nights and stretches a booking
 // when you drag its end. Undo and Redo.
 export default function ToolRail({ canTool, quickHold, onToggleMouse, onToggleHold, history }) {
   return (
@@ -14,8 +14,8 @@ export default function ToolRail({ canTool, quickHold, onToggleMouse, onToggleHo
             vertical
             icon={Cursor}
             tone="ink"
-            label="Mouse"
-            title="Mouse: click a booking to open it, drag a box to pick several. Once something is picked, click a booking to pick or unpick it. Double-click to see its whole group"
+            label="Select"
+            title="Select: click a booking to open it, drag a box to pick several. Once something is picked, click a booking to pick or unpick it. Double-click to see its whole group"
             on={!quickHold}
             onClick={onToggleMouse}
           />
@@ -23,8 +23,8 @@ export default function ToolRail({ canTool, quickHold, onToggleMouse, onToggleHo
             vertical
             icon={PencilSimpleLine}
             tone="amber"
-            label="Pencil"
-            title="Pencil: drag across free nights to place a hold, or drag the end of a booking to change its dates"
+            label="Hold"
+            title="Hold: drag across free nights to place a hold, or drag the end of a booking to change its dates"
             on={quickHold}
             onClick={onToggleHold}
           />

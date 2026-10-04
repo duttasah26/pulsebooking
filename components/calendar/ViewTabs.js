@@ -12,7 +12,7 @@ export default function ViewTabs({ view, onChange }) {
           title={v.label}
           aria-selected={view === v.key}
           onClick={() => onChange(v.key)}
-          className={`btn min-h-8 shrink-0 gap-1.5 border-transparent px-2.5 lg:min-h-7 ${view === v.key ? 'bg-accent text-accent-ink hover:bg-accent' : ''}`}
+          className={`btn min-h-11 shrink-0 gap-1.5 border-transparent px-3 lg:min-h-7 lg:px-2.5 ${view === v.key ? 'bg-accent text-accent-ink hover:bg-accent' : ''}`}
         >
           <v.Icon size={16} aria-hidden="true" className="shrink-0" />
           <span className="sr-only @[52rem]:not-sr-only">{v.label}</span>

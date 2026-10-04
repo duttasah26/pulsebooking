@@ -23,7 +23,7 @@ export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
     <div className="space-y-2" role="group" aria-label="Rooms">
       {byFloor(rooms).map(([floor, list]) => (
         <div key={floor}>
-          <p className="mb-0.5 text-xs font-medium text-muted">{FLOOR_NAME[floor] ?? `Floor ${floor}`}</p>
+          <p className="mb-0.5 text-sm font-medium text-muted lg:text-xs">{FLOOR_NAME[floor] ?? `Floor ${floor}`}</p>
           <div className="grid grid-cols-6 gap-1">
             {list.map((r) => {
               const on = roomIds.includes(r.id);

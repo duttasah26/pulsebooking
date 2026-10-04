@@ -23,7 +23,7 @@ export default function ColorPicker({
           type="button"
           aria-pressed={color === null}
           onClick={() => onChange(null)}
-          className={`btn min-h-9 px-3 lg:min-h-8 ${color === null ? 'border-ink bg-surface-2' : ''}`}
+          className={`btn min-h-11 px-3 lg:min-h-8 ${color === null ? 'border-ink bg-surface-2' : ''}`}
         >
           {autoLabel}
         </button>
@@ -35,7 +35,7 @@ export default function ColorPicker({
             title={c.name}
             aria-pressed={color === c.key}
             onClick={() => onChange(c.key)}
-            className={`cell grid size-9 place-items-center rounded-lg border-2 transition-transform active:scale-95 lg:size-8 ${color === c.key ? 'border-ink' : ''}`}
+            className={`cell grid size-11 place-items-center rounded-lg border-2 transition-transform active:scale-95 lg:size-8 ${color === c.key ? 'border-ink' : ''}`}
             style={{ backgroundColor: c.bg, borderColor: color === c.key ? undefined : c.border }}
           >
             {color === c.key && <Check size={16} weight="bold" />}
@@ -44,7 +44,7 @@ export default function ColorPicker({
         {/* Any colour: the native colour picker sits invisibly over this swatch. */}
         <label
           title="Pick any colour"
-          className={`cell relative flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border-2 px-2.5 text-sm font-medium transition-transform active:scale-95 focus-within:outline-2 focus-within:outline-accent lg:h-8 ${custom ? 'border-ink' : 'border-line bg-surface'}`}
+          className={`cell relative flex h-11 cursor-pointer items-center gap-1.5 rounded-lg border-2 px-2.5 text-sm font-medium transition-transform active:scale-95 focus-within:outline-2 focus-within:outline-accent lg:h-8 ${custom ? 'border-ink' : 'border-line bg-surface'}`}
           style={custom ? { backgroundColor: `color-mix(in srgb, ${color} 28%, white)` } : undefined}
         >
           {custom ? <Check size={16} weight="bold" /> : <Eyedropper size={16} />}

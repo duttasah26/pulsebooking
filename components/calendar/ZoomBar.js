@@ -3,7 +3,7 @@ import { MousePill, PencilPill, SavePill } from './InlineIcons';
 
 const MIN = 0.6;
 const MAX = 1.6;
-export const clampZoom = (z) => Math.min(MAX, Math.max(MIN, Math.round(z * 10) / 10));
+export const clampZoom = (z) => Math.min(MAX, Math.max(MIN, Math.round(z * 20) / 20)); // 5% steps, so pinching feels smooth
 
 // The line under the grid: what to do with the tool you have picked, in large plain words with the tool's own icon, a
 // "How to use" button for the full guide, and the zoom slider on the right. Smaller shows more at once; larger makes the
@@ -23,7 +23,14 @@ function ToolHint({ tool }) {
   );
 }
 
-export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp }) {
+// What a finger does with each tool (phones and tablets; the zoom buttons float over the grid there).
+const TOUCH_HINT = {
+  mouse: 'Tap a booking to open it. Pinch the calendar to zoom.',
+  select: 'Tap each booking to pick it. Then delete them together.',
+  pencil: 'Tap the first night, then the last night, to hold a room. To move a booking, drag it, then press Save.',
+};
+
+export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp, touch = false }) {
   return (
     <div className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1">
       {strip ? (
@@ -33,13 +40,14 @@ export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp 
           <ToolHint tool={tool} />
         </div>
       ) : (
-        <div className="flex-1" /> // phones: the controls differ, so no desktop instructions here
+        <p className="min-w-0 flex-1 text-sm leading-snug text-ink/80">{TOUCH_HINT[tool]}</p>
       )}
       {onHelp && (
         <button type="button" className="btn min-h-9 shrink-0 gap-1.5 px-3 font-semibold lg:min-h-9" onClick={onHelp}>
           <Question size={18} weight="bold" aria-hidden="true" /> How to use
         </button>
       )}
+      {!touch && (
       <div className="flex shrink-0 items-center gap-1.5 text-muted">
         <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out" onClick={() => onChange(clampZoom(zoom - 0.1))}>
           <MagnifyingGlassMinus size={18} aria-hidden="true" />
@@ -62,6 +70,7 @@ export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp 
           {Math.round(zoom * 100)}%
         </button>
       </div>
+      )}
     </div>
   );
 }

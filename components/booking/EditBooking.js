@@ -35,7 +35,7 @@ function RoomChoice({ rooms, roomId, taken, onPick }) {
                 disabled={busy}
                 title={busy ? `Room ${r.number} is booked on these dates` : `Room ${r.number}`}
                 onClick={() => onPick(r.id)}
-                className={`inline-flex min-h-9 min-w-14 items-center justify-center gap-1 rounded-md border px-2 font-mono text-sm font-semibold transition-transform active:scale-95 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-1' : ''}`}
+                className={`inline-flex min-h-11 min-w-14 items-center justify-center gap-1 rounded-md border px-2 font-mono text-sm font-semibold transition-transform active:scale-95 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-1' : ''}`}
                 style={busy ? undefined : { backgroundColor: shade.fill, borderColor: shade.edge }}
               >
                 {on && <Check size={14} weight="bold" aria-hidden="true" />}
@@ -108,11 +108,11 @@ export default function EditBooking({ rooms, onCancel, ...rest }) {
             onTime={f.setCheckOutTime}
           />
         </MomentPair>
-        <p className="mt-1 text-center text-xs text-muted">{f.nights >= 1 ? nightsLabel(f.nights) : 'Check-out must be after check-in'}</p>
+        <p className="mt-1 text-center text-sm text-muted lg:text-xs">{f.nights >= 1 ? nightsLabel(f.nights) : 'Check-out must be after check-in'}</p>
       </div>
 
       {several ? (
-        <RoomChips numbers={f.targets.map((t) => t.room_number)} note={<p className="mt-2 text-xs text-muted">Changes here apply to all of these rooms.</p>} />
+        <RoomChips numbers={f.targets.map((t) => t.room_number)} note={<p className="mt-2 text-sm text-muted lg:text-xs">Changes here apply to all of these rooms.</p>} />
       ) : (
         <Card icon={Bed} title="Room">
           <RoomChoice rooms={rooms} roomId={f.roomIds[0]} taken={f.roomTaken} onPick={(id) => f.setRoomIds([id])} />

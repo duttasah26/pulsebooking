@@ -37,14 +37,14 @@ export default function Layout({ title, wide = false, children }) {
       </a>
 
       <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className={`relative mx-auto flex h-12 ${max} items-center justify-between px-4`}>
+        <div className={`relative mx-auto flex h-12 short:h-11 ${max} items-center justify-between px-4`}>
           <Link href="/" className="flex shrink-0 items-center gap-2 rounded-lg" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-8 w-auto" />
             <span className="hidden text-sm font-semibold text-muted sm:inline">Rooms</span>
           </Link>
           <IndiaClock />
           <div className="flex items-center gap-2">
-          <nav className="hidden gap-1 md:flex" aria-label="Main">
+          <nav className="hidden gap-1 md:flex short:flex" aria-label="Main">
             {TABS.map(({ href, label, Icon }) => {
               const active = pathname === href;
               return (
@@ -69,11 +69,11 @@ export default function Layout({ title, wide = false, children }) {
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-24 pt-3 outline-none md:pb-6`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-24 pt-3 outline-none md:pb-6 short:pb-3 short:pt-2`}>{children}</main>
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
           const active = pathname === href;

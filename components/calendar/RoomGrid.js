@@ -7,7 +7,7 @@ import { useGridSelection } from './grid/useGridSelection';
 import { useMarquee } from './grid/useMarquee';
 import { useBarResize } from './grid/useBarResize';
 import TimelineNavigator from './grid/TimelineNavigator';
-import { ArrowCounterClockwise } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, MagnifyingGlassMinus, MagnifyingGlassPlus } from '@phosphor-icons/react';
 import { DayHeader, DayLabel, GridCorner, RoomHead } from './grid/GridHeaders';
 import GridCell from './grid/GridCell';
 import BookingBar from './grid/BookingBar';
@@ -28,7 +28,7 @@ export const MAX_WIDTH_SCALE = 3;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
-  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup,
+  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom,
 }) {
   const rows = orientation === 'rows';
   const n = days.length;
@@ -37,20 +37,24 @@ export default function RoomGrid({
   const scrollRef = useRef(null);
   const gridRef = useRef(null);
   const placing = holdEnabled; // pencil on: drag free nights to hold, drag a booking's end to stretch it
-  const selecting = !placing && Boolean(picked?.size); // something is picked: a click now picks or unpicks a booking
+  const selecting = !placing && (Boolean(picked?.size) || tapToPick); // something is picked (or phones chose Select): a tap now picks or unpicks a booking
 
   // The grid is sized to the window so the page itself never needs to scroll: `avail` is the height from the top of the
-  // grid down to the bottom of the screen (less room for the zoom bar). In the timeline the rows then share that height
-  // (24 to 56px each), so every room of the chosen floors is in view; if even 24px rows do not fit, the grid scrolls inside.
+  // grid down to the bottom of the screen (less room for the line under it). In the timeline the rows then share that
+  // height (24 to 56px each), so every room of the chosen floors is in view; if even 24px rows do not fit, the grid
+  // scrolls inside. A phone held sideways (the `short` variant in globals.css) has no bottom nav and a one-row toolbar,
+  // so it keeps less in reserve and may go lower than the usual 240px minimum.
   const [avail, setAvail] = useState(null);
   const [boxW, setBoxW] = useState(0); // width of the scrolling box, so `visibleDays` days fill it exactly
   useEffect(() => {
     const measure = () => {
       const el = scrollRef.current;
       if (!el) return;
-      const reserve = (window.innerWidth < 768 ? 170 : 126) + (rows ? 22 : 0); // zoom bar, page padding, the status bar (phones: and the bottom nav) and the navigator bar
+      const short = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+      const navigator = rows && !touchUi ? 22 : 0; // the day width bar under the grid (not shown on touch screens)
+      const reserve = short ? 76 : (window.innerWidth < 768 ? 170 : 126) + navigator; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
-      setAvail(Math.max(240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
+      setAvail(Math.max(short ? 130 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -60,13 +64,14 @@ export default function RoomGrid({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [rows, rooms.length]);
+  }, [rows, rooms.length, touchUi]);
 
   const base = cellSize(rows);
   const baseH = base.cellH;
   // Timeline: `visibleDays` days share the box width (24px at the least); the days after them are reached by scrolling.
   // The day width slider under the grid scales that fit: 1 shows exactly `visibleDays`, more makes the days wider (fewer in view).
-  const fitW = rows && visibleDays && boxW ? (boxW / zoom - LABEL) / visibleDays : 0;
+  // The fit is worked out at 100% zoom: zooming in then makes every cell bigger and fewer days fit, zooming out the reverse.
+  const fitW = rows && visibleDays && boxW ? (boxW - LABEL) / visibleDays : 0;
   const cellW = fitW ? Math.max(24, fitW * widthScale) : base.cellW; // not rounded, so 30 days is exactly 30
   const inViewF = fitW ? (boxW / zoom - LABEL) / cellW : visibleDays; // days in view, exactly (the navigator bar needs the fraction)
   const inView = Math.max(1, Math.round(inViewF));
@@ -112,7 +117,7 @@ export default function RoomGrid({
     firstRef.current += added;
     scrollRef.current.scrollLeft = firstRef.current * dayPx;
   }, [lead]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cellH = rows && avail ? Math.min(56, Math.max(24, Math.floor((avail / zoom - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(56, Math.max(24, Math.floor((avail - HEAD) / rooms.length))) : baseH;
   const place = (r, i, len) => placeAt(rows, r, i, len);
 
   const { settings } = useSettings();
@@ -182,6 +187,35 @@ export default function RoomGrid({
   const follow = (from, to) => () => {
     if (to.current && to.current.scrollLeft !== from.current.scrollLeft) to.current.scrollLeft = from.current.scrollLeft;
   };
+  // Two fingers on the grid zoom it (the browser's own page zoom is switched off there, see touch-action below).
+  const pinch = useRef({ d0: 0, z0: 1 });
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !onZoom) return;
+    const gap = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const start = (e) => {
+      if (e.touches.length === 2) pinch.current = { d0: gap(e.touches), z0: zoom };
+    };
+    const move = (e) => {
+      if (e.touches.length !== 2 || !pinch.current.d0) return;
+      if (e.cancelable) e.preventDefault();
+      onZoom(pinch.current.z0 * (gap(e.touches) / pinch.current.d0));
+    };
+    const end = (e) => {
+      if (e.touches.length < 2) pinch.current.d0 = 0;
+    };
+    el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchmove', move, { passive: false });
+    el.addEventListener('touchend', end, { passive: true });
+    el.addEventListener('touchcancel', end, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', start);
+      el.removeEventListener('touchmove', move);
+      el.removeEventListener('touchend', end);
+      el.removeEventListener('touchcancel', end);
+    };
+  }, [zoom, onZoom]);
+
   // When quick hold is off (the default) a drag anywhere draws a selection box instead.
   const marquee = useMarquee({ enabled: !placing, containerRef: scrollRef, picked, onPick });
   const toggleBar = (b) =>
@@ -251,7 +285,7 @@ export default function RoomGrid({
         onScroll={rows ? onTimelineScroll : undefined}
         className={`scroll-area rounded-lg border border-line bg-surface ${
           rows ? 'no-scrollbar overflow-x-auto overscroll-x-contain' : 'min-h-64 overflow-auto overscroll-contain'
-        } ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
+        } [touch-action:pan-x_pan-y] ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
         style={avail ? { maxHeight: avail } : undefined}
         onPointerMove={placing ? selection.onPointerMove : undefined}
         onPointerDown={marquee.onPointerDown}
@@ -334,7 +368,7 @@ export default function RoomGrid({
           style={marquee.box}
         />
       )}
-      {rows && fitW > 0 && (
+      {rows && fitW > 0 && !touchUi && (
         <div className="mt-1.5 flex items-center gap-2 text-xs text-muted">
           <div className="min-w-0 flex-1">
             <TimelineNavigator
@@ -350,8 +384,21 @@ export default function RoomGrid({
             />
           </div>
           <span className="w-16 shrink-0 text-right font-mono">{inView} days</span>
-          <button type="button" className="btn btn-icon min-h-7 min-w-7 shrink-0 lg:min-h-7" title={`Default view: ${visibleDays} days fill the screen, from the first day`} aria-label="Reset to the default view" onClick={resetNav}>
+          <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 lg:min-h-7 lg:min-w-7" title={`Default view: ${visibleDays} days fill the screen, from the first day`} aria-label="Reset to the default view" onClick={resetNav}>
             <ArrowCounterClockwise size={15} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+      {touchUi && onZoom && (
+        <div role="group" aria-label="Zoom" className="absolute bottom-2 left-2 z-[5] flex items-center rounded-lg border border-line bg-surface/95 shadow-lg">
+          <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out" onClick={() => onZoom(zoom - 0.1)}>
+            <MagnifyingGlassMinus size={20} aria-hidden="true" />
+          </button>
+          <button type="button" className="btn min-w-14 border-transparent px-1 font-mono text-sm" onClick={() => onZoom(1)} title="Back to 100%">
+            {Math.round(zoom * 100)}%
+          </button>
+          <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom in" onClick={() => onZoom(zoom + 0.1)}>
+            <MagnifyingGlassPlus size={20} aria-hidden="true" />
           </button>
         </div>
       )}

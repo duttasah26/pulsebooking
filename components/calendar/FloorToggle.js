@@ -22,7 +22,7 @@ export default function FloorToggle({ floorKeys, shownFloors, onToggle }) {
             aria-label={floorLabel(f)}
             aria-pressed={on}
             onClick={() => onToggle(f)}
-            className={`btn min-h-8 shrink-0 gap-1.5 px-2.5 lg:min-h-7 ${on ? 'font-semibold' : 'border-transparent text-muted'}`}
+            className={`btn min-h-11 shrink-0 gap-1.5 px-3 lg:min-h-7 lg:px-2.5 ${on ? 'font-semibold' : 'border-transparent text-muted'}`}
             style={on ? { backgroundColor: shade.fill, borderColor: shade.edge } : undefined}
           >
             <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: shade.edge }} />

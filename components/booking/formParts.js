@@ -3,7 +3,7 @@ import TimeSelect from '../TimeSelect';
 
 // The look shared by the new-booking form, the edit form and the booking details: bordered cards, each with a small
 // uppercase title and an icon, and big controls that are easy to read and hit.
-export const TITLE = 'flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted';
+export const TITLE = 'flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-muted lg:text-xs';
 
 export function Card({ icon: Icon, title, children }) {
   return (

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { X } from '@phosphor-icons/react';
 
-// Bottom sheet on phones, right-hand panel on desktop.
+// Bottom sheet on phones (also a phone held sideways, which is wide but short), right-hand panel on tablets and desktop.
 export default function Sheet({ title, onClose, children, footer, actions }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -15,9 +15,9 @@ export default function Sheet({ title, onClose, children, footer, actions }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end md:justify-end" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-40 flex items-end md:justify-end short:justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <button type="button" aria-label="Close" tabIndex={-1} className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative flex max-h-[92dvh] w-full flex-col rounded-t-lg border border-line bg-surface md:h-full md:max-h-none md:max-w-md md:rounded-none md:border-y-0 md:border-r-0">
+      <div className="relative flex max-h-[92dvh] w-full flex-col rounded-t-lg border border-line bg-surface md:h-full md:max-h-none md:max-w-md md:rounded-none md:border-y-0 md:border-r-0 short:h-auto short:max-h-[96dvh] short:max-w-3xl short:rounded-t-lg short:border-y short:border-r">
         <div className="flex items-center justify-between border-b border-line px-4 py-2">
           <h2 className="min-w-0 truncate text-base font-semibold">{title}</h2>
           <div className="flex shrink-0 items-center gap-1">
