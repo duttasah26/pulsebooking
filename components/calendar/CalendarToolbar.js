@@ -83,54 +83,36 @@ export default function CalendarToolbar({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
-        {/* Phones and tablets (the desktop has the tool column): New Booking is a tool like the others, first in the row. */}
-        {onNew && (
-          <Strip label="New">
-            <ToolButton icon={Plus} tone="green" label="New Booking" title="New Booking: draw the stay on the calendar, or type the dates" on={drawing} onClick={onNew} />
-          </Strip>
-        )}
+      {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
+      <div className="no-scrollbar flex flex-wrap items-center gap-1.5 max-md:flex-nowrap max-md:overflow-x-auto short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
-
-        {!wide && canTool && (
-          <Strip label="Tools">
-            <ToolButton
-              icon={Cursor}
-              tone="ink"
-              label="Open"
-              title="Open: tap a booking to see it"
-              on={!quickHold && !touchSelect && !hand && !drawing}
-              onClick={onToggleMouse}
-            />
-            <ToolButton
-              icon={CheckSquare}
-              tone="violet"
-              label="Select"
-              title="Select: tap bookings to pick several, then delete them together"
-              on={touchSelect}
-              onClick={onToggleSelect}
-            />
-            <ToolButton
-              icon={PencilSimpleLine}
-              tone="amber"
-              label="On Hold"
-              title="On Hold: tap the first and last free night to put a room on hold, or drag a booking to move it"
-              on={quickHold}
-              onClick={onToggleHold}
-            />
-            <ToolButton icon={Hand} tone="sky" label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
-          </Strip>
-        )}
-
-        {!wide && (
-        <Strip label="History">
-          <ToolButton iconOnly icon={ArrowUUpLeft} label="Undo" title={history.canUndo ? `Undo: ${history.undoLabel} (Ctrl+Z)` : 'Nothing to undo'} disabled={!history.canUndo} onClick={history.undo} />
-          <ToolButton iconOnly icon={ArrowUUpRight} label="Redo" title={history.canRedo ? `Redo: ${history.redoLabel} (Ctrl+Shift+Z)` : 'Nothing to redo'} disabled={!history.canRedo} onClick={history.redo} />
-        </Strip>
-        )}
       </div>
+
+      {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that
+          scrolls sideways when it is wider than the screen. */}
+      {!wide && (
+        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto">
+          {onNew && (
+            <Strip label="New">
+              <ToolButton icon={Plus} tone="green" label="New Booking" title="New Booking: draw the stay on the calendar, or type the dates" on={drawing} onClick={onNew} />
+            </Strip>
+          )}
+          {canTool && (
+            <Strip label="Tools">
+              <ToolButton icon={Cursor} tone="ink" label="Open" title="Open: tap a booking to see it" on={!quickHold && !touchSelect && !hand && !drawing} onClick={onToggleMouse} />
+              <ToolButton icon={CheckSquare} tone="violet" label="Select" title="Select: tap bookings to pick several, then delete them together" on={touchSelect} onClick={onToggleSelect} />
+              <ToolButton icon={PencilSimpleLine} tone="amber" label="On Hold" title="On Hold: tap the first and last free night to put a room on hold, or drag a booking to move it" on={quickHold} onClick={onToggleHold} />
+              <ToolButton icon={Hand} tone="sky" label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
+            </Strip>
+          )}
+          <Strip label="History">
+            <ToolButton iconOnly icon={ArrowUUpLeft} label="Undo" title={history.canUndo ? `Undo: ${history.undoLabel} (Ctrl+Z)` : 'Nothing to undo'} disabled={!history.canUndo} onClick={history.undo} />
+            <ToolButton iconOnly icon={ArrowUUpRight} label="Redo" title={history.canRedo ? `Redo: ${history.redoLabel} (Ctrl+Shift+Z)` : 'Nothing to redo'} disabled={!history.canRedo} onClick={history.redo} />
+          </Strip>
+        </div>
+      )}
     </div>
   );
 }

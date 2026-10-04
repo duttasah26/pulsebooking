@@ -189,6 +189,7 @@ export default function CalendarPage() {
   // New Booking: open the form and let the calendar fill it in. Tap or drag nights; the rooms and days go into the form and
   // nothing is held until the form is confirmed. On a phone the form is a pop-up, so it opens after the nights are drawn.
   const startNew = () => {
+    stopSelecting(); // anything still picked would keep the selection panel in front of the new form
     setTouchSelect(false);
     setHand(false);
     setQuickHold(false);
@@ -324,7 +325,7 @@ export default function CalendarPage() {
   // What is picked, with View / Delete / Done. It sits in the line under the grid (where the hint is), so it never pushes
   // the calendar down when it appears.
   const selectionStrip = selecting ? (
-    <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft px-2 py-1 text-sm">
+    <div role="status" data-below-grid className="flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft px-2 py-1 text-sm">
       <span className="min-w-0 flex-1 px-1 font-medium">
         {pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>
@@ -416,7 +417,8 @@ export default function CalendarPage() {
             onToggleHold={toggleHoldTool}
             onToggleHand={toggleHandTool}
             zoom={zoom}
-            onZoom={!wide ? (z) => setZoom(clampZoom(z)) : undefined}
+            onZoom={(z) => setZoom(clampZoom(z))}
+            onHelp={() => setHelpOpen(true)}
             onNew={blank ? () => (drawing ? stopDrawing() : startNew()) : undefined}
           />
         )}
@@ -447,6 +449,7 @@ export default function CalendarPage() {
                   zoom={zoom}
                   holdEnabled={quickHold || drawing}
                   drawing={drawing}
+                  extraReserve={(drawing || quickHold || touchSelect || hand ? 60 : 0) + (rail && !selecting ? -46 : 0)} // with the tool column the bar under the grid is gone
                   onRemoveDraft={removeGhost}
                   pan={hand}
                 widthScale={colScale}
@@ -469,9 +472,9 @@ export default function CalendarPage() {
                 />
               )}
               {view === 'calendar' && (
-                <OccupancyMonth date={date} rooms={visibleRooms} bookings={visibleBookings} onPickDay={(d) => set({ view: 'day', date: d })} />
+                <OccupancyMonth date={date} rooms={visibleRooms} bookings={visibleBookings} onPickDay={(d) => set({ view: 'day', date: d })} onDate={(d) => set({ date: d })} />
               )}
-              {view === 'day' && <DayView date={date} rooms={visibleRooms} bookings={visibleBookings} onOpen={openEdit} onCreate={placeHold} />}
+              {view === 'day' && <DayView date={date} rooms={visibleRooms} bookings={visibleBookings} onOpen={openEdit} onCreate={placeHold} onDate={(d) => set({ date: d })} />}
             </div>
           )}
 
@@ -483,7 +486,7 @@ export default function CalendarPage() {
               onSkip={drawing && !wide ? () => { setDrawing(false); setNewOpen(true); } : undefined}
             />
           )}
-          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} onChange={(z) => setZoom(clampZoom(z))} />}
+          {showGrid && roomList.length > 0 && (rail ? selectionStrip : <ZoomBar zoom={zoom} tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} onChange={(z) => setZoom(clampZoom(z))} />)}
         </div>
 
         <BookingPanel

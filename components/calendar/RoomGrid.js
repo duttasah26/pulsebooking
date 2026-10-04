@@ -28,7 +28,7 @@ export const MAX_WIDTH_SCALE = 3;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
-  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft,
+  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft, extraReserve = 0,
 }) {
   const rows = orientation === 'rows';
   const n = days.length;
@@ -54,9 +54,13 @@ export default function RoomGrid({
       if (!el) return;
       const short = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
       const navigator = rows && !touchUi ? 22 : 0; // the day width bar under the grid (not shown on touch screens)
-      const reserve = short ? 66 : (window.innerWidth < 768 ? 142 : 100) + navigator; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
+      // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
+      // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
+      const below = [...document.querySelectorAll('[data-below-grid]')].reduce((total, n) => total + n.offsetHeight + 8, 0);
+      const base = short ? 8 : window.innerWidth < 768 ? 84 : 36;
+      const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
-      setAvail(Math.max(short ? 130 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
+      setAvail(Math.max(short ? 130 : window.innerWidth < 768 ? 180 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -66,7 +70,7 @@ export default function RoomGrid({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [rows, rooms.length, touchUi]);
+  }, [rows, rooms.length, touchUi, extraReserve]);
 
   const base = cellSize(rows);
   const baseH = base.cellH;
@@ -119,7 +123,7 @@ export default function RoomGrid({
     firstRef.current += added;
     scrollRef.current.scrollLeft = firstRef.current * dayPx;
   }, [lead]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cellH = rows && avail ? Math.min(72, Math.max(24, Math.floor((avail - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(160, Math.max(24, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
   const place = (r, i, len) => placeAt(rows, r, i, len);
 
   const { settings } = useSettings();
@@ -331,7 +335,7 @@ export default function RoomGrid({
         className={`scroll-area rounded-lg border border-line bg-surface ${
           rows ? 'no-scrollbar overflow-x-auto overscroll-x-contain' : 'min-h-64 overflow-auto overscroll-contain'
         } [touch-action:pan-x_pan-y] ${pan ? (panning ? 'cursor-panning' : 'cursor-pan') : ''} ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
-        style={avail ? { maxHeight: avail } : undefined}
+        style={avail ? { height: avail } : undefined} // a fixed window: zooming changes what is inside it, never its size
         onPointerMove={placing ? selection.onPointerMove : undefined}
         onPointerDown={(e) => { panStart(e); marquee.onPointerDown(e); }}
         onClickCapture={marquee.onClickCapture}

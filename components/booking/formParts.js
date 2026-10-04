@@ -26,7 +26,7 @@ export function Moment({ icon: Icon, label, id, date, onDate, min, time, onTime 
       {date !== undefined && (
         <input id={`${id}-date`} name={`${id}-date`} type="date" className="field min-w-0 px-2 text-sm font-semibold [&::-webkit-calendar-picker-indicator]:ml-0 [&::-webkit-calendar-picker-indicator]:p-0" value={date} min={min} onChange={(e) => e.target.value && onDate(e.target.value)} />
       )}
-      <TimeSelect id={`${id}-time`} name={`${id}-time`} label="Time" value={time} onChange={onTime} />
+      <TimeSelect id={`${id}-time`} name={`${id}-time`} label="Time" value={time} onChange={onTime} hideLabel />
     </div>
   );
 }

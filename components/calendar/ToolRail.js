@@ -1,4 +1,4 @@
-import { ArrowUUpLeft, ArrowUUpRight, ChatCircleDots, CheckSquare, Cursor, Hand, MagnifyingGlassMinus, MagnifyingGlassPlus, PencilSimpleLine, Plus } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, ChatCircleDots, CheckSquare, Cursor, Hand, MagnifyingGlassMinus, MagnifyingGlassPlus, PencilSimpleLine, Plus, Question } from '@phosphor-icons/react';
 import { OPEN_ASSISTANT } from '../Assistant';
 import ToolButton from './ToolButton';
 
@@ -9,7 +9,7 @@ import ToolButton from './ToolButton';
 //   On Hold drag across free nights to place a hold, or drag the end of a booking to change its dates
 //   Hand    drag the calendar to move around it
 // then Undo and Redo, and (touch screens) Zoom out and in. The pane scrolls if the screen is too short for all of it.
-export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, zoom, onZoom }) {
+export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, zoom, onZoom, onHelp }) {
   const openOn = touch ? !quickHold && !touchSelect && !hand && !drawing : !quickHold && !hand && !drawing;
   return (
     <nav aria-label="Tools" className="no-scrollbar sticky top-[4.5rem] flex max-h-[calc(100dvh-5rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
@@ -63,18 +63,24 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
         disabled={!history.canRedo}
         onClick={history.redo}
       />
-      {!touch && (
+      {onZoom && (
         <>
           <hr className="my-0.5 border-line" />
-          <ToolButton
-            vertical
-            icon={ChatCircleDots}
-            tone="green"
-            label="Ask"
-            title="Ask the assistant about rooms, nights, guests and contacts"
-            onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))}
-          />
+          <ToolButton vertical icon={MagnifyingGlassPlus} label="Zoom in" title={`Zoom in (now ${Math.round(zoom * 100)}%)`} onClick={() => onZoom(zoom + 0.1)} />
+          <ToolButton vertical icon={MagnifyingGlassMinus} label="Zoom out" title={`Zoom out (now ${Math.round(zoom * 100)}%)`} onClick={() => onZoom(zoom - 0.1)} />
         </>
+      )}
+      <hr className="my-0.5 border-line" />
+      {onHelp && <ToolButton vertical icon={Question} tone="sky" label="Help" title="How to use the calendar" onClick={onHelp} />}
+      {!touch && (
+        <ToolButton
+          vertical
+          icon={ChatCircleDots}
+          tone="green"
+          label="Ask"
+          title="Ask the assistant about rooms, nights, guests and contacts"
+          onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))}
+        />
       )}
     </nav>
   );

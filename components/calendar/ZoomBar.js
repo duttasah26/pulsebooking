@@ -40,7 +40,7 @@ function HoldSteps() {
 
 export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp, touch = false }) {
   return (
-    <div className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+    <div data-below-grid className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1">
       {strip ? (
         <div className="min-w-0 flex-1 basis-64">{strip}</div>
       ) : touch ? (

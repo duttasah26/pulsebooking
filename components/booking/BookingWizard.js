@@ -380,7 +380,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
       {/* Step 3: the box with everything to check, then the more options. */}
       <div className={`space-y-3 ${step === 2 ? '' : 'hidden'}`}>
         <Card icon={Tag} title="Is it confirmed?">
-          <StatusPicker value={f.status} onChange={f.setStatus} hideLabel />
+          <StatusPicker value={f.status} onChange={f.setStatus} hideLabel only={['confirmed', 'on_hold']} />
           <p className="text-sm leading-snug text-ink/70">
             <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> only keeps the room.
           </p>
@@ -435,7 +435,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         <MoreOptions f={f} hideParty hideStatus />
       </div>
 
-      {hint ? <p className="flex items-center gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm" role="alert"><WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
+      {hint && (guestProblem || stayProblem || extraProblem) ? <p className="flex items-center gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm" role="alert"><WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
       {f.error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">{f.error}</p>}
 
       <div className="sticky bottom-0 -mx-4 flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-2 lg:pt-2">

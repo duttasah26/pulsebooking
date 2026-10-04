@@ -15,11 +15,11 @@ export function formatTime(value) {
   A time chosen from a list. It is a native <select>, so phones show their own scroll wheel and desktops show a
   keyboard-friendly list, with a proper label. A time that is not on the half-hour grid (set earlier) stays selectable.
 */
-export default function TimeSelect({ id, name, label, icon, value, onChange }) {
+export default function TimeSelect({ id, name, label, icon, value, onChange, hideLabel = false }) {
   const options = value && !SLOTS.includes(value) ? [value, ...SLOTS] : SLOTS;
   return (
     <div>
-      <FieldLabel icon={icon} htmlFor={id}>{label}</FieldLabel>
+      {hideLabel ? <label htmlFor={id} className="sr-only">{label}</label> : <FieldLabel icon={icon} htmlFor={id}>{label}</FieldLabel>}
       <select id={id} name={name ?? id} className="field" value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">Not set</option>
         {options.map((t) => (

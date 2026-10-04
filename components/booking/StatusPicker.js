@@ -8,13 +8,13 @@ import { STATUS_OPTIONS } from '../../lib/status';
 // The booking status as coloured buttons: each wears the colour that status has on the calendar (confirmed green,
 // on hold yellow with a dashed edge, finished or cancelled grey). The chosen one shows a tick.
 // hideLabel: the form already has a heading that says Status (it stays for screen readers).
-export default function StatusPicker({ value, onChange, hideLabel = false }) {
+export default function StatusPicker({ value, onChange, hideLabel = false, only }) {
   const { settings } = useSettings();
   return (
     <fieldset>
       {hideLabel ? <legend className="sr-only">Status</legend> : <FieldLabel as="legend" icon={Tag}>Status</FieldLabel>}
       <div className="grid grid-cols-2 gap-1.5">
-        {STATUS_OPTIONS.map(([key, label]) => {
+        {STATUS_OPTIONS.filter(([key]) => !only || only.includes(key)).map(([key, label]) => {
           const c = statusColor(key, settings);
           const on = value === key;
           const Icon = on ? Check : STATUS_ICON[key];

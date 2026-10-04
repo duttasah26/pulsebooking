@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import sql from '../../../lib/db';
 import { bookingColumns, bookingJoins } from '../../../lib/bookings';
 import { shareOut } from '../../../lib/party';
+import { autoCheckout } from '../../../lib/autoCheckout';
 import { HttpError, actor, parseColor, parseId, parseDate, parseStay, parseTime, parseUuid, route } from '../../../lib/api';
 
 const SORTS = {
@@ -22,6 +23,7 @@ const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hol
 //   year & month (1-12) still work for the current calendar.
 // deleted=only never lists on-hold bookings: removing a hold deletes it for good, so old ones are not "deleted records".
 async function list(req, res) {
+  await autoCheckout(); // anything whose leaving day and time have passed becomes Checked out
   const { when = 'all', deleted = 'hide', status, holds, room_id, guest_id, q, sort = 'check_in', dir = 'desc' } = req.query;
   let { from, to } = req.query;
 

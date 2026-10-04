@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowCounterClockwise, ChatCircleDots, PaperPlaneTilt, X } from '@phosphor-icons/react';
-import { api } from '../lib/useApi';
+import { api, useApi } from '../lib/useApi';
+import { useSettings } from './SettingsProvider';
+import { roomShade } from '../lib/colors';
 import { useMediaQuery } from '../lib/useMediaQuery';
 
 // The calendar page has its own launcher (the Ask button in the tool pane); it sends this event.
@@ -15,6 +17,25 @@ const SUGGESTIONS = [
   'Who is arriving today?',
   'Best quiet days next month?',
 ];
+
+// An answer with the room numbers drawn as chips in their floor colour (the same colours as the calendar) and **bold** kept
+// bold. Only numbers that really are rooms become chips, so "120 nights" stays plain text.
+function Answer({ text, rooms }) {
+  const { settings } = useSettings();
+  const numbers = new Set((rooms ?? []).map((r) => String(r.number)));
+  return text.split(/(\*\*[^*]+\*\*|\b\d{3}\b)/g).map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    if (/^\d{3}$/.test(part) && numbers.has(part)) {
+      const shade = roomShade({ number: part }, settings);
+      return (
+        <span key={i} className="mx-0.5 inline-block rounded-md px-1.5 py-px font-mono text-[0.95em] font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
 
 /*
   The chat assistant: a round button at the bottom right that opens a small chat panel (like the chat on a hotel website).
@@ -32,6 +53,7 @@ export default function Assistant() {
   const [busy, setBusy] = useState(false);
   const end = useRef(null);
   const input = useRef(null);
+  const rooms = useApi(open ? '/api/rooms?all=1' : null); // to know which numbers are rooms
 
   useEffect(() => {
     end.current?.scrollIntoView({ block: 'end' });
@@ -127,7 +149,7 @@ export default function Assistant() {
               m.role === 'user' ? 'ml-auto bg-accent text-accent-ink' : m.error ? 'border border-danger text-danger' : 'bg-surface-2'
             }`}
           >
-            {m.text}
+            {m.role === 'assistant' && !m.error ? <Answer text={m.text} rooms={rooms.data} /> : m.text}
           </p>
         ))}
         {busy && <p className="w-fit rounded-lg bg-surface-2 px-3 py-2 text-sm text-muted motion-safe:animate-pulse">Checking the bookings…</p>}

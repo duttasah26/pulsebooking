@@ -139,19 +139,19 @@ export default function SelectionPanel({
             })}
           </ul>
 
-          <div className="flex gap-2">
+          <div className="grid gap-2">
             {holds.length > 0 && (
-              <button type="button" className="btn btn-primary flex-1" onClick={() => onConfirmAll(holds)}>
+              <button type="button" className="btn btn-primary w-full" onClick={() => onConfirmAll(holds)}>
                 <Check size={18} aria-hidden="true" /> Confirm {holds.length === bookings.length ? 'All' : `${holds.length} Hold${holds.length === 1 ? '' : 's'}`}
               </button>
             )}
             {/* Real bookings need a hold to delete (a slip is costly); a selection of holds only deletes with a click. */}
             {bookings.some((b) => b.status !== 'on_hold') ? (
-              <HoldButton className={`btn btn-danger ${holds.length > 0 ? 'flex-1' : ''}`} onConfirm={onDeleteAll}>
+              <HoldButton className={`btn min-h-12 border-2 border-danger bg-red-50 text-base font-semibold text-danger hover:bg-red-100 w-full`} onConfirm={onDeleteAll}>
                 <Trash size={18} aria-hidden="true" /> Hold to Delete {bookings.length}
               </HoldButton>
             ) : (
-              <button type="button" className={`btn btn-danger ${holds.length > 0 ? 'flex-1' : ''}`} onClick={onDeleteAll}>
+              <button type="button" className="btn btn-danger min-h-12 w-full border-2 border-danger bg-red-50 text-base font-semibold hover:bg-red-100" onClick={onDeleteAll}>
                 <Trash size={18} aria-hidden="true" /> Delete {bookings.length}
               </button>
             )}

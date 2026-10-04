@@ -44,9 +44,9 @@ export default function ModeBanner({ mode, touch, onExit, onSkip }) {
   const m = MODES[mode];
   const Icon = m.icon;
   return (
-    <div role="status" className={`animate-fade flex min-h-12 items-center gap-3 rounded-lg border-2 px-3 py-1.5 ${m.box}`}>
+    <div role="status" data-below-grid className={`animate-fade flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border-2 px-3 py-1.5 sm:flex-nowrap ${m.box}`}>
       <Icon size={22} weight="fill" aria-hidden="true" className={`shrink-0 ${m.iconTone}`} />
-      <p className="min-w-0 flex-1 text-base leading-snug">
+      <p className="min-w-[10rem] flex-1 text-base leading-snug">
         <strong className="font-semibold">{m.name} mode.</strong> {touch ? m.touch : m.mouse}
       </p>
       {onSkip && (
