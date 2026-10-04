@@ -21,7 +21,7 @@ export function Pill({ icon: Icon, tone = 'ink', children }) {
 
 // The two tools on the left, and the buttons the instructions name.
 export const MousePill = () => <Pill icon={Cursor}>Select</Pill>;
-export const PencilPill = () => <Pill icon={PencilSimpleLine} tone="amber">Hold</Pill>;
+export const PencilPill = () => <Pill icon={PencilSimpleLine} tone="amber">On Hold</Pill>;
 export const UndoPill = () => <Pill icon={ArrowUUpLeft}>Undo</Pill>;
 export const RedoPill = () => <Pill icon={ArrowUUpRight}>Redo</Pill>;
 export const SavePill = () => <Pill icon={Check} tone="green">Save</Pill>;

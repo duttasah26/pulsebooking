@@ -49,8 +49,16 @@ html {
      calendar by a few pixels and made it look like it zoomed. */
   scrollbar-gutter: stable;
 }
-h1, h2 {
+h1, h2, h3 {
   text-wrap: balance;
+}
+p, li, dd {
+  text-wrap: pretty; /* no single word left alone on the last line */
+}
+/* Wherever the keyboard goes, a thick green ring shows it (links, buttons, fields, the summary of a folded section). */
+a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible, [role="tab"]:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 html,
@@ -62,6 +70,7 @@ body {
 
 body {
   margin: 0;
+  line-height: 1.5;
   overflow-x: clip; /* nothing may push the page sideways; clip (not hidden) keeps sticky headers working */
   min-height: 100dvh;
 }
@@ -78,13 +87,13 @@ body {
     outline-offset: 2px;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-ink lg:mb-0.5 lg:text-xs;
+    @apply mb-1.5 block text-base font-medium text-ink lg:mb-0.5 lg:text-xs;
   }
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50 lg:min-h-8;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-base font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50 lg:min-h-8 lg:text-sm;
   }
   .btn-primary {
-    @apply border-transparent bg-accent text-accent-ink hover:bg-accent hover:opacity-90;
+    @apply min-h-12 border-transparent bg-accent font-semibold text-accent-ink shadow-sm shadow-black/15 hover:bg-accent hover:opacity-90 lg:min-h-9;
   }
   .btn-danger {
     @apply text-danger;
@@ -115,6 +124,10 @@ body {
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+.cursor-pan { cursor: grab; }
+.cursor-panning { cursor: grabbing; }
+.cursor-pan button, .cursor-panning button { cursor: inherit; }
+
 /* Booked or on-hold nights: diagonal hatching. */
 .hatch {
   background-color: var(--surface-2);
@@ -134,9 +147,47 @@ body {
 .animate-pop { animation: pop 160ms cubic-bezier(0.16, 1, 0.3, 1); }
 .animate-bar-in { animation: bar-in 200ms cubic-bezier(0.16, 1, 0.3, 1); }
 
+/* The booking pop-up rises from the bottom on phones (and landscape phones) and slides in from the right on tablets and
+   desktop, so it is clear where it came from and where Close sends it back. The dim layer behind it fades in. */
+@keyframes sheet-up {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sheet-side {
+  from { opacity: 0; transform: translateX(1.5rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-sheet { animation: sheet-up 260ms cubic-bezier(0.16, 1, 0.3, 1); }
+@media (min-width: 768px) {
+  .animate-sheet { animation-name: sheet-side; }
+}
+@media (min-width: 768px) and (orientation: landscape) and (max-height: 500px) {
+  .animate-sheet { animation-name: sheet-up; } /* a phone held sideways still gets the bottom sheet */
+}
+.animate-fade { animation: fade-in 200ms ease-out; }
+/* Picked bookings: dashes that march round the bar. */
+@keyframes march {
+  to { stroke-dashoffset: -22; }
+}
+.animate-march { animation: march 2600ms linear infinite; }
+/* A soft green wash that fades away once, to say "look here": used on the instruction line when the tool changes. */
+@keyframes nudge {
+  0%, 35% { background-color: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+  100% { background-color: transparent; box-shadow: 0 0 0 3px transparent; }
+}
+.animate-nudge { animation: nudge 1800ms ease-out; }
+
+/* Reduced motion: nothing slides or scales, but fades and colour changes stay, so an opening sheet or a pressed button
+   still shows what happened. */
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
+  .animate-sheet { animation-name: fade-in; }
+  .animate-pop, .animate-bar-in { animation-duration: 120ms; }
+  .animate-march { animation: none; }
+  .animate-nudge { animation-duration: 1800ms; } /* a colour wash only, no movement, so it stays */
+  .active\:scale-95:active, .active\:scale-90:active, .active\:scale-\[0\.98\]:active, .active\:translate-y-px:active { transform: none; }
+  .motion-safe\:animate-pulse { animation: none; }
 }

@@ -18,6 +18,7 @@ export default function BookingSheet({ onClose, editing: editingProp, onEditingC
     <Sheet
       title={existing ? props.booking.name : 'New Booking'}
       onClose={onClose}
+      locked={!existing}
       actions={existing && !editing ? <EditButton onClick={() => setEditing(true)} disabled={props.booking.id < 0} /> : null}
     >
       {existing ? (

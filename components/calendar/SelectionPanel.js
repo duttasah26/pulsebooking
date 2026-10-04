@@ -10,8 +10,8 @@ import { colorFor, roomShade } from '../../lib/colors';
 import { partyOf, partyText } from '../../lib/party';
 import { fmtShort, nightsLabel } from '../../lib/dates';
 
-// The same person can be in several bookings: a guest's name is one cell, shared by all of that guest's bookings.
-const nameKey = (b) => (b.guest_id ? `g${b.guest_id}` : `b${b.id}`);
+// Every booking has its own name cell, so one room of a group can be renamed on its own.
+const nameKey = (b) => `b${b.id}`;
 
 // The details of everything picked in select mode: the rooms, the total guests, and a card for each booking (in the
 // colour of its bar). Tap a card to open that booking on its own. Edit turns the names into cells you can type in, like a
@@ -82,7 +82,7 @@ export default function SelectionPanel({
               );
             })}
           </ul>
-          <p className="text-xs text-muted">A guest's name changes in all of that guest's bookings. A hold with no guest changes its label.</p>
+          <p className="text-xs text-muted">Only the bookings you change are renamed. Give every booking of one guest the same new name to rename the guest itself.</p>
           <div className="flex gap-2">
             <button type="button" className="btn flex-1" onClick={onCancelEdit}>
               <X size={16} aria-hidden="true" /> Cancel

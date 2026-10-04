@@ -8,6 +8,7 @@ import OccupancyMonth from './OccupancyMonth';
 import DayView from './DayView';
 import CalendarToolbar from './CalendarToolbar';
 import ZoomBar, { clampZoom } from './ZoomBar';
+import ModeBanner from './ModeBanner';
 import BookingPanel from './BookingPanel';
 import ToolRail from './ToolRail';
 import HelpGuide from './HelpGuide';
@@ -39,14 +40,20 @@ export default function CalendarPage() {
   const router = useRouter();
   const toast = useToast();
   const wide = useMediaQuery('(min-width: 1024px)');
+  const short = useMediaQuery('(orientation: landscape) and (max-height: 500px)'); // a phone held sideways
+  const rail = wide || short; // the tool pane on the left (a phone held sideways has the width for it, not the height for the toolbar rows)
   const { view, date, span, floors, set } = useCalendarParams();
 
   const [quickHold, setQuickHold] = useStoredState('pulse.quickHold', false, { parse: (raw) => raw === '1', serialize: (v) => (v ? '1' : '0') }); // off: dragging selects
   const [colScale, setColScale] = useStoredState('pulse.dayWidth', 1, { parse: (raw) => { const v = Number(raw); return v >= MIN_WIDTH_SCALE && v <= MAX_WIDTH_SCALE ? v : undefined; } }); // timeline day width
   const [preview, setPreview] = useState(null); // ghost of the booking being filled in, drawn on the grid
   const [picked, setPicked] = useState(() => new Set());
+  const [drawing, setDrawing] = useState(false); // New Booking is waiting for you to draw the stay on the calendar
+  const [draftKey, setDraftKey] = useState(0); // changes to start the New Booking form over (the X on its bar)
+  const [drawn, setDrawn] = useState(null); // the nights just drawn: { roomIds, checkIn, checkOut, n }, handed to the form
+  const [hand, setHand] = useState(false); // the Hand tool: dragging moves the calendar around
   const [touchSelect, setTouchSelect] = useState(false); // phones: the Select tool, where a tap picks a booking instead of opening it
-  const [helpOpen, setHelpOpen] = useState(false); // the "How to use" guide (desktop)
+  const [helpOpen, setHelpOpen] = useState(false); // the "How to use" guide
   const [newOpen, setNewOpen] = useState(false); // phones: the New Booking sheet
   const [pending, setPending] = useState(null); // dates changed by dragging, waiting for Save in the details: { items }
   const [editSelection, setEditSelection] = useState(false); // the selected bookings' names as editable cells
@@ -161,18 +168,81 @@ export default function CalendarPage() {
   }, [picked.size]);
   // The Select and Hold tools (in the pane on the left, or the toolbar on narrow screens, which also has Open and Select).
   const toggleMouseTool = () => {
+    setDrawing(false);
     stopSelecting();
     setTouchSelect(false);
+    setHand(false);
     setQuickHold(false);
   };
   const toggleSelectTool = () => {
+    setDrawing(false);
     setQuickHold(false);
+    setHand(false);
     setTouchSelect(true);
   };
   const toggleHoldTool = () => {
+    setDrawing(false);
     setTouchSelect(false);
+    setHand(false);
     setQuickHold(!quickHold);
   };
+  // New Booking: open the form and let the calendar fill it in. Tap or drag nights; the rooms and days go into the form and
+  // nothing is held until the form is confirmed. On a phone the form is a pop-up, so it opens after the nights are drawn.
+  const startNew = () => {
+    setTouchSelect(false);
+    setHand(false);
+    setQuickHold(false);
+    setDrawn(null);
+    setDrawing(true);
+    if (wide) {
+      closePanel();
+      setFormOpen(true);
+    }
+  };
+  const stopDrawing = () => {
+    setDrawing(false);
+    setDrawn(null);
+    setPreview(null);
+  };
+  // The X on one ghost bar: nothing was saved. It takes away just that room's stay; the last one left empties the form.
+  const removeGhost = (roomId, checkIn, checkOut) => {
+    const total = (preview?.stays ?? []).reduce((sum, s) => sum + s.roomIds.length, 0);
+    if (total <= 1) return dropDraft();
+    setDrawn({ remove: { roomId, checkIn, checkOut }, n: Date.now() });
+  };
+  // Forget the whole draft and empty the form (used when its only stay is removed).
+  const dropDraft = () => {
+    stopDrawing();
+    setDraftKey((k) => k + 1);
+  };
+  // Every stay drawn (and every room number clicked) is handed to the form, which decides what it adds: rooms for the same
+  // days join the booking, other days become a further stay in it. Rooms need not sit side by side (101, 203, 303).
+  const drawStay = (range) => {
+    setDrawn({ ...range, n: Date.now() });
+    if (!wide) {
+      setDrawing(false);
+      setNewOpen(true);
+    }
+  };
+  const toggleDrawRoom = (roomId) => setDrawn({ toggle: roomId, n: Date.now() });
+  const toggleHandTool = () => {
+    setDrawing(false);
+    setTouchSelect(false);
+    setQuickHold(false);
+    setHand(true);
+  };
+  // Escape leaves On Hold, Select, Hand or New Booking and goes back to Open (not while typing in a field).
+  useEffect(() => {
+    if (!drawing && !quickHold && !touchSelect && !hand) return;
+    const onKey = (e) => {
+      if (e.key !== 'Escape' || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if (drawing) stopDrawing();
+      else toggleMouseTool();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawing, quickHold, touchSelect, hand]);
   // Hold drags end here: the change is shown on the grid and waits for Save in the details (or in the selection).
   const holdPending = (items) => {
     setPending({ items });
@@ -247,7 +317,7 @@ export default function CalendarPage() {
   // Deleting what is picked needs a hold when any of it is a real booking; holds alone delete with a click.
   const pickedHasBookings = pickedBookings.some((b) => b.status !== 'on_hold');
   const blank = roomList.length
-    ? { mode: 'create', onPreview: setPreview, defaults: { roomIds: [roomList[0].id], checkIn: today(), checkOut: addDays(today(), 1) } }
+    ? { mode: 'create', onPreview: setPreview, drawn, onDone: stopDrawing, resetKey: draftKey, defaults: { roomIds: [], checkIn: '', checkOut: '' } } // empty: nothing is chosen for you
     : null;
   const grid = wide ? (formOpen ? WITH_TOOLS.open : WITH_TOOLS.folded) : '';
 
@@ -303,20 +373,25 @@ export default function CalendarPage() {
             setColScale(1);
             setHomeKey((k) => k + 1);
           }}
-          wide={wide}
+          wide={rail}
           canTool={showGrid}
           quickHold={quickHold}
+          drawing={drawing}
           touchSelect={touchSelect}
+          hand={hand}
           onToggleMouse={toggleMouseTool}
           onToggleSelect={toggleSelectTool}
           onToggleHold={toggleHoldTool}
+          onToggleHand={toggleHandTool}
           history={history}
-          onNew={!wide && blank ? () => setNewOpen(true) : undefined}
+          zoom={zoom}
+          onZoom={(z) => setZoom(clampZoom(z))}
+          onNew={!rail && blank ? () => (drawing ? stopDrawing() : startNew()) : undefined}
         />
       </div>
 
       {!wide && newOpen && blank && (
-        <BookingSheet {...blank} rooms={roomList} isBusy={isBusy} onSaved={reload} onClose={() => { setNewOpen(false); setPreview(null); }} />
+        <BookingSheet key={`new-${draftKey}`} {...blank} rooms={roomList} isBusy={isBusy} onSaved={reload} onClose={() => { setNewOpen(false); setPreview(null); setDrawn(null); }} />
       )}
 
       {failed && (
@@ -326,14 +401,23 @@ export default function CalendarPage() {
         </p>
       )}
 
-      <div className={`lg:grid lg:items-start lg:gap-4 ${grid}`}>
-        {wide && roomList.length > 0 && (
+      <div className={`lg:grid lg:items-start lg:gap-4 short:grid short:grid-cols-[4.5rem_minmax(0,1fr)] short:items-start short:gap-2 ${grid}`}>
+        {rail && roomList.length > 0 && (
           <ToolRail
             canTool={showGrid}
             quickHold={quickHold}
+            drawing={drawing}
+            hand={hand}
+            touch={!wide}
+            touchSelect={touchSelect}
             history={history}
             onToggleMouse={toggleMouseTool}
+            onToggleSelect={toggleSelectTool}
             onToggleHold={toggleHoldTool}
+            onToggleHand={toggleHandTool}
+            zoom={zoom}
+            onZoom={!wide ? (z) => setZoom(clampZoom(z)) : undefined}
+            onNew={blank ? () => (drawing ? stopDrawing() : startNew()) : undefined}
           />
         )}
 
@@ -356,12 +440,15 @@ export default function CalendarPage() {
                   onShift={view === 'timeline' ? setShift : undefined}
                   onNeedMore={view === 'timeline' && timelineDays < 366 ? () => setWindows((w) => w + 1) : undefined}
                   bookings={bookingList}
-                  onCreate={placeHold}
+                  onCreate={(range, opts) => { if (drawing) return drawStay(range); placeHold(range, opts); if (!wide) setQuickHold(false); }} // a phone goes back to Open after each hold
                   onOpen={openEdit}
                   onDelete={removeBooking}
-                  onToggleRoom={isHoldOpen ? toggleRoom : undefined}
+                  onToggleRoom={drawing ? toggleDrawRoom : isHoldOpen ? toggleRoom : undefined}
                   zoom={zoom}
-                  holdEnabled={quickHold}
+                  holdEnabled={quickHold || drawing}
+                  drawing={drawing}
+                  onRemoveDraft={removeGhost}
+                  pan={hand}
                 widthScale={colScale}
                 homeKey={homeKey}
                 onWidthScale={setColScale}
@@ -377,7 +464,7 @@ export default function CalendarPage() {
                   onView={openEdit}
                   preview={preview}
                   activeIds={panelBooking ? new Set((group ?? [panelBooking]).map((b) => b.id)) : undefined}
-                  activeRoomIds={panelBooking ? (group ?? [panelBooking]).map((b) => b.room_id) : undefined}
+                  activeRoomIds={drawing ? (preview?.stays ?? []).flatMap((s) => s.roomIds) : panelBooking ? (group ?? [panelBooking]).map((b) => b.room_id) : undefined}
                   onOpenGroup={openGroup}
                 />
               )}
@@ -388,7 +475,15 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} tool={quickHold ? 'pencil' : touchSelect ? 'select' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={wide ? () => setHelpOpen(true) : undefined} onChange={(z) => setZoom(clampZoom(z))} />}
+          {showGrid && roomList.length > 0 && (drawing || quickHold || touchSelect || hand) && (
+            <ModeBanner
+              mode={drawing ? 'draw' : quickHold ? 'reserve' : touchSelect ? 'select' : 'hand'}
+              touch={!wide}
+              onExit={drawing ? stopDrawing : toggleMouseTool}
+              onSkip={drawing && !wide ? () => { setDrawing(false); setNewOpen(true); } : undefined}
+            />
+          )}
+          {showGrid && roomList.length > 0 && <ZoomBar zoom={zoom} tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} onChange={(z) => setZoom(clampZoom(z))} />}
         </div>
 
         <BookingPanel

@@ -66,8 +66,14 @@ export default function BookingDetails({
         <span className="flex items-center gap-2 text-base font-semibold uppercase tracking-wide">
           <StatusIcon size={18} weight="bold" aria-hidden="true" /> {STATUS_LABEL[b.status]}
         </span>
-        {b.status === 'on_hold' && <span className="text-sm">Not confirmed yet</span>}
+        {b.status === 'on_hold' && <span className="text-sm font-medium">Not confirmed yet</span>}
       </div>
+
+      {b.status === 'on_hold' && onConfirm && (
+        <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-base leading-snug">
+          Held only. Press <strong>Confirm Booking</strong> when the guest is sure.
+        </p>
+      )}
 
       <div className="rounded-lg border p-3" style={{ backgroundColor: c.bg, borderColor: c.border }}>
         <p className="min-w-0 break-words text-base font-medium">{b.name}</p>
@@ -75,7 +81,7 @@ export default function BookingDetails({
           {b.phone && <Line icon={Phone}>{b.phone}</Line>}
           {b.email && <Line icon={Envelope}>{b.email}</Line>}
           {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
-          {!b.guest_id && <li>No guest yet. Press Edit to add one.</li>}
+          {!b.guest_id && <li>No guest name yet</li>}
         </ul>
       </div>
 
@@ -110,7 +116,7 @@ export default function BookingDetails({
       <div className="flex flex-wrap gap-2">
         {b.status === 'on_hold' && onConfirm && (
           <button type="button" className="btn btn-primary flex-1" onClick={() => onConfirm(b)} disabled={b.id < 0}>
-            <Check size={18} aria-hidden="true" /> Confirm
+            <Check size={18} aria-hidden="true" /> Confirm Booking
           </button>
         )}
         {/* A confirmed booking can go back on hold (the guest stays on it): right beside Delete. */}

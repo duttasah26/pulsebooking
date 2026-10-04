@@ -1,5 +1,6 @@
 import { HttpError, route } from '../../lib/api';
 import { loginConfigured, staffAccounts, verifyPassword } from '../../lib/auth';
+import { hashFor } from '../../lib/passwords';
 import { COOKIE, SESSION_DAYS, signSession } from '../../lib/session';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,7 +19,8 @@ async function login(req, res) {
   const password = String(req.body?.password ?? '');
   const account = staffAccounts().find((a) => a.name.toLowerCase() === name.toLowerCase());
   // The same message and the same wait for a wrong name or a wrong password, so neither can be guessed apart.
-  if (!account || !password || !verifyPassword(password, account.hash)) {
+  const hash = account ? await hashFor(account.name).catch(() => account.hash) : null; // a password changed in the app wins
+  if (!account || !password || !hash || !verifyPassword(password, hash)) {
     await wait(600);
     throw new HttpError(401, 'That name and password do not match.');
   }

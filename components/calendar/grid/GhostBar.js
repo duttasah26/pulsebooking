@@ -1,9 +1,12 @@
 // A preview of a booking that is still being filled in: a see-through bar with a dashed outline in the colour it will
-// have. It never takes clicks, so the real calendar underneath keeps working.
-export default function GhostBar({ g, rows, style: placement, tone, name }) {
+// have. It never takes clicks (so the real calendar underneath keeps working), except its X, which throws the draft away:
+// the booking is not made until it is confirmed.
+import { X } from '@phosphor-icons/react';
+
+export default function GhostBar({ g, rows, style: placement, tone, name, onRemove }) {
   return (
     <div
-      aria-hidden="true"
+      aria-hidden={onRemove ? undefined : 'true'}
       className={`animate-bar-in @container pointer-events-none relative z-[1] flex min-w-0 items-center overflow-hidden rounded-lg border-2 border-dashed px-2 text-xs font-medium text-ink ${
         g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
       } ${g.cutEnd ? (rows ? 'rounded-r-none border-r-0' : 'rounded-b-none border-b-0') : ''}`}
@@ -14,7 +17,18 @@ export default function GhostBar({ g, rows, style: placement, tone, name }) {
         borderColor: tone.border,
       }}
     >
-      <span className={`truncate opacity-70 ${rows ? '' : '[writing-mode:vertical-rl] @min-[84px]:[writing-mode:horizontal-tb]'}`}>{name || 'New booking'}</span>
+      <span className={`min-w-0 truncate opacity-70 ${rows ? '' : '[writing-mode:vertical-rl] @min-[84px]:[writing-mode:horizontal-tb]'}`}>{name || 'New Booking'}</span>
+      {onRemove && (
+        <button
+          type="button"
+          aria-label="Remove this new booking (it is not saved yet)"
+          title="Remove this new booking. It is not saved yet"
+          onClick={onRemove}
+          className="pointer-events-auto ml-auto grid size-6 shrink-0 place-items-center rounded-lg bg-transparent hover:bg-black/10 active:scale-90"
+        >
+          <X size={14} weight="bold" />
+        </button>
+      )}
     </div>
   );
 }

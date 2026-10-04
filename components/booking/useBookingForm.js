@@ -52,6 +52,8 @@ export function useBookingForm({
   const [typedGuest, setTypedGuest] = useState(''); // text typed in the guest box, used as a hold label if no guest is picked
   // A break in the stay (new bookings only): the guest leaves on `from` and comes back on `to`, so it is saved as two stays.
   const [away, setAway] = useState(null);
+  // More stays saved with this one, as one group under the same guest: [{ roomIds, checkIn, checkOut }] (new bookings only).
+  const [extraStays, setExtraStays] = useState([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const orgTouched = useRef(edit);
@@ -92,8 +94,8 @@ export function useBookingForm({
 
   // A new booking starts with one adult per room (4 rooms, 4 adults) until the number is typed in by hand.
   useEffect(() => {
-    if (!adultsTouched.current) setAdults(Math.max(1, roomIds.length));
-  }, [roomIds.length]);
+    if (!adultsTouched.current) setAdults(Math.max(1, roomIds.length + extraStays.reduce((total, s) => total + s.roomIds.length, 0)));
+  }, [roomIds.length, extraStays]);
 
   const nightBusy = (date) => roomIds.some((id) => isBusy(id, date, ignoreId));
   const roomTaken = (id) => {
@@ -107,16 +109,16 @@ export function useBookingForm({
     setOrganization(value);
   };
 
-  const submit = async (asHold) => {
+  const submit = async (asHold, forceStatus) => {
     setError('');
     if (roomIds.length === 0) return setError('Choose at least one room.');
     if (nights < 1) return setError('Check-out must be after check-in.');
     if (away && !(away.from > checkIn && away.to > away.from && away.to < checkOut)) {
       return setError('The break must start after check-in and end before check-out, and the guest must be away at least one night.');
     }
-    const finalStatus = asHold ? 'on_hold' : status;
+    const finalStatus = forceStatus ?? (asHold ? 'on_hold' : status);
     if (finalStatus !== 'on_hold' && !guestChoice) {
-      return setError('Choose a guest, or add a new one (a name is enough). Use Hold to reserve without details.');
+      return setError('Please add the guest’s name first. A name is enough. To keep the room without a name, press Hold instead.');
     }
 
     setBusy(true);
@@ -159,7 +161,10 @@ export function useBookingForm({
         const guestPart = guestChoice?.guestId
           ? { guest_id: guestChoice.guestId }
           : guestChoice?.newGuest ? { guest: guestChoice.newGuest } : {};
-        const postBody = { ...common, ...guestPart, room_ids: roomIds };
+        const groupId = extraStays.length ? crypto.randomUUID() : null; // one group for every stay in this save
+        // The guests are for the whole booking; the first stay takes what the further stays (one adult per room) leave.
+        const extraRoomCount = extraStays.reduce((total, s) => total + s.roomIds.length, 0);
+        const postBody = { ...common, adults: Math.max(roomIds.length, Number(adults) - extraRoomCount), ...guestPart, room_ids: roomIds, ...(groupId ? { group_id: groupId } : {}) };
         // With a break there are two stays for the same guest and rooms: check-in to the day they leave, and the day they come back to check-out.
         const first = away ? { ...postBody, check_out: away.from } : postBody;
         let made = await api('/api/bookings', { method: 'POST', body: first });
@@ -175,6 +180,23 @@ export function useBookingForm({
             throw err;
           }
         }
+        // Other rooms and days for the same party: each is its own booking (or rooms), under the same guest and group.
+        // All or nothing: if one is refused, everything made so far is taken back.
+        const extraBodies = [];
+        if (extraStays.length) {
+          const guestId = made[0]?.guest_id;
+          const { guest: _newGuest, ...base } = postBody;
+          try {
+            for (const s of extraStays) {
+              const body = { ...base, ...(guestId ? { guest_id: guestId } : {}), room_ids: s.roomIds, check_in: s.checkIn, check_out: s.checkOut, check_in_time: (s.checkInTime ?? checkInTime) || null, check_out_time: (s.checkOutTime ?? checkOutTime) || null, adults: s.roomIds.length, children: 0 };
+              extraBodies.push(body);
+              made = [...made, ...(await api('/api/bookings', { method: 'POST', body }))];
+            }
+          } catch (err) {
+            await Promise.all(made.map((m) => api(`/api/bookings/${m.id}`, { method: 'DELETE' })));
+            throw err;
+          }
+        }
         const knownGuest = made[0]?.guest_id ?? null;
         const entry = {
           label: finalStatus === 'on_hold' ? 'Hold placed' : 'Booking created',
@@ -185,10 +207,11 @@ export function useBookingForm({
             const again = { ...firstRest, ...(knownGuest ? { guest_id: knownGuest } : { guest: first.guest }) };
             made = await api('/api/bookings', { method: 'POST', body: again });
             if (secondBody) made = [...made, ...(await api('/api/bookings', { method: 'POST', body: { ...secondBody, guest_id: made[0]?.guest_id ?? secondBody.guest_id } }))];
+            for (const body of extraBodies) made = [...made, ...(await api('/api/bookings', { method: 'POST', body: { ...body, guest_id: made[0]?.guest_id ?? body.guest_id } }))];
             onSaved();
           },
         };
-        onSaved(away ? 'Booking created in two parts' : finalStatus === 'on_hold' ? 'Hold placed' : roomIds.length > 1 ? `${roomIds.length} rooms booked` : 'Booking created', entry);
+        onSaved(away ? 'Booking created in two parts' : finalStatus === 'on_hold' ? 'Hold placed' : extraBodies.length ? `${made.length} bookings created` : roomIds.length > 1 ? `${roomIds.length} rooms booked` : 'Booking created', entry);
       }
       onDone();
     } catch (err) {
@@ -207,6 +230,6 @@ export function useBookingForm({
     setCheckOutTime: (v) => { timesTouched.current = true; setCheckOutTime(v); },
     status, setStatus, channel, setChannel, ratePlan, setRatePlan, adults, children, setChildren,
     notes, setNotes, color, setColor, organization, editOrganization, label, setLabel,
-    away, setAway, guestChoice, setGuestChoice, typedGuest, setTypedGuest, submit, remove,
+    away, setAway, extraStays, setExtraStays, guestChoice, setGuestChoice, typedGuest, setTypedGuest, submit, remove,
   };
 }

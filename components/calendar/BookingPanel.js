@@ -1,4 +1,3 @@
-import { Plus } from '@phosphor-icons/react';
 import Dock from '../Dock';
 import BookingForm from '../booking/BookingForm';
 import BookingSheet from '../booking/BookingSheet';
@@ -88,11 +87,6 @@ export default function BookingPanel({
   const actions = (
     <>
       {panel && !panel.editing && <EditButton onClick={() => setEditing(true)} disabled={panelBooking.id < 0} />}
-      {panel && (
-        <button type="button" className="btn" onClick={closePanel}>
-          <Plus size={18} aria-hidden="true" /> New
-        </button>
-      )}
     </>
   );
 
@@ -128,7 +122,7 @@ export default function BookingPanel({
           onCancelPending={onCancelPending}
         />
       ) : (
-        <BookingForm key="blank" {...blank} rooms={rooms} isBusy={isBusy} onSaved={onSaved} onDone={() => {}} />
+        <BookingForm key={`blank-${blank.resetKey ?? 0}`} {...blank} rooms={rooms} isBusy={isBusy} onSaved={onSaved} onDone={blank.onDone ?? (() => {})} />
       )}
     </Dock>
   );

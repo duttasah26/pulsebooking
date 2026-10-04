@@ -7,7 +7,7 @@ import { useGridSelection } from './grid/useGridSelection';
 import { useMarquee } from './grid/useMarquee';
 import { useBarResize } from './grid/useBarResize';
 import TimelineNavigator from './grid/TimelineNavigator';
-import { ArrowCounterClockwise, MagnifyingGlassMinus, MagnifyingGlassPlus } from '@phosphor-icons/react';
+import { ArrowCounterClockwise } from '@phosphor-icons/react';
 import { DayHeader, DayLabel, GridCorner, RoomHead } from './grid/GridHeaders';
 import GridCell from './grid/GridCell';
 import BookingBar from './grid/BookingBar';
@@ -28,7 +28,7 @@ export const MAX_WIDTH_SCALE = 3;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
-  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom,
+  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft,
 }) {
   const rows = orientation === 'rows';
   const n = days.length;
@@ -37,6 +37,8 @@ export default function RoomGrid({
   const scrollRef = useRef(null);
   const gridRef = useRef(null);
   const placing = holdEnabled; // pencil on: drag free nights to hold, drag a booking's end to stretch it
+  // Existing bookings can be moved or stretched only with the On Hold tool. New Booking only draws nights for the new booking.
+  const editBars = placing && !drawing && Boolean(onPending);
   const selecting = !placing && (Boolean(picked?.size) || tapToPick); // something is picked (or phones chose Select): a tap now picks or unpicks a booking
 
   // The grid is sized to the window so the page itself never needs to scroll: `avail` is the height from the top of the
@@ -52,7 +54,7 @@ export default function RoomGrid({
       if (!el) return;
       const short = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
       const navigator = rows && !touchUi ? 22 : 0; // the day width bar under the grid (not shown on touch screens)
-      const reserve = short ? 76 : (window.innerWidth < 768 ? 170 : 126) + navigator; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
+      const reserve = short ? 66 : (window.innerWidth < 768 ? 142 : 100) + navigator; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
       setAvail(Math.max(short ? 130 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
     };
@@ -117,7 +119,7 @@ export default function RoomGrid({
     firstRef.current += added;
     scrollRef.current.scrollLeft = firstRef.current * dayPx;
   }, [lead]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cellH = rows && avail ? Math.min(56, Math.max(24, Math.floor((avail - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(72, Math.max(24, Math.floor((avail - HEAD) / rooms.length))) : baseH;
   const place = (r, i, len) => placeAt(rows, r, i, len);
 
   const { settings } = useSettings();
@@ -126,7 +128,7 @@ export default function RoomGrid({
   const defaultOut = dayFraction(settings.checkOutTime, 0.5);
   // Changes made with the pencil show on the bars at once: the drag in progress, then `pending` (changes waiting for
   // Save, which lives in the booking details, not here). linkedFor(b) lists the bookings that move together with b.
-  const resize = useBarResize({ enabled: placing && Boolean(onPending), rows, days, rooms, gridRef, zoom, isBusy, linkedFor, onResize: onPending });
+  const resize = useBarResize({ enabled: editBars, rows, days, rooms, gridRef, zoom, isBusy, linkedFor, onResize: onPending });
   const changes = resize.drag?.items ?? pending?.items ?? null;
   const drawn = useMemo(() => {
     if (!changes) return bookings;
@@ -138,7 +140,14 @@ export default function RoomGrid({
       return { ...b, check_in: c.checkIn, check_out: c.checkOut, nights: diffDays(c.checkIn, c.checkOut), room_id: c.roomId, room_number: room?.number ?? b.room_number };
     });
   }, [bookings, rooms, changes]);
-  const { roomIndex, occupancy } = useOccupancy(rooms, drawn, days);
+  // While New Booking is on, the stays already drawn count as taken, so a second stay can never be drawn over the first.
+  const withDraft = useMemo(
+    () => (drawing && preview?.stays
+      ? [...drawn, ...preview.stays.flatMap((s) => s.roomIds.map((id) => ({ id: 0, room_id: id, check_in: s.checkIn, check_out: s.checkOut, status: 'on_hold' })))]
+      : drawn),
+    [drawn, drawing, preview],
+  );
+  const { roomIndex, occupancy } = useOccupancy(rooms, withDraft, days);
   const selection = useGridSelection({ rooms, days, occupancy, onCreate });
   const { sel, summary, isFree, selected, cornerR, cornerI, roomCount, nightCount } = selection;
   // Timeline: every room is always shown (the page scrolls down), and only the dates scroll sideways. Its scrollbar sits
@@ -188,18 +197,24 @@ export default function RoomGrid({
     if (to.current && to.current.scrollLeft !== from.current.scrollLeft) to.current.scrollLeft = from.current.scrollLeft;
   };
   // Two fingers on the grid zoom it (the browser's own page zoom is switched off there, see touch-action below).
+  // The latest zoom and handler are read through refs, so the touch listeners are attached once and not on every zoom step.
   const pinch = useRef({ d0: 0, z0: 1 });
+  const zoomRef = useRef(zoom);
+  const onZoomRef = useRef(onZoom);
+  zoomRef.current = zoom;
+  onZoomRef.current = onZoom;
+  const canPinch = Boolean(onZoom);
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || !onZoom) return;
+    if (!el || !canPinch) return;
     const gap = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     const start = (e) => {
-      if (e.touches.length === 2) pinch.current = { d0: gap(e.touches), z0: zoom };
+      if (e.touches.length === 2) pinch.current = { d0: gap(e.touches), z0: zoomRef.current };
     };
     const move = (e) => {
       if (e.touches.length !== 2 || !pinch.current.d0) return;
       if (e.cancelable) e.preventDefault();
-      onZoom(pinch.current.z0 * (gap(e.touches) / pinch.current.d0));
+      onZoomRef.current(pinch.current.z0 * (gap(e.touches) / pinch.current.d0));
     };
     const end = (e) => {
       if (e.touches.length < 2) pinch.current.d0 = 0;
@@ -214,10 +229,38 @@ export default function RoomGrid({
       el.removeEventListener('touchend', end);
       el.removeEventListener('touchcancel', end);
     };
-  }, [zoom, onZoom]);
+  }, [canPinch]);
 
   // When quick hold is off (the default) a drag anywhere draws a selection box instead.
-  const marquee = useMarquee({ enabled: !placing, containerRef: scrollRef, picked, onPick });
+  const marquee = useMarquee({ enabled: !placing && !pan, containerRef: scrollRef, picked, onPick });
+  // Hand tool: dragging with a mouse moves the calendar (a finger already does). A drag never also opens what it ends on.
+  const [panning, setPanning] = useState(false);
+  const panStart = (e) => {
+    const el = scrollRef.current;
+    if (!pan || !el || e.pointerType === 'touch' || e.button !== 0) return;
+    const x0 = e.clientX;
+    const y0 = e.clientY;
+    const left0 = el.scrollLeft;
+    const top0 = el.scrollTop;
+    let moved = false;
+    const move = (ev) => {
+      if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 4) return;
+      moved = true;
+      setPanning(true);
+      el.scrollLeft = left0 - (ev.clientX - x0);
+      el.scrollTop = top0 - (ev.clientY - y0);
+    };
+    const end = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+      setPanning(false);
+      if (moved) window.addEventListener('click', (ev) => ev.stopPropagation(), { capture: true, once: true });
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+  };
   const toggleBar = (b) =>
     onPick((prev) => {
       const next = new Set(prev);
@@ -246,13 +289,15 @@ export default function RoomGrid({
   const ghosts = useMemo(() => {
     if (!preview) return [];
     const out = [];
-    for (const id of preview.roomIds) {
-      const r = roomIndex.get(id);
-      const g = r === undefined ? null : barGeometry(
-        { rows, start, n, cellH }, preview.checkIn, preview.checkOut,
-        dayFraction(preview.checkInTime, defaultIn), dayFraction(preview.checkOutTime, defaultOut),
-      );
-      if (g) out.push({ room: id, r, g });
+    for (const stay of preview.stays ?? [preview]) {
+      for (const id of stay.roomIds) {
+        const r = roomIndex.get(id);
+        const g = r === undefined ? null : barGeometry(
+          { rows, start, n, cellH }, stay.checkIn, stay.checkOut,
+          dayFraction(stay.checkInTime ?? preview.checkInTime, defaultIn), dayFraction(stay.checkOutTime ?? preview.checkOutTime, defaultOut),
+        );
+        if (g) out.push({ room: `${id}-${stay.checkIn}-${stay.checkOut}`, roomId: id, checkIn: stay.checkIn, checkOut: stay.checkOut, r, g });
+      }
     }
     return out;
   }, [preview, roomIndex, rows, start, n, cellH, defaultIn, defaultOut]);
@@ -285,10 +330,10 @@ export default function RoomGrid({
         onScroll={rows ? onTimelineScroll : undefined}
         className={`scroll-area rounded-lg border border-line bg-surface ${
           rows ? 'no-scrollbar overflow-x-auto overscroll-x-contain' : 'min-h-64 overflow-auto overscroll-contain'
-        } [touch-action:pan-x_pan-y] ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
+        } [touch-action:pan-x_pan-y] ${pan ? (panning ? 'cursor-panning' : 'cursor-pan') : ''} ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
         style={avail ? { maxHeight: avail } : undefined}
         onPointerMove={placing ? selection.onPointerMove : undefined}
-        onPointerDown={marquee.onPointerDown}
+        onPointerDown={(e) => { panStart(e); marquee.onPointerDown(e); }}
         onClickCapture={marquee.onClickCapture}
       >
         <div
@@ -310,6 +355,7 @@ export default function RoomGrid({
                 d={d}
                 free={placing && isFree(r, i)}
                 selected={placing && selected(r, i)}
+                draw={drawing}
                 chip={sel && r === cornerR && i === cornerI ? `${roomCount > 1 ? `${roomCount}x` : ''}${nightCount}n` : null}
                 r={r}
                 i={i}
@@ -334,19 +380,19 @@ export default function RoomGrid({
               onPick={toggleBar}
               onView={onView}
               onOpenGroup={onOpenGroup}
-              movable={placing && Boolean(onPending) && b.id > 0}
+              movable={editBars && b.id > 0}
               onMoveStart={resize.startResize}
               resizing={Boolean(changes?.some((c) => c.original.id === b.id))}
               onDelete={onDelete}
             />
           ))}
 
-          {placing && onPending && bars.map(({ b, r, g }) =>
+          {editBars && bars.map(({ b, r, g }) =>
             b.id > 0 ? <BarHandles key={`h-${b.clientKey ?? b.id}`} b={b} g={g} rows={rows} style={place(r, g.a, g.len)} onStart={resize.startResize} /> : null,
           )}
 
-          {ghosts.map(({ room, r, g }) => (
-            <GhostBar key={room} g={g} rows={rows} style={place(r, g.a, g.len)} tone={preview.tone} name={preview.name} />
+          {ghosts.map(({ room, roomId, checkIn, checkOut, r, g }) => (
+            <GhostBar key={room} g={g} rows={rows} style={place(r, g.a, g.len)} tone={preview.tone} name={preview.name} onRemove={onRemoveDraft ? () => onRemoveDraft(roomId, checkIn, checkOut) : undefined} />
           ))}
         </div>
       </div>
@@ -386,19 +432,6 @@ export default function RoomGrid({
           <span className="w-16 shrink-0 text-right font-mono">{inView} days</span>
           <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 lg:min-h-7 lg:min-w-7" title={`Default view: ${visibleDays} days fill the screen, from the first day`} aria-label="Reset to the default view" onClick={resetNav}>
             <ArrowCounterClockwise size={15} aria-hidden="true" />
-          </button>
-        </div>
-      )}
-      {touchUi && onZoom && (
-        <div role="group" aria-label="Zoom" className="absolute bottom-2 left-2 z-[5] flex items-center rounded-lg border border-line bg-surface/95 shadow-lg">
-          <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out" onClick={() => onZoom(zoom - 0.1)}>
-            <MagnifyingGlassMinus size={20} aria-hidden="true" />
-          </button>
-          <button type="button" className="btn min-w-14 border-transparent px-1 font-mono text-sm" onClick={() => onZoom(1)} title="Back to 100%">
-            {Math.round(zoom * 100)}%
-          </button>
-          <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom in" onClick={() => onZoom(zoom + 0.1)}>
-            <MagnifyingGlassPlus size={20} aria-hidden="true" />
           </button>
         </div>
       )}

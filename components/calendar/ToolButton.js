@@ -1,8 +1,11 @@
 // One tool button. `tone` is the colour of its icon (and of its fill while it is on). `vertical` stacks the label under
 // the icon, for the tool pane on the right edge; otherwise the label sits beside it (iconOnly hides it, for Undo and Redo).
+// Each tool has its own colour (icon always, fill while it is on), so a tool is found by colour as well as by shape:
+// New green, On Hold amber, Open ink, Select violet, Hand sky.
 const TONES = {
   amber: { icon: 'text-amber-600', on: 'border-amber-400 bg-amber-100' },
   sky: { icon: 'text-sky-600', on: 'border-sky-400 bg-sky-100' },
+  violet: { icon: 'text-violet-600', on: 'border-violet-400 bg-violet-100' },
   plain: { icon: 'text-ink', on: '' },
   green: { icon: 'text-accent-text', on: 'border-accent bg-accent-soft' },
   ink: { icon: 'text-ink', on: 'border-ink bg-surface-2' },

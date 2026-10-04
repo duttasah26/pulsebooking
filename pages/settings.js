@@ -5,12 +5,17 @@ import ColorPicker from '../components/booking/ColorPicker';
 import { useSettings } from '../components/SettingsProvider';
 import { useToast } from '../components/Toast';
 import { floorLabel, floorOf } from '../components/calendar/floors';
-import { STATUS_SWATCHES, roomShade, statusColor } from '../lib/colors';
+import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
 
 const STATUSES = [
   { key: 'confirmed', label: 'Confirmed Bookings' },
   { key: 'on_hold', label: 'On-hold Bookings' },
+];
+
+const STAY_ROWS = [
+  { key: 'checkIn', label: 'Check-in Day', sample: 'Check-in' },
+  { key: 'checkOut', label: 'Check-out Day', sample: 'Check-out' },
 ];
 
 function Section({ icon: Icon, title, hint, children }) {
@@ -107,6 +112,34 @@ export default function Settings() {
                     swatches={STATUS_SWATCHES}
                     color={settings.statusColors[key] ?? null}
                     onChange={(color) => apply({ statusColors: { [key]: color } })}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+
+        <Section icon={Palette} title="Stay Colours" hint="The first and last day in the booking form's date picker.">
+          <div className="space-y-5">
+            {STAY_ROWS.map(({ key, label, sample }) => {
+              const tone = stayColor(key, settings);
+              return (
+                <div key={key} className="grid gap-2 sm:grid-cols-[7rem_1fr]">
+                  <div>
+                    <span
+                      className="inline-flex min-h-8 min-w-20 items-center justify-center rounded-lg border-2 px-3 text-xs font-semibold"
+                      style={{ backgroundColor: tone.bg, borderColor: tone.border }}
+                    >
+                      {sample}
+                    </span>
+                  </div>
+                  <ColorPicker
+                    id={`stay-${key}`}
+                    label={label}
+                    autoLabel="Default"
+                    swatches={STATUS_SWATCHES}
+                    color={settings.stayColors?.[key] ?? null}
+                    onChange={(color) => apply({ stayColors: { [key]: color } })}
                   />
                 </div>
               );

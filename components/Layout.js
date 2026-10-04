@@ -37,14 +37,13 @@ export default function Layout({ title, wide = false, children }) {
       </a>
 
       <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className={`relative mx-auto flex h-12 short:h-11 ${max} items-center justify-between px-4`}>
-          <Link href="/" className="flex shrink-0 items-center gap-2 rounded-lg" aria-label="The Pulse Newtown, Rooms: go to the calendar">
+        <div className={`mx-auto grid h-14 short:h-12 ${max} grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center px-4`}>
+          <Link href="/" className="flex shrink-0 items-center gap-2 justify-self-start rounded-lg" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-8 w-auto" />
-            <span className="hidden text-sm font-semibold text-muted sm:inline">Rooms</span>
-          </Link>
+                      </Link>
           <IndiaClock />
-          <div className="flex items-center gap-2">
-          <nav className="hidden gap-1 md:flex short:flex" aria-label="Main">
+          <div className="flex shrink-0 items-center gap-2 justify-self-end short:gap-1">
+          <nav className="hidden gap-1 md:flex short:flex short:gap-0.5" aria-label="Main">
             {TABS.map(({ href, label, Icon }) => {
               const active = pathname === href;
               return (
@@ -52,17 +51,18 @@ export default function Layout({ title, wide = false, children }) {
                   key={href}
                   href={href}
                   aria-current={active ? 'page' : undefined}
-                  className={`btn border-transparent ${active ? 'bg-accent-soft' : ''}`}
+                  aria-label={label}
+                  title={label}
+                  className={`btn btn-icon min-h-11 min-w-11 lg:min-h-11 lg:min-w-11 ${active ? 'border-accent bg-accent-soft' : 'border-transparent'}`}
                 >
-                  <Icon size={18} weight={active ? 'fill' : 'regular'} />
-                  {label}
+                  <Icon size={24} weight={active ? 'fill' : 'regular'} aria-hidden="true" />
                 </Link>
               );
             })}
           </nav>
           {/* Below the desktop width the assistant's button lives here, not floating over the page. */}
-          <button type="button" className="btn btn-icon border-transparent lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
-            <ChatCircleDots size={20} aria-hidden="true" />
+          <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
+            <ChatCircleDots size={24} aria-hidden="true" />
           </button>
           <AccountMenu />
           </div>

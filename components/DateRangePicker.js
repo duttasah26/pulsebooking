@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
+import { useSettings } from './SettingsProvider';
+import { stayColor } from '../lib/colors';
 import {
   addDays, addMonths, dayOfMonth, daysInMonth, diffDays, fmtMonth, fmtShort, monthStart, nightsLabel, range, today, weekdayIndex,
 } from '../lib/dates';
@@ -14,10 +16,26 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   the last day (the same day again is allowed). The value is still (first, day after last), so onChange(a, b) means
   the days a up to b - 1, and the last day is the one highlighted as the end.
 */
+// One end of the stay: icon and label (plain, no colour), then the date in large type. Same layout as the booking details.
+// The check-out date is red, so the day they leave stands out.
+function End({ icon: Icon, label, date, out = false }) {
+  return (
+    <div className="bg-surface p-3">
+      <p className="flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide text-muted lg:text-xs">
+        <Icon size={14} aria-hidden="true" /> {label}
+      </p>
+      <p className={`mt-1 text-lg font-semibold leading-tight ${out && date ? 'text-danger' : ''}`}>{date ? fmtShort(date) : 'Pick a day'}</p>
+    </div>
+  );
+}
+
 export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = () => false, inclusive = false }) {
   const [view, setView] = useState(monthStart(checkIn || today()));
   const [awaitingEnd, setAwaitingEnd] = useState(false);
   const todayStr = today();
+  const { settings } = useSettings();
+  const inColor = stayColor('checkIn', settings); // check-in blue, check-out green (changeable in Settings)
+  const outColor = stayColor('checkOut', settings);
 
   // Follow the selection when it changes from outside (a drag on the grid), not from this picker's own picks.
   const own = useRef(false);
@@ -63,7 +81,18 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
   };
 
   return (
-    <div className="rounded-lg border border-line p-3 lg:p-2">
+    <div className="space-y-2">
+      <div>
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
+          <End icon={SignIn} label={inclusive ? 'First day' : 'Check-in'} date={checkIn} />
+          <End icon={SignOut} label={inclusive ? 'Last day' : 'Check-out'} date={awaitingEnd ? null : lastDay} out />
+        </div>
+        <p className="mt-1 text-center text-sm text-muted lg:text-xs" aria-live="polite">
+          {awaitingEnd ? <span className="text-accent-text">{words.pickEnd}</span> : checkIn && checkOut ? words.unit(nights) : words.pickStart}
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-line p-3 lg:p-2">
       <div className="mb-1 flex items-center justify-between">
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, -1))} aria-label="Previous month">
           <CaretLeft size={18} />
@@ -85,7 +114,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
           const blockedEnd = awaitingEnd && d > checkIn && !clearThrough(d);
           const disabled = awaitingEnd ? (d < checkIn || (d === checkIn && !inclusive) ? busy : blockedEnd) : busy;
           let tone = 'text-ink hover:bg-surface-2';
-          if (isStart || isEnd) tone = 'bg-accent text-accent-ink hover:bg-accent';
+          if (isStart || isEnd) tone = 'border-2 font-semibold text-ink';
           else if (inside) tone = 'bg-accent-soft text-ink';
           else if (busy) tone = 'hatch text-muted';
           return (
@@ -96,7 +125,8 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
               onClick={() => pick(d)}
               aria-label={`${fmtShort(d)}${isStart ? `, ${words.start}` : isEnd ? `, ${words.end}` : busy ? ', booked' : ''}`}
               aria-pressed={isStart || isEnd}
-              className={`cell mx-auto flex size-10 items-center justify-center rounded-lg font-mono text-sm transition-colors lg:size-6 lg:text-[11px] disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
+              style={isStart || isEnd ? { backgroundColor: (isStart ? inColor : outColor).bg, borderColor: (isStart ? inColor : outColor).border } : undefined}
+              className={`cell mx-auto flex size-10 items-center justify-center rounded-lg font-mono text-sm transition-colors lg:size-6 lg:text-xs disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
                 d === todayStr && !isStart && !isEnd ? 'ring-1 ring-accent' : ''
               }`}
             >
@@ -105,18 +135,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
           );
         })}
       </div>
-
-      <p className="mt-2 text-sm lg:mt-1 lg:text-xs" aria-live="polite">
-        {checkIn && checkOut ? (
-          <>
-            <span className="font-medium">{fmtShort(checkIn)}</span> to <span className="font-medium">{fmtShort(lastDay)}</span>
-            <span className="text-muted">, {words.unit(nights)}</span>
-          </>
-        ) : (
-          <span className="text-muted">{words.pickStart}</span>
-        )}
-        {awaitingEnd && <span className="block text-accent-text">{words.pickEnd}</span>}
-      </p>
+      </div>
     </div>
   );
 }

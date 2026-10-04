@@ -42,7 +42,7 @@ export default function HelpGuide({ onClose }) {
         </p>
 
         <Group title="Booking a room">
-          <Step icon={PencilSimpleLine} tone="amber" title="To book a room, choose Hold">
+          <Step icon={PencilSimpleLine} tone="amber" title="To book a room, choose On Hold">
             Press the <PencilPill /> on the left. Then press on an empty day and drag across the days the guest will stay. A yellow bar appears. This is a <strong>hold</strong>: the room is kept, but it has no name yet.
           </Step>
           <Step icon={Check} tone="green" title="Turn the hold into a real booking">

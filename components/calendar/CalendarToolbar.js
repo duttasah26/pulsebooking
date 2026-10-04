@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, PencilSimpleLine, Plus } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, Hand, MagnifyingGlassMinus, MagnifyingGlassPlus, PencilSimpleLine, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
@@ -46,7 +46,7 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
 // scrolls sideways beside the first.
 export default function CalendarToolbar({
   view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor,
-  monthAligned, onHome, onResetView, wide, canTool, quickHold, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, history, onNew,
+  monthAligned, onHome, onResetView, wide, canTool, quickHold, drawing, touchSelect, hand, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, zoom, onZoom, onNew,
 }) {
   const [rangeOpen, setRangeOpen] = useState(false);
   const show = ({ date: d, span: n }) => {
@@ -84,11 +84,11 @@ export default function CalendarToolbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
-        {/* Phones only (the desktop has the booking panel on the right): the one filled button, first in this row. */}
+        {/* Phones and tablets (the desktop has the tool column): New Booking is a tool like the others, first in the row. */}
         {onNew && (
-          <button type="button" className="btn btn-primary shrink-0 gap-1.5 px-3" onClick={onNew}>
-            <Plus size={18} weight="bold" aria-hidden="true" /> New Booking
-          </button>
+          <Strip label="New">
+            <ToolButton icon={Plus} tone="green" label="New Booking" title="New Booking: draw the stay on the calendar, or type the dates" on={drawing} onClick={onNew} />
+          </Strip>
         )}
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
@@ -101,12 +101,12 @@ export default function CalendarToolbar({
               tone="ink"
               label="Open"
               title="Open: tap a booking to see it"
-              on={!quickHold && !touchSelect}
+              on={!quickHold && !touchSelect && !hand && !drawing}
               onClick={onToggleMouse}
             />
             <ToolButton
               icon={CheckSquare}
-              tone="green"
+              tone="violet"
               label="Select"
               title="Select: tap bookings to pick several, then delete them together"
               on={touchSelect}
@@ -115,11 +115,12 @@ export default function CalendarToolbar({
             <ToolButton
               icon={PencilSimpleLine}
               tone="amber"
-              label="Hold"
-              title="Hold: tap the first and last free night to place a hold, or drag a booking to move it"
+              label="On Hold"
+              title="On Hold: tap the first and last free night to put a room on hold, or drag a booking to move it"
               on={quickHold}
               onClick={onToggleHold}
             />
+            <ToolButton icon={Hand} tone="sky" label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
           </Strip>
         )}
 

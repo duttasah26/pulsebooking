@@ -1,4 +1,4 @@
-import { Buildings, Check, Minus, Plus, SignIn, SignOut, Tag, Users, Baby, Bed } from '@phosphor-icons/react';
+import { Buildings, Check, Minus, Plus, SignIn, SignOut, Tag, Users, Baby, Bed, X } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import TimeSelect from '../TimeSelect';
@@ -49,6 +49,35 @@ function RoomChoice({ rooms, roomId, taken, onPick }) {
   );
 }
 
+// Shown while a hold is open for editing: the two things that turn it into a real booking, in order, each ticked once done.
+function ConfirmSteps({ hasGuest, onCancel, busy }) {
+  const num = 'grid size-7 shrink-0 place-items-center rounded-full font-mono text-base font-semibold';
+  return (
+    <section aria-label="How to confirm this hold" className="animate-fade rounded-lg border-2 border-accent bg-accent-soft p-3">
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="text-lg font-semibold leading-tight">To confirm this booking</h2>
+        {onCancel && (
+          <button type="button" className="btn -mr-1 -mt-1 shrink-0 gap-1.5 px-3" onClick={onCancel} disabled={busy}>
+            <X size={18} aria-hidden="true" /> Cancel
+          </button>
+        )}
+      </div>
+      <ol className="mt-2 space-y-2 text-base">
+        <li className="flex items-center gap-2.5">
+          <span className={`${num} ${hasGuest ? 'bg-accent text-accent-ink' : 'border-2 border-accent bg-surface text-accent-text'}`}>
+            {hasGuest ? <Check size={16} weight="bold" aria-label="Done" /> : 1}
+          </span>
+          Type the guest’s name
+        </li>
+        <li className="flex items-center gap-2.5">
+          <span className={`${num} border-2 border-accent bg-surface text-accent-text`}>2</span>
+          Press <strong>Confirm Booking</strong>
+        </li>
+      </ol>
+    </section>
+  );
+}
+
 /*
   Editing an existing booking or hold, laid out like its details so the two feel like one thing: Status, Guest, the stay
   (Check-in and Check-out side by side, then the room as coloured chips), Guests with plus and minus buttons, and a
@@ -63,9 +92,13 @@ export default function EditBooking({ rooms, onCancel, ...rest }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); f.submit(false); }} className="space-y-3 pb-1">
-      <Card icon={Tag} title="Status">
-        <StatusPicker value={f.status} onChange={f.setStatus} hideLabel />
-      </Card>
+      {f.isHoldEdit ? (
+        <ConfirmSteps hasGuest={Boolean(f.guestChoice)} onCancel={onCancel} busy={f.busy} />
+      ) : (
+        <Card icon={Tag} title="Status">
+          <StatusPicker value={f.status} onChange={f.setStatus} hideLabel />
+        </Card>
+      )}
 
       <Card icon={Bed} title="Guest">
         <GuestPicker
@@ -131,7 +164,7 @@ export default function EditBooking({ rooms, onCancel, ...rest }) {
 
       {f.error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">{f.error}</p>}
 
-      <FormFooter f={f} onCancel={onCancel} />
+      <FormFooter f={f} onCancel={f.isHoldEdit ? undefined : onCancel} />
     </form>
   );
 }

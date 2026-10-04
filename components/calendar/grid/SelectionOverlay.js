@@ -16,13 +16,13 @@ export function SelectionSummary({ summary }) {
 export function TouchBar({ summary, onCancel, onHold }) {
   return (
     <div className="fixed inset-x-0 bottom-20 z-30 flex justify-center px-4 md:bottom-6 short:bottom-auto short:top-12 short:justify-end short:px-2">
-      <div className="flex w-full max-w-md items-center gap-2 short:max-w-lg rounded-lg border border-line bg-surface p-2 pl-4 shadow-lg">
+      <div className="animate-fade flex w-full max-w-md items-center gap-2 short:max-w-lg rounded-lg border border-line bg-surface p-2 pl-4 shadow-lg">
         <p className="min-w-0 flex-1 text-sm">
           <span className="font-medium">{summary}</span>
-          <span className="block text-muted">Tap another night to extend, or press Hold</span>
+          <span className="block text-muted">Now tap the last night</span>
         </p>
         <button type="button" className="btn" onClick={onCancel}>Cancel</button>
-        <button type="button" className="btn btn-primary" onClick={onHold}>Hold</button>
+        <button type="button" className="btn btn-primary" onClick={onHold}>Hold 1 Night</button>
       </div>
     </div>
   );

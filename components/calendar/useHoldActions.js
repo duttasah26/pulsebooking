@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { api } from '../../lib/useApi';
 import { NeedGuestError, confirmHolds, reholdAll } from '../../lib/holds';
 import { addDays, diffDays, fmtShort } from '../../lib/dates';
@@ -196,14 +197,47 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
   const renameBookings = async (changes) => {
     const todo = changes.filter((c) => c.name.trim() && c.name.trim() !== c.booking.name);
     if (!todo.length) return;
-    const call = (c, name) =>
-      c.booking.guest_id
-        ? api(`/api/guests/${c.booking.guest_id}`, { method: 'PATCH', body: { name } })
-        : api(`/api/bookings/${c.booking.id}`, { method: 'PATCH', body: { label: name } });
-    // Two bookings of one guest share the name: send it once.
-    const unique = [...new Map(todo.map((c) => [c.booking.guest_id ? 'g' + c.booking.guest_id : 'b' + c.booking.id, c])).values()];
+    const patchBooking = (id, body) => api(`/api/bookings/${id}`, { method: 'PATCH', body });
+    // Each step knows how to do itself and how to take itself back (for Undo and Redo).
+    const steps = [];
+    const byGuest = new Map();
+    for (const c of todo) {
+      const name = c.name.trim();
+      if (!c.booking.guest_id) {
+        // A hold with no guest: its name is its label.
+        steps.push({ run: () => patchBooking(c.booking.id, { label: name }), back: () => patchBooking(c.booking.id, { label: c.booking.label ?? null }) });
+      } else {
+        byGuest.set(c.booking.guest_id, [...(byGuest.get(c.booking.guest_id) ?? []), c]);
+      }
+    }
+    for (const [guestId, group] of byGuest) {
+      const name = group[0].name.trim();
+      const ofGuest = changes.filter((c) => c.booking.guest_id === guestId);
+      const everyone = group.length === ofGuest.length && group.every((c) => c.name.trim() === name);
+      if (everyone) {
+        // All of that guest's bookings in the selection got the same new name: the guest itself is renamed.
+        steps.push({
+          run: () => api(`/api/guests/${guestId}`, { method: 'PATCH', body: { name } }),
+          back: () => api(`/api/guests/${guestId}`, { method: 'PATCH', body: { name: group[0].booking.name } }),
+        });
+        continue;
+      }
+      // Only some of them: those bookings move to a guest with the new name; the others keep the old one.
+      const names = [...new Set(group.map((c) => c.name.trim()))];
+      for (const each of names) {
+        const items = group.filter((c) => c.name.trim() === each);
+        let newId = null;
+        steps.push({
+          run: async () => {
+            newId ??= (await api('/api/guests', { method: 'POST', body: { name: each, organization: items[0].booking.organization || null } })).id;
+            await Promise.all(items.map((c) => patchBooking(c.booking.id, { guest_id: newId })));
+          },
+          back: () => Promise.all(items.map((c) => patchBooking(c.booking.id, { guest_id: guestId }))),
+        });
+      }
+    }
     try {
-      await Promise.all(unique.map((c) => call(c, c.name.trim())));
+      for (const step of steps) await step.run();
     } catch (err) {
       return toast({ message: err.message });
     }
@@ -211,16 +245,16 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     const entry = {
       label: 'Names changed',
       undo: async () => {
-        await Promise.all(unique.map((c) => call(c, c.booking.name)));
+        for (const step of [...steps].reverse()) await step.back();
         bookings.reload();
       },
       redo: async () => {
-        await Promise.all(unique.map((c) => call(c, c.name.trim())));
+        for (const step of steps) await step.run();
         bookings.reload();
       },
     };
     history.push(entry);
-    toast({ message: unique.length > 1 ? `${unique.length} names changed` : 'Name changed', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+    toast({ message: todo.length > 1 ? `${todo.length} names changed` : 'Name changed', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
   };
 
   const removeBooking = (b) => {
@@ -238,8 +272,13 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
   // flickers when the server confirms); the save happens in the background. Undo works even before the server has
   // answered: the hold is taken off the screen now and deleted as soon as the server reports it was created.
   // opts.groupId / opts.copy add a room to an existing hold; opts.keepPanel leaves the open panel alone.
+  const lastPlaced = useRef({ key: '', at: 0 });
   const placeHold = async ({ roomIds, checkIn, checkOut }, opts = {}) => {
     const stamp = Date.now();
+    // The same rooms and days twice within two seconds is a double tap, not a second hold.
+    const sameAs = `${roomIds.join(',')}|${checkIn}|${checkOut}`;
+    if (!opts.groupId && lastPlaced.current.key === sameAs && stamp - lastPlaced.current.at < 2000) return;
+    lastPlaced.current = { key: sameAs, at: stamp };
     const groupId = opts.groupId ?? crypto.randomUUID();
     const copy = opts.copy ?? {};
     const known = rooms ?? [];
@@ -286,16 +325,8 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     };
     const entry = { label: message, undo, redo };
     history.push(entry);
-    // Narrow screens: no pop-up over the calendar; the message offers the details form instead (tap the hold any time).
-    if (!opts.keepPanel && !wide) {
-      toast({
-        message,
-        actionLabel: 'Add Details',
-        onAction: () => setPanel({ booking: job.created[0] ?? temps[0], key: temps[0].clientKey, editing: true }),
-      });
-    } else {
-      toast({ message, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
-    }
+    // Phones too: the hold is placed, with Undo. Tap it any time to see it, add a name or confirm it.
+    toast({ message, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
 
     try {
       const created = await api('/api/bookings', { method: 'POST', body });

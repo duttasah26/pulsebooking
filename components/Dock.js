@@ -45,7 +45,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
         ref={box}
         aria-label={label}
         style={maxH ? { maxHeight: maxH } : undefined}
-        className={`sticky top-[4.5rem] overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? '' : 'hidden'}`}
+        className={`no-scrollbar sticky top-[4.5rem] overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? '' : 'hidden'}`}
       >
         <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-1.5">
           <h2 className="min-w-0 truncate text-base font-semibold">{title}</h2>

@@ -1,8 +1,19 @@
 import { useRef } from 'react';
-import { CheckSquare, Clock, SignIn, X } from '@phosphor-icons/react';
+import { Clock, SignIn, X } from '@phosphor-icons/react';
 import { useSettings } from '../../SettingsProvider';
 import { colorFor, roomShade } from '../../../lib/colors';
 import { fmtShort } from '../../../lib/dates';
+
+// A picked booking: its edge itself becomes a dashed line in the bar's own edge colour, the dashes drifting slowly round
+// the bar (no solid border and no black outline while it is picked). The drift
+// stops with reduced motion; the dashes stay.
+function MarchingDashes({ color }) {
+  return (
+    <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full overflow-visible">
+      <rect x="1" y="1" rx="7" style={{ width: 'calc(100% - 2px)', height: 'calc(100% - 2px)' }} fill="none" stroke={color} strokeWidth="2" strokeDasharray="6 5" className="animate-march" />
+    </svg>
+  );
+}
 
 // One booking drawn over the grid. Colour: the booking's own, else its guest's, else its status (on hold yellow,
 // confirmed green). A hold is hatched with a dashed border and carries its own remove button, so it is a group of two
@@ -44,7 +55,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
 
-  const shape = `animate-bar-in @container relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border text-left text-xs font-medium text-ink ${
+  const shape = `animate-bar-in @container relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border text-left text-sm font-medium text-ink lg:text-xs ${
     hold ? 'border-dashed' : ''
   } ${b.status === 'checked_out' ? 'opacity-60' : ''} ${
     g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
@@ -54,21 +65,21 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     ...placement,
     ...g.margin,
     backgroundColor: c.bg,
-    borderColor: c.border,
+    borderColor: picked ? 'transparent' : c.border, // a picked bar's edge is the moving dashes
     boxShadow: '0 0 0 1.5px var(--surface)',
-    ...(active ? { outline: '2px solid var(--ink)', outlineOffset: '1px' } : {}),
-    ...(picked || resizing ? { outline: '3px solid var(--accent)', outlineOffset: '1px' } : {}),
+    ...(active && !picked ? { outline: '2px solid var(--ink)', outlineOffset: '1px' } : {}),
+    ...(resizing ? { outline: '3px solid var(--accent)', outlineOffset: '1px' } : {}),
     ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
   };
 
   const content = (
     <>
-      {picked && <CheckSquare size={14} weight="fill" className="shrink-0 text-accent" />}
-      {!picked && b.status === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
-      {!picked && hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
+      {picked && <MarchingDashes color={c.border} />}
+      {b.status === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
+      {hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
       {hold && (
         <span
-          className="hidden shrink-0 rounded px-1 font-mono text-[10px] font-semibold leading-4 @min-[96px]:inline-block"
+          className="hidden shrink-0 rounded px-1 font-mono text-xs font-semibold leading-4 @min-[96px]:inline-block"
           style={{ backgroundColor: roomTone.fill, boxShadow: `inset 0 0 0 1px ${roomTone.edge}` }}
         >
           {b.room_number}
