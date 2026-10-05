@@ -13,7 +13,7 @@ export default function GhostBar({ g, rows, style: placement, tone, name, onRemo
       style={{
         ...placement,
         ...g.margin,
-        backgroundColor: `color-mix(in srgb, ${tone.border} 18%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${tone.border} ${tone.fillPct ?? 18}%, transparent)`,
         borderColor: tone.border,
       }}
     >

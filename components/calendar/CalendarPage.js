@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Eye, Trash, X } from '@phosphor-icons/react';
+import { Clock, Eye, Trash, X } from '@phosphor-icons/react';
 import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
@@ -19,6 +19,7 @@ import HelpGuide from './HelpGuide';
 // changes size when the panel opens or closes.
 const WITH_TOOLS = { open: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]' };
 import { useToast } from '../Toast';
+import Head from 'next/head';
 import Presence from '../Presence';
 import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
@@ -112,7 +113,7 @@ export default function CalendarPage() {
   const showGroup = () => setPanel((p) => (p ? { ...p, grouped: true } : p));
 
   const history = useHistory({ onError: (err) => toast({ message: err.message }) });
-  const { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, putOnHold, resizeBookings, renameBookings } = useHoldActions({
+  const { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, putOnHold, resizeBookings, renameBookings, editMany } = useHoldActions({
     data, panelState: { panel, setPanel, panelBooking, group: fullGroup, wide }, rooms: roomList, toast, history,
   });
 
@@ -309,6 +310,10 @@ export default function CalendarPage() {
     setPicked(new Set());
     setViewPicked(false);
   };
+  // Several picked bookings back on hold at once (only confirmed and checked-in ones can go back), and changed together.
+  const holdable = pickedBookings.filter((b) => b.status === 'confirmed' || b.status === 'checked_in');
+  const holdPicked = (list = holdable) => { if (list.length) putOnHold(list[0], { targets: list }); };
+  const editPicked = (change) => editMany(pickedBookings, change);
   // Confirm every hold in the selection (a hold of several rooms is confirmed once, as a whole).
   const confirmPicked = (holds) => {
     const seen = new Set();
@@ -341,6 +346,11 @@ export default function CalendarPage() {
           <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
         </button>
       )}
+      {holdable.length > 0 && (
+        <button type="button" className="btn min-h-11 shrink-0 border-amber-400 bg-amber-100 text-amber-800 hover:bg-amber-100 max-sm:px-2.5 lg:min-h-8" onClick={() => holdPicked()} title="Put the confirmed bookings picked back on hold">
+          <Clock size={16} /> On Hold<span className="max-sm:hidden"> {holdable.length}</span>
+        </button>
+      )}
       {pickedHasBookings ? (
         <HoldButton className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onConfirm={deletePicked}>
           <Trash size={16} /> Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span>
@@ -361,9 +371,16 @@ export default function CalendarPage() {
     </div>
   ) : null;
 
+  // The browser tab says what is on screen: the open booking, or the view and the days (Layout supplies the plain "Calendar").
+  const VIEW_NAMES = { timeline: 'Timeline', month: 'Month', calendar: 'Occupancy', day: 'Day' };
+  const tabTitle = panelBooking && !selection
+    ? `${panelBooking.name}, Room ${panelBooking.room_number} | Pulse Rooms`
+    : `${VIEW_NAMES[view] ?? 'Calendar'}: ${monthAligned && shift === 0 ? fmtMonth(date) : calendarTitle(view, shownDate, span)} | Pulse Rooms`;
+
   // The toolbar spans the whole width; below it the tool pane, the calendar and the booking panel all start on the same line.
   return (
     <div className="space-y-2">
+      <Head><title>{tabTitle}</title></Head>
       <div className="@container">
         <CalendarToolbar
           view={view}
@@ -488,15 +505,17 @@ export default function CalendarPage() {
             </div>
           )}
 
+          <div className={wide && formOpen ? 'mr-[19.5rem] space-y-2' : 'space-y-2'}>{/* the open booking panel covers the right 19.5rem of this row */}
           <Presence show={showGrid && roomList.length > 0 && (drawing || quickHold || hand || (touchSelect && pickedBookings.length === 0))}>
             <ModeBanner
               mode={drawing ? 'draw' : quickHold ? 'reserve' : touchSelect ? 'select' : 'hand'}
               touch={!wide}
-              onExit={drawing ? stopDrawing : toggleMouseTool}
+              onExit={drawing ? dropDraft : toggleMouseTool} // Cancel in New Booking ends drawing AND empties the form: one press, not two
               onSkip={drawing && !wide ? () => { setDrawing(false); setNewOpen(true); } : undefined}
             />
           </Presence>
           {showGrid && roomList.length > 0 && (rail ? selectionStrip : <ZoomBar tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} />)}
+          </div>
         </div>
 
         <BookingPanel
@@ -520,6 +539,9 @@ export default function CalendarPage() {
           selection={selection}
           onOpenFromSelection={(b) => { setViewPicked(false); openEdit(b); }}
           onConfirmAll={confirmPicked}
+          onEditMany={editPicked}
+          onPreview={setPreview}
+          onHoldAll={holdPicked}
           onDeleteAll={deletePicked}
           onCloseSelection={() => setViewPicked(false)}
           pending={pending}

@@ -7,7 +7,7 @@ import { useToast } from './Toast';
   Works with a mouse, a finger, and the keyboard (hold Space or Enter). Pass the same props as a button
   (className, title, aria-label, disabled) and the label or icon as children.
 */
-export default function HoldButton({ onConfirm, duration = 700, className = '', children, title = 'Hold to delete', disabled, ...rest }) {
+export default function HoldButton({ onConfirm, duration = 700, className = '', children, title = 'Hold to delete', reminder = 'Hold the button to delete', disabled, ...rest }) {
   const toast = useToast();
   const [holding, setHolding] = useState(false);
   const timer = useRef(null);
@@ -18,7 +18,7 @@ export default function HoldButton({ onConfirm, duration = 700, className = '', 
     clearTimeout(timer.current);
     timer.current = null;
     setHolding(false);
-    if (Date.now() - startedAt.current < 250) toast({ message: 'Hold the button to delete', important: true }); // a tap, not a hold
+    if (Date.now() - startedAt.current < 250) toast({ message: reminder, important: true }); // a tap, not a hold
   };
   const start = () => {
     if (disabled || timer.current !== null) return;

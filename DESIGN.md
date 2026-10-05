@@ -110,6 +110,13 @@ One radius everywhere (8px). Status is told by shape too: on hold is dashed and 
   once something is picked are exactly the same height (56px), so swapping them never moves the calendar. On a phone, On Hold returns
   to Open by itself after each hold.
 - **Primary button**: filled emerald, semibold, 48px on phones. One per screen or sheet.
+- **Buttons, all of them**: one family, one 8px corner. Neutral (outlined white, `btn`), Primary (filled emerald, one per view), Danger
+  (red text, or the red Hold to Delete), Icon (square, `btn-icon`), and Chips (a choice that is on or off, `aria-pressed`: soft
+  green edge and fill, or the choice's own colour with a dark edge and a tick). Every one is 44px tall on touch (32px on a
+  desktop), changes on hover (the edge darkens, a soft shadow lifts it a pixel; Primary deepens), presses back down when
+  clicked, shows a pointer, and does nothing on hover when it is disabled. Buttons that are really surfaces (list rows, day
+  cards, calendar cells, booking bars) keep their own shape but hover the same way, and every other button gets a gentle
+  darken from the base style, so no button is left without a hover. No button is round: no pills, no circles.
 - **On Hold flow**: two taps (first night, last night) put the room on hold at once, with an Undo. A hold is confirmed from
   its details with **Confirm Booking**, or kept with **Keep On Hold**. A hold with no guest asks for the guest's name; the
   app never invents a guest from a label. A hold is never created twice by accident (the same rooms and days within two

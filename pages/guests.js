@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
+import Head from 'next/head';
 import FieldLabel from '../components/FieldLabel';
 import Layout from '../components/Layout';
 import FilterDock from '../components/FilterDock';
@@ -159,6 +160,7 @@ export default function Guests() {
 
   return (
     <Layout title="Guests">
+      <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-3">
           <div className="flex items-center justify-between gap-3">

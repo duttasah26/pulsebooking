@@ -55,6 +55,24 @@ h1, h2, h3 {
 p, li, dd {
   text-wrap: pretty; /* no single word left alone on the last line */
 }
+/* Buttons and other controls you can press show it: a pointer, and (for buttons that carry no hover style of their own) a gentle
+   darken. Written in the base layer so any button that does style itself (Tailwind hover: classes) simply wins. Only where a
+   real pointer exists: a phone must not keep a hover state after a tap. */
+@layer base {
+  button:not(:disabled), [role="button"], summary, select, input[type="checkbox"], input[type="radio"], input[type="range"], label[for] {
+    cursor: pointer;
+  }
+  button:disabled { cursor: not-allowed; }
+  @media (hover: hover) {
+    button:not(.btn):not(:disabled) {
+      transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, filter 150ms ease-out, box-shadow 150ms ease-out, opacity 150ms ease-out;
+    }
+    button:not(.btn):not(:disabled):hover {
+      filter: brightness(0.95);
+    }
+  }
+}
+
 /* Wherever the keyboard goes, a thick green ring shows it (links, buttons, fields, the summary of a folded section). */
 a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible, [role="tab"]:focus-visible {
   outline: 3px solid var(--accent);
@@ -90,13 +108,27 @@ body {
     @apply mb-1.5 block text-base font-medium text-ink lg:mb-0.5 lg:text-xs;
   }
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-base font-medium text-ink transition-colors hover:bg-surface-2 active:translate-y-px disabled:opacity-50 lg:min-h-8 lg:text-sm;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-base font-medium text-ink transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out hover:-translate-y-px hover:border-muted/50 hover:bg-surface-2 hover:shadow-sm active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none lg:min-h-8 lg:text-sm;
   }
   .btn-primary {
-    @apply min-h-12 border-transparent bg-accent font-semibold text-accent-ink shadow-sm shadow-black/15 hover:bg-accent hover:opacity-90 lg:min-h-9;
+    @apply min-h-12 border-transparent bg-accent font-semibold text-accent-ink shadow-sm shadow-black/15 hover:border-transparent hover:bg-accent hover:opacity-90 hover:shadow-md lg:min-h-9;
   }
   .btn-danger {
     @apply text-danger;
+  }
+  /* The big action buttons that stack at the bottom of a panel (Confirm, Put on Hold, Hold to Delete, Sign Out): the same
+     height, edge and type on every screen, whatever the colour. Used as: btn btn-block btn-block-primary | -hold | -danger. */
+  .btn-block {
+    @apply min-h-12 w-full gap-2 border-2 text-base font-semibold lg:min-h-12 lg:text-base;
+  }
+  .btn-block-primary {
+    @apply border-accent bg-accent text-accent-ink hover:border-accent hover:bg-accent hover:opacity-90 hover:shadow-md;
+  }
+  .btn-block-hold {
+    @apply border-amber-400 bg-amber-100 text-amber-800 hover:border-amber-400 hover:bg-amber-200;
+  }
+  .btn-block-danger {
+    @apply border-danger bg-red-50 text-danger hover:border-danger hover:bg-red-100;
   }
   .btn-icon {
     @apply min-h-11 min-w-11 px-0 lg:min-h-8 lg:min-w-8;
@@ -249,6 +281,13 @@ body {
 .animate-dock-in { animation: dock-in 280ms cubic-bezier(0.16, 1, 0.3, 1); }
 .animate-dock-out { animation: dock-out 170ms cubic-bezier(0.7, 0, 0.84, 0) forwards; }
 
+/* The clock's colon blinks once a second, like a digital clock; with reduced motion it simply stays on. */
+@keyframes clock-colon {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.25; }
+}
+.clock-colon { animation: clock-colon 1s steps(1, end) infinite; }
+
 /* Loading placeholders: a slow light sweep instead of a blink, so the wait reads as calm. */
 @keyframes shimmer {
   from { background-position: 150% 0; }
@@ -266,6 +305,7 @@ body {
 /* Reduced motion: nothing slides or scales, but fades and colour changes stay, so an opening sheet or a pressed button
    still shows what happened. */
 @media (prefers-reduced-motion: reduce) {
+  .clock-colon { animation: none; }
   .animate-sheet-out { animation-name: fade-out; }
   .animate-dock-in { animation-name: fade-in; }
   .animate-dock-out { animation-name: fade-out; }
@@ -275,5 +315,6 @@ body {
   .animate-march { animation: none; }
   .animate-nudge { animation-duration: 1800ms; } /* a colour wash only, no movement, so it stays */
   .active\:scale-95:active, .active\:scale-90:active, .active\:scale-\[0\.98\]:active, .active\:translate-y-px:active { transform: none; }
+  .btn:hover { translate: none; } /* reduced motion: the hover keeps its colour and shadow, but nothing moves */
   .motion-safe\:animate-pulse { animation: none; }
 }

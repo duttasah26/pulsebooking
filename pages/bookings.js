@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
+import Head from 'next/head';
 import Layout from '../components/Layout';
 import BookingSheet from '../components/booking/BookingSheet';
 import BookingRow, { BOOKING_COLUMNS } from '../components/bookings/BookingRow';
@@ -244,6 +245,7 @@ export default function Bookings() {
 
   return (
     <Layout title="Bookings">
+      <Head><title>{`${active.label} Bookings${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-3">
           <div className="flex items-center justify-between gap-3">

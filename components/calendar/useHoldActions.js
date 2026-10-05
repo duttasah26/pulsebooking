@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { api } from '../../lib/useApi';
 import { NeedGuestError, confirmHolds, reholdAll } from '../../lib/holds';
 import { addDays, diffDays, fmtShort } from '../../lib/dates';
+import { backFor, bodyFor, localPatch, newDates } from '../../lib/bulkEdit';
 
 /*
   Everything you can do to holds on the calendar. They all feel instant: the screen changes first, the server is told
@@ -18,8 +19,9 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
 
   // The other way round: a confirmed (or checked-in) booking goes back on hold. The guest stays attached. Undo puts each
   // room back to the status it had. opts.grouped: every room booked together with it, otherwise just this one.
+  // opts.targets: exactly these bookings (several picked in Select), whatever their groups.
   const putOnHold = async (b, opts = {}) => {
-    const mates = opts.grouped && b.group_id ? data.bookingList.filter((x) => x.group_id === b.group_id && x.status === b.status) : [b];
+    const mates = opts.targets ?? (opts.grouped && b.group_id ? data.bookingList.filter((x) => x.group_id === b.group_id && x.status === b.status) : [b]);
     const targets = mates.length ? mates : [b];
     if (targets.some((t) => t.id < 0)) return toast({ message: 'Still saving, try again in a moment', important: true });
     const ids = targets.map((t) => t.id);
@@ -47,7 +49,7 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
       },
     };
     history.push(entry);
-    toast({ message: targets.length > 1 ? `${targets.length} rooms put on hold` : 'Put on hold', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+    toast({ message: targets.length > 1 ? `${targets.length} ${opts.targets ? 'bookings' : 'rooms'} put on hold` : 'Put on hold', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
   };
 
   // Deleting is an undoable entry. Rows leave the screen at once; the server is told in parallel. Undo waits for the
@@ -257,6 +259,48 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     toast({ message: todo.length > 1 ? `${todo.length} names changed` : 'Name changed', actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
   };
 
+  // Several bookings changed together (Select, then Change): dates moved by some days or set to one date, times, status,
+  // organization, a note added, the colour. See lib/bulkEdit.js. They change on screen at once, one Undo takes them all
+  // back, and if the server refuses any (for example a room is taken on the new days) everything already changed is put back.
+  const editMany = async (list, change) => {
+    if (list.some((b) => b.id < 0)) return toast({ message: 'Still saving, try again in a moment', important: true });
+    const jobs = list.map((b) => ({ b, to: bodyFor(b, change) })).filter((j) => Object.keys(j.to).length > 0);
+    if (!jobs.length) return toast({ message: 'Nothing to change' });
+    for (const j of jobs) {
+      if (!newDates(j.b, change).valid) return toast({ message: `${j.b.name}, room ${j.b.room_number}: the stay would end before it starts`, important: true });
+      j.back = backFor(j.b, j.to);
+    }
+    // Moving later: the latest stay first, so two stays in one room never overlap on the way. Moving earlier: the earliest first.
+    jobs.sort((x, y) => (change.shift > 0 ? -1 : 1) * (x.b.check_in < y.b.check_in ? -1 : x.b.check_in > y.b.check_in ? 1 : 0));
+    const send = (j, which) => api(`/api/bookings/${j.b.id}`, { method: 'PATCH', body: j[which] });
+    const run = async (which) => {
+      const order = which === 'to' ? jobs : [...jobs].reverse();
+      const other = which === 'to' ? 'back' : 'to';
+      const done = [];
+      try {
+        for (const j of order) {
+          patchLocal([j.b.id], localPatch(j.b, j[which]));
+          await send(j, which);
+          done.push(j);
+        }
+      } catch (err) {
+        for (const j of done.reverse()) await send(j, other).catch(() => {});
+        jobs.forEach((j) => patchLocal([j.b.id], null));
+        bookings.reload();
+        throw err;
+      }
+      bookings.reload();
+    };
+    try {
+      await run('to');
+    } catch (err) {
+      return toast({ message: `Nothing was changed: ${err.message}`, important: true });
+    }
+    const entry = { label: `${jobs.length} bookings changed`, undo: () => run('back'), redo: () => run('to') };
+    history.push(entry);
+    toast({ message: `${jobs.length} bookings changed`, actionLabel: 'Undo', onAction: () => history.undoEntry(entry) });
+  };
+
   const removeBooking = (b) => {
     if (b.id < 0) {
       // Still being saved: take it off the grid now, and delete it as soon as the server confirms it.
@@ -377,5 +421,5 @@ export function useHoldActions({ data, panelState, rooms, toast, history }) {
     );
   };
 
-  return { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, putOnHold, resizeBookings, renameBookings };
+  return { placeHold, removeMany, removeBooking, toggleRoom, confirmHold, putOnHold, resizeBookings, renameBookings, editMany };
 }

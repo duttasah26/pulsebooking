@@ -48,7 +48,8 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
   const counts = taken.map((s) => s.size);
   const fullest = counts.indexOf(Math.max(...counts));
   const quietest = counts.indexOf(Math.min(...counts));
-  const average = total ? Math.round((counts.reduce((a, n) => a + n, 0) / (days.length * total)) * 100) : 0;
+  const nightsBooked = counts.reduce((a, n) => a + n, 0); // room-nights taken this month (a hold counts: it blocks the room)
+  const nightsPossible = days.length * total;
 
   // Swipe sideways on the calendar to change month (vertical scrolling is left alone).
   const swipe = useRef(null);
@@ -136,7 +137,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
       <p className="px-1 text-base">
         <strong className="font-semibold">{fmtMonth(first)}</strong>
         <span className="text-ink/80">
-          : {average}% full on average. Fullest day {fmtDayMonth(days[fullest])} ({counts[fullest]} of {total} rooms), quietest {fmtDayMonth(days[quietest])} ({counts[quietest]}).
+          : <span className="font-semibold text-ink">{nightsBooked} {nightsBooked === 1 ? 'night' : 'nights'} booked</span> of {nightsPossible} possible. Fullest day {fmtDayMonth(days[fullest])} ({counts[fullest]} of {total} rooms), quietest {fmtDayMonth(days[quietest])} ({counts[quietest]}).
         </span>
       </p>
 

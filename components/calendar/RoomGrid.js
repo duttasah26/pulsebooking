@@ -475,7 +475,7 @@ export default function RoomGrid({
           )}
 
           {ghosts.map(({ room, roomId, checkIn, checkOut, r, g }) => (
-            <GhostBar key={room} g={g} rows={rows} style={place(r, g.a, g.len)} tone={preview.tone} name={preview.name} onRemove={onRemoveDraft ? () => onRemoveDraft(roomId, checkIn, checkOut) : undefined} />
+            <GhostBar key={room} g={g} rows={rows} style={place(r, g.a, g.len)} tone={preview.tone} name={preview.name} onRemove={onRemoveDraft && !preview.locked ? () => onRemoveDraft(roomId, checkIn, checkOut) : undefined} />
           ))}
         </div>
       </div>

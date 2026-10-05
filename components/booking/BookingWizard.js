@@ -111,7 +111,7 @@ function StepList({ step, done, onGo }) {
 export default function BookingWizard({ onDone, ...props }) {
   const [round, setRound] = useState(0);
   const restart = () => setRound((n) => n + 1);
-  return <Steps key={round} {...props} onClear={restart} onDone={() => { onDone?.(); restart(); }} />;
+  return <Steps key={round} {...props} onClear={() => { onDone?.(); restart(); }} onDone={() => { onDone?.(); restart(); }} />;
 }
 
 function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {

@@ -116,18 +116,18 @@ export default function BookingDetails({
       {/* One button to a line, full width, so the words always fit (the side panel is narrow). */}
       <div className="sticky bottom-0 -mx-4 grid gap-2 border-t border-line bg-surface px-4 pb-3 pt-3">
         {b.status === 'on_hold' && onConfirm && (
-          <button type="button" className="btn btn-primary w-full" onClick={() => onConfirm(b)} disabled={b.id < 0}>
-            <Check size={18} aria-hidden="true" /> Confirm Booking
+          <button type="button" className="btn btn-block btn-block-primary" onClick={() => onConfirm(b)} disabled={b.id < 0}>
+            <Check size={20} weight="bold" aria-hidden="true" /> Confirm Booking
           </button>
         )}
         {/* A confirmed booking can go back on hold (the guest stays on it): right beside Delete. */}
         {(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold && (
-          <button type="button" className="btn min-h-12 w-full border-2 border-amber-400 bg-amber-100 text-base font-semibold hover:bg-amber-200" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
-            <Clock size={20} weight="bold" aria-hidden="true" className="text-amber-700" /> Change to On Hold
+          <button type="button" className="btn btn-block btn-block-hold" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
+            <Clock size={20} weight="bold" aria-hidden="true" /> Change to On Hold
           </button>
         )}
         <HoldButton
-          className="btn min-h-12 w-full border-2 border-danger bg-red-50 text-base font-semibold text-danger hover:bg-red-100"
+          className="btn btn-block btn-block-danger"
           title={b.status === 'on_hold' ? 'Hold to cancel this hold' : 'Hold to delete'}
           onConfirm={remove}
           disabled={removing || b.id < 0}

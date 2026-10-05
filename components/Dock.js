@@ -52,7 +52,8 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
         style={maxH && !overlay ? { maxHeight: maxH } : undefined}
         className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.5rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? (leaving ? 'animate-dock-out' : 'animate-dock-in') : 'hidden'}`}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-1.5">
+        {/* Docked at the top of the panel however far its contents are scrolled: the name, Edit and Hide stay in reach. */}
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-line bg-surface px-4 py-1.5">
           <h2 className="min-w-0 truncate text-base font-semibold">{title}</h2>
           <div className="flex shrink-0 items-center gap-1">
             {actions}
@@ -71,7 +72,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           aria-expanded="false"
           title={`Show ${label.toLowerCase()}`}
           onClick={() => onToggle(true)}
-          className={`animate-fade sticky top-[4.5rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-sm font-medium hover:bg-surface-2`}
+          className={`animate-fade sticky top-[4.5rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-sm font-medium transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-muted/50 hover:bg-surface-2 hover:shadow-sm active:translate-y-0`}
         >
           <CaretLeft size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>

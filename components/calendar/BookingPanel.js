@@ -17,7 +17,7 @@ import EditButton from '../booking/EditButton';
 export default function BookingPanel({
   wide, formOpen, onToggle, panel, setPanel, panelBooking, group, rooms, isBusy, blank, onSaved, onRemove, onConfirm, onPutOnHold, closePanel, groupCount, onShowGroup,
   selection, onOpenFromSelection, onConfirmAll, onDeleteAll, onCloseSelection,
-  pending, onSavePending, onCancelPending, editSelection, onEditSelection, onSaveNames, onUnpick,
+  pending, onSavePending, onCancelPending, editSelection, onEditSelection, onSaveNames, onUnpick, onEditMany, onHoldAll, onPreview,
 }) {
   const setEditing = (editing) => setPanel((p) => (p ? { ...p, editing } : p));
   const title = panel ? panelBooking.name : 'New Booking';
@@ -36,10 +36,22 @@ export default function BookingPanel({
       editing={editSelection}
       onCancelEdit={() => onEditSelection(false)}
       onSaveNames={onSaveNames}
+      onEdit={onEditSelection}
+      onPreview={onPreview}
+      onEditMany={onEditMany}
+      onHoldAll={onHoldAll}
     />
   );
   if (selection && !wide) {
-    return <Sheet title={`${selection.length} Selected`} onClose={onCloseSelection}>{selectionView}</Sheet>;
+    return (
+      <Sheet
+        title={`${selection.length} Selected`}
+        onClose={onCloseSelection}
+        actions={!editSelection && <EditButton onClick={() => onEditSelection(true)} label="Edit the selected bookings together: names, dates and details" />}
+      >
+        {selectionView}
+      </Sheet>
+    );
   }
   if (selection) {
     return (
@@ -49,7 +61,7 @@ export default function BookingPanel({
         onToggle={onToggle}
         label="Selected bookings"
         title={`${selection.length} Selected`}
-        actions={!editSelection && <EditButton onClick={() => onEditSelection(true)} label="Edit the names of the selected bookings" />}
+        actions={!editSelection && <EditButton onClick={() => onEditSelection(true)} label="Edit the selected bookings together: names, dates and details" />}
         tab={`${selection.length} selected`}
         tabMark
       >

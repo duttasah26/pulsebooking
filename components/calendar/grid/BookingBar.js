@@ -143,6 +143,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
       <button
         type="button"
         data-bid={b.id}
+        data-movable={movable ? '' : undefined}
         onClick={(e) => (selectMode || e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b))}
         onDoubleClick={() => onOpenGroup?.(b)}
         aria-pressed={selectMode ? Boolean(picked) : undefined}
@@ -159,7 +160,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   }
 
   return (
-    <div ref={rootRef} role="group" data-bid={b.id} aria-label={`${label}, on hold`} className={`${shape} pl-1.5 pr-0.5 @min-[70px]:pl-2`} style={style}>
+    <div ref={rootRef} role="group" data-bid={b.id} data-movable={movable ? '' : undefined} aria-label={`${label}, on hold`} className={`${shape} pl-1.5 pr-0.5 @min-[70px]:pl-2`} style={style}>
       <button
         type="button"
         onClick={(e) => (e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b))}

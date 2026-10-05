@@ -15,6 +15,8 @@ export function useMarquee({ enabled, containerRef, picked, onPick }) {
   const onPointerDown = (e) => {
     const root = containerRef.current;
     if (!enabled || !root || e.pointerType === 'touch' || e.button !== 0) return;
+    // Pressing on a bar that can be moved is the start of moving it, never of drawing a box (the box also re-picked bars).
+    if (e.target.closest?.('[data-movable]')) return;
     const x0 = e.clientX;
     const y0 = e.clientY;
     const onBar = Boolean(e.target.closest?.('[data-bid]'));

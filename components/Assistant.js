@@ -100,7 +100,7 @@ export default function Assistant() {
         onClick={() => setOpen(true)}
         aria-label="Open the assistant"
         title="Ask about rooms and bookings"
-        className={`${place.replace('z-[45]', 'z-[35]')} grid size-12 place-items-center rounded-full bg-accent text-accent-ink shadow-lg transition-transform hover:scale-105 active:scale-95`}
+        className={`${place.replace('z-[45]', 'z-[35]')} grid size-12 place-items-center rounded-lg bg-accent text-accent-ink shadow-lg transition-[opacity,box-shadow,transform] duration-150 hover:-translate-y-px hover:opacity-90 hover:shadow-xl active:translate-y-0 transition-transform hover:scale-105 active:scale-95`}
       >
         <ChatCircleDots size={26} weight="fill" aria-hidden="true" />
       </button>

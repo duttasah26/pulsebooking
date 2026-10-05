@@ -1,22 +1,29 @@
 import { useState } from 'react';
-import Link from 'next/link';
 import {
-  ArrowCounterClockwise, Bed, CalendarBlank, CaretRight, Clock, Eye, Palette, SignIn, SignOut, SlidersHorizontal, TextAa, UserCircle,
+  ArrowCounterClockwise, Bed, CalendarBlank, Clock, Palette, SignIn, SignOut, SlidersHorizontal, TextAa, UserCircle,
 } from '@phosphor-icons/react';
 import Layout from '../components/Layout';
 import TimeSelect from '../components/TimeSelect';
 import ColorPicker from '../components/booking/ColorPicker';
 import { Segmented } from '../components/FilterParts';
+import AccountPanel from '../components/settings/AccountPanel';
 import { useSettings } from '../components/SettingsProvider';
 import { useToast } from '../components/Toast';
 import { floorLabel, floorOf } from '../components/calendar/floors';
 import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
+import { useQueryState } from '../lib/useQueryState';
 
 /*
-  Settings, in plain groups. On a wide screen the groups are listed on the left and the page jumps to the one you press; on a
-  phone they are a row of buttons under the header. Every change saves by itself: colours, times and calendar choices are
-  shared by everyone; the text size is for this device only (and the page says which is which, on each group).
+  Settings, in tabs. On a wide screen the tabs are listed on the left; on a phone they are a row of buttons under the header.
+  Each tab is its own screen, and the tab you are on is in the address (?tab=account), so it survives a reload:
+    Look and feel   the text size of this device, and the colours
+    Bookings        usual times and automatic check-out
+    Calendar        what it opens with
+    Rooms           which rooms are on
+    Account         who you are, Sign Out and changing your password (it used to be a separate page in the header)
+  Every change saves by itself: colours, times and calendar choices are shared by everyone; the text size is for this device
+  only (and the page says which is which, on each group).
 */
 const STATUSES = [
   { key: 'confirmed', label: 'Confirmed Bookings' },
@@ -26,13 +33,12 @@ const STAY_ROWS = [
   { key: 'checkIn', label: 'Check-in Day', sample: 'Check-in' },
   { key: 'checkOut', label: 'Check-out Day', sample: 'Check-out' },
 ];
-const GROUPS = [
-  { id: 'looks', label: 'Text size', Icon: TextAa },
-  { id: 'colours', label: 'Colours', Icon: Palette },
+const TABS = [
+  { id: 'look', label: 'Look and feel', Icon: Palette },
   { id: 'bookings', label: 'Bookings', Icon: Clock },
   { id: 'calendar', label: 'Calendar', Icon: CalendarBlank },
   { id: 'rooms', label: 'Rooms', Icon: Bed },
-  { id: 'account', label: 'Your account', Icon: UserCircle },
+  { id: 'account', label: 'Account', Icon: UserCircle },
 ];
 
 // One group of settings: a clear heading, who it applies to, and the settings under it.
@@ -99,6 +105,8 @@ export default function Settings() {
   const toast = useToast();
   const rooms = useApi('/api/rooms?all=1');
   const [saved, setSaved] = useState('');
+  const [tabParam, setTab] = useQueryState('tab', 'look');
+  const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'look';
 
   // Every change saves by itself and says so.
   const apply = async (change, said = 'Saved') => {
@@ -139,19 +147,34 @@ export default function Settings() {
         </div>
 
         <div className="mt-4 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-6">
-          <nav
-            aria-label="Settings groups"
+          <div
+            role="tablist"
+            aria-label="Settings"
             className="no-scrollbar sticky top-14 z-20 -mx-4 mb-4 flex gap-1.5 overflow-x-auto bg-canvas px-4 py-2 lg:top-20 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:px-0 lg:py-0"
           >
-            {GROUPS.map(({ id, label, Icon }) => (
-              <a key={id} href={`#${id}`} className="btn shrink-0 justify-start gap-2 px-3 text-base lg:min-h-11">
-                <Icon size={18} aria-hidden="true" className="shrink-0 text-muted" />
-                {label}
-              </a>
-            ))}
-          </nav>
+            {TABS.map(({ id, label, Icon }) => {
+              const on = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${id}`}
+                  aria-selected={on}
+                  aria-controls="settings-panel"
+                  onClick={() => { setTab(id); setSaved(''); }}
+                  className={`btn shrink-0 justify-start gap-2 px-3 text-base lg:min-h-11 ${on ? 'border-accent bg-accent-soft font-semibold text-accent-text' : ''}`}
+                >
+                  <Icon size={18} weight={on ? 'fill' : 'regular'} aria-hidden="true" className={`shrink-0 ${on ? '' : 'text-muted'}`} />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
 
-          <div className="space-y-6">
+          <div id="settings-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="space-y-6">
+            {tab === 'look' && (
+              <>
             <Group id="looks" icon={TextAa} title="Text size" scope="This device only" hint="Makes every word in the app bigger on this phone or computer. Other devices keep their own size.">
               <Segmented
                 legend="Text size"
@@ -231,6 +254,10 @@ export default function Settings() {
               </button>
             </Group>
 
+              </>
+            )}
+
+            {tab === 'bookings' && (
             <Group id="bookings" icon={Clock} title="Bookings" scope="Everyone" hint="How new bookings start, and what the app does by itself.">
               <Setting label="Usual times" hint="Filled in on every new booking. Each booking can still change them.">
                 <div className="grid grid-cols-2 gap-3">
@@ -246,6 +273,9 @@ export default function Settings() {
               />
             </Group>
 
+            )}
+
+            {tab === 'calendar' && (
             <Group id="calendar" icon={SlidersHorizontal} title="Calendar" scope="Everyone" hint="What the calendar shows when you open it. You can still change it any time from the toolbar.">
               <Setting label="Open the calendar with" hint="The view you see first.">
                 <Segmented
@@ -267,6 +297,9 @@ export default function Settings() {
               </Setting>
             </Group>
 
+            )}
+
+            {tab === 'rooms' && (
             <Group id="rooms" icon={Bed} title="Rooms" scope="Everyone" hint="Switch a room off to hide it from the calendar. Its bookings are kept.">
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {roomList.map((r) => {
@@ -285,13 +318,9 @@ export default function Settings() {
               </ul>
             </Group>
 
-            <Group id="account" icon={UserCircle} title="Your account" scope="You">
-              <Link href="/account" className="btn min-h-14 justify-between gap-3 px-4 text-base">
-                <span className="flex items-center gap-2"><UserCircle size={22} aria-hidden="true" /> Your name, password and sign out</span>
-                <CaretRight size={18} aria-hidden="true" />
-              </Link>
-              <p className="flex items-center gap-2 text-base text-ink/80"><Eye size={18} aria-hidden="true" className="shrink-0" /> Your name is saved on every booking you make or change.</p>
-            </Group>
+            )}
+
+            {tab === 'account' && <AccountPanel />}
           </div>
         </div>
       </div>

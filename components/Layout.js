@@ -2,23 +2,25 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import AccountMenu from './AccountMenu';
 import { ExpandableTabs } from './ui/ExpandableTabs';
 import IndiaClock from './IndiaClock';
 import { OPEN_ASSISTANT } from './Assistant';
-import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, Users } from '@phosphor-icons/react';
+import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, UserCircle, Users } from '@phosphor-icons/react';
 
 const TABS = [
   { href: '/', label: 'Calendar', Icon: CalendarBlank },
   { href: '/bookings', label: 'Bookings', Icon: ListBullets },
   { href: '/guests', label: 'Guests', Icon: Users },
   { href: '/settings', label: 'Settings', Icon: GearSix },
+  { href: '/settings?tab=account', label: 'Account', Icon: UserCircle }, // far right: who you are, Sign Out and your password
 ];
 
 // wide: the calendar uses the full screen width; the other pages stay in a readable column.
 export default function Layout({ title, wide = false, children }) {
   const max = wide ? 'max-w-none' : 'max-w-[1400px]';
-  const { pathname } = useRouter();
+  const { pathname, query } = useRouter();
+  // Settings and Account are two tabs of one page, so the current tab says which of the two buttons is lit.
+  const here = pathname === '/settings' ? (query.tab === 'account' ? '/settings?tab=account' : '/settings') : pathname;
 
   return (
     <>
@@ -48,13 +50,12 @@ export default function Layout({ title, wide = false, children }) {
             label="Main"
             className="hidden md:flex short:flex"
             tabs={TABS.map(({ href, label, Icon }) => ({ href, title: label, icon: Icon }))}
-            activeIndex={TABS.findIndex((t) => t.href === pathname)}
+            activeIndex={TABS.findIndex((t) => t.href === here)}
           />
           {/* Below the desktop width the assistant's button lives here, not floating over the page. */}
           <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
             <ChatCircleDots size={24} aria-hidden="true" />
           </button>
-          <AccountMenu />
           </div>
         </div>
       </header>
@@ -63,10 +64,10 @@ export default function Layout({ title, wide = false, children }) {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden short:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
-          const active = pathname === href;
+          const active = here === href;
           return (
             <Link
               key={href}
