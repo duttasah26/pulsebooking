@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import AccountMenu from './AccountMenu';
+import { ExpandableTabs } from './ui/ExpandableTabs';
 import IndiaClock from './IndiaClock';
 import { OPEN_ASSISTANT } from './Assistant';
 import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, Users } from '@phosphor-icons/react';
@@ -43,23 +44,12 @@ export default function Layout({ title, wide = false, children }) {
                       </Link>
           <IndiaClock />
           <div className="flex shrink-0 items-center gap-2 justify-self-end short:gap-1">
-          <nav className="hidden gap-1 md:flex short:flex short:gap-0.5" aria-label="Main">
-            {TABS.map(({ href, label, Icon }) => {
-              const active = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? 'page' : undefined}
-                  aria-label={label}
-                  title={label}
-                  className={`btn btn-icon min-h-11 min-w-11 lg:min-h-11 lg:min-w-11 ${active ? 'border-accent bg-accent-soft' : 'border-transparent'}`}
-                >
-                  <Icon size={24} weight={active ? 'fill' : 'regular'} aria-hidden="true" />
-                </Link>
-              );
-            })}
-          </nav>
+          <ExpandableTabs
+            label="Main"
+            className="hidden md:flex short:flex"
+            tabs={TABS.map(({ href, label, Icon }) => ({ href, title: label, icon: Icon }))}
+            activeIndex={TABS.findIndex((t) => t.href === pathname)}
+          />
           {/* Below the desktop width the assistant's button lives here, not floating over the page. */}
           <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
             <ChatCircleDots size={24} aria-hidden="true" />

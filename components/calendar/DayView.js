@@ -1,9 +1,10 @@
 import { useRef } from 'react';
+import { useHoldStep, useSlide } from './useDaySlide';
 import { ArrowDownLeft, ArrowUpRight, Bed, CaretLeft, CaretRight, Clock, Plus } from '@phosphor-icons/react';
 import { useSettings } from '../SettingsProvider';
 import { formatTime } from '../TimeSelect';
 import { roomShade } from '../../lib/colors';
-import { addDays, dayOfMonth, fmtDayMonth, fmtLong, fmtWeekday, isWeekend, nightsLabel, today } from '../../lib/dates';
+import { addDays, dayOfMonth, diffDays, fmtDayMonth, fmtLong, fmtWeekday, isWeekend, nightsLabel, today } from '../../lib/dates';
 
 /*
   The Day tab: the front desk's view of one date, with a strip of days to move through.
@@ -38,7 +39,7 @@ function Row({ b, tone, what, detail, onOpen }) {
       <button
         type="button"
         onClick={() => onOpen(b)}
-        className={`flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left hover:brightness-95 ${bg} ${hold ? 'border-y border-dashed border-amber-400' : ''}`}
+        className={`flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left transition-[filter] duration-150 hover:brightness-95 ${bg} ${hold ? 'border-y border-dashed border-amber-400' : ''}`}
       >
         <RoomChip number={b.room_number} />
         <span className="min-w-0 flex-1">
@@ -92,31 +93,41 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(date, i - 3));
 
+  // The strip glides by the days it moved; the lists below glide in from the side you moved towards.
+  const stripRef = useRef(null);
+  const bodyRef = useRef(null);
+  const delta = (from, to) => diffDays(from, to);
+  useSlide(stripRef, date, { delta, unit: (el) => el.firstElementChild.offsetWidth + 4, max: 7, duration: 320 });
+  useSlide(bodyRef, date, { delta, distance: 28, fade: true, duration: 360 });
+  // Hold an arrow or a day card to keep moving that way.
+  const hold = useHoldStep();
+
   return (
     <div className="space-y-3">
       {onDate && (
         <nav aria-label="Days" className="flex items-stretch gap-1.5">
-          <button type="button" className="btn btn-icon min-h-14 min-w-11 shrink-0 border-transparent" aria-label="Day before" onClick={() => onDate(addDays(date, -1))}>
+          <button type="button" className="btn btn-icon min-h-14 min-w-11 shrink-0 border-transparent" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
             <CaretLeft size={22} aria-hidden="true" />
           </button>
-          <ol className="grid min-w-0 flex-1 grid-cols-7 gap-1">
-            {days.map((d) => {
+          <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
+          <ol ref={stripRef} className="grid grid-cols-7 gap-1">
+            {days.map((d, i) => {
               const c = on(d);
               const sel = d === date;
               return (
-                <li key={d}>
+                <li key={i}>
                   <button
                     type="button"
-                    onClick={() => onDate(d)}
+                    {...hold(`day-${i}`, () => onDate(addDays(date, Math.sign(i - 3))), () => onDate(d))}
                     aria-current={sel ? 'date' : undefined}
                     aria-label={`${fmtLong(d)}: ${c.arriving.length} arriving, ${c.leaving.length} leaving`}
-                    className={`flex min-h-16 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight ${
+                    className={`flex min-h-16 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight select-none transition-[background-color,border-color,transform] duration-200 ease-out active:scale-95 ${
                       sel ? 'border-ink bg-surface' : `border-transparent ${isWeekend(d) ? 'bg-surface-2' : 'bg-surface'} hover:bg-surface-2`
                     } ${d === todayStr ? 'ring-2 ring-accent ring-offset-1' : ''}`}
                   >
                     <span className="text-sm text-muted">{fmtWeekday(d)}</span>
                     <span className="font-mono text-lg font-semibold">{dayOfMonth(d)}</span>
-                    <span className="flex gap-1.5 text-xs font-semibold">
+                    <span className="flex gap-1.5 text-sm font-semibold">
                       <span className="text-accent-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
                       <span className="text-danger">{c.leaving.length ? `-${c.leaving.length}` : ''}</span>
                     </span>
@@ -125,12 +136,15 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
               );
             })}
           </ol>
-          <button type="button" className="btn btn-icon min-h-14 min-w-11 shrink-0 border-transparent" aria-label="Day after" onClick={() => onDate(addDays(date, 1))}>
+          </div>
+          <button type="button" className="btn btn-icon min-h-14 min-w-11 shrink-0 border-transparent" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
             <CaretRight size={22} aria-hidden="true" />
           </button>
         </nav>
       )}
 
+      <div ref={bodyRef} className="space-y-3">
+        <p className="sr-only" role="status" aria-live="polite">{fmtLong(date)}</p>
       <p className="px-1 text-base">
         <strong className="font-semibold">{fmtLong(date)}</strong>
         <span className="text-ink/80">
@@ -175,6 +189,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
             })}
           </li>
         </Section>
+      </div>
       </div>
     </div>
   );

@@ -20,15 +20,15 @@ const MODES = {
     box: 'border-amber-400 bg-amber-100',
     iconTone: 'text-amber-600',
     touch: 'Tap the first night, then the last night',
-    mouse: 'Drag across free nights, or drag a booking to change it',
+    mouse: 'Drag across free nights, or drag a hold to change it',
   },
   select: {
     icon: CheckSquare,
     name: 'Select',
     box: 'border-violet-400 bg-violet-100',
     iconTone: 'text-violet-600',
-    touch: 'Tap each booking to pick it',
-    mouse: 'Click bookings to pick them',
+    touch: 'Tap each booking to pick it, then drag its white tabs to change the days',
+    mouse: 'Click bookings to pick them. Drag a picked booking to move it, or its white tabs to change the days',
   },
   hand: {
     icon: Hand,
@@ -44,13 +44,13 @@ export default function ModeBanner({ mode, touch, onExit, onSkip }) {
   const m = MODES[mode];
   const Icon = m.icon;
   return (
-    <div role="status" data-below-grid className={`animate-fade flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border-2 px-3 py-1.5 sm:flex-nowrap ${m.box}`}>
+    <div role="status" data-below-grid className={`animate-fade flex h-14 items-center gap-3 overflow-hidden rounded-lg border-2 px-3 ${m.box}`}>
       <Icon size={22} weight="fill" aria-hidden="true" className={`shrink-0 ${m.iconTone}`} />
-      <p className="min-w-[10rem] flex-1 text-base leading-snug">
+      <p className="line-clamp-2 min-w-0 flex-1 text-sm leading-snug sm:text-base">
         <strong className="font-semibold">{m.name} mode.</strong> {touch ? m.touch : m.mouse}
       </p>
       {onSkip && (
-        <button type="button" className="btn shrink-0 px-3" onClick={onSkip}>Type dates instead</button>
+        <button type="button" className="btn shrink-0 px-3" onClick={onSkip}>Type dates<span className="max-sm:hidden"> instead</span></button>
       )}
       <button type="button" className="btn shrink-0 gap-1.5 px-3" onClick={onExit}>
         <X size={18} aria-hidden="true" /> {mode === 'draw' ? 'Cancel' : 'Done'}

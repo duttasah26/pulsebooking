@@ -60,7 +60,7 @@ room colours, the logo).
 
 Warm neutrals from the brand palette (dimgray, gainsboro, near-black) with **one accent, emerald**. Emerald means "do
 this" or "this is chosen". A golden or peru accent was rejected and must not return. Light mode only. Status colours
-(confirmed green, on hold yellow with a dashed edge, finished grey) and per-room floor colours carry meaning on the
+(confirmed green, on hold yellow with a dashed edge, finished grey, drawn clearly faded: washed toward the page, less saturated, text at 75%) and per-room floor colours carry meaning on the
 calendar and are never reused for decoration. Secondary text is `muted` (5:1 on white) and never lighter.
 
 ## Typography
@@ -74,7 +74,10 @@ Confirm Booking, Hold to Delete).
 
 Phone first. Touch targets are 44px or more; the dense grid is the one exception, and zoom is its remedy. A phone held
 sideways (the `short:` variant) swaps the toolbar rows for a slim **tool column on the left** because it has width but
-no height; the booking form always opens as a **bottom sheet** there, never beside the calendar. Nothing scrolls
+no height; the booking form always opens as a **bottom sheet** there, never beside the calendar. On wide screens the booking panel is a card that **lies over the right
+side of the calendar**, as tall as the calendar, so opening or closing it never resizes the calendar. The calendar always
+leaves a slim column at its right (the width of the folded tab). The room bar sits on the calendar's right edge, which the
+open panel covers; fold the panel or use the wheel to scroll the rooms. Nothing scrolls
 sideways except the calendar itself.
 
 ## Elevation & Depth
@@ -87,12 +90,24 @@ One radius everywhere (8px). Status is told by shape too: on hold is dashed and 
 
 ## Components
 
-- **Tools** (left column or toolbar), in three chunks: **Book** (New, On Hold), **Look** (Open or Select, Select on touch,
-  Hand), **Fix** (Undo, Redo), then Zoom on touch screens. At most four chunks of controls on screen at once. Icon above a
+- **Tools** (left column or toolbar), in three chunks: **Book** (New, On Hold), **Look** (Open, Select, Hand, on every
+  screen), **Fix** (Undo, Redo). Open clicks a booking to see it; Select ticks bookings with no Ctrl key. At most four chunks of controls on screen at once. Icon above a
   one-word label, always visible; each tool has its own colour (New green, On Hold amber, Open ink, Select violet, Hand sky), shown on its icon and as its fill while it is on. The pointer over
   the calendar wears the active tool's icon (pencil for On Hold, hand for Hand).
+- **Zoom**: one group in the second toolbar row, beside the days range: minus, a slider (wide screens only), plus, and the
+  percentage, which is also the way back to 100%. Never in the tool column.
+- **Room bar and day bar**: scroll and zoom bars for the rooms (vertical, right of the calendar) and the days (horizontal,
+  under it). A fixed slim width; drag the block to scroll, drag its ends to change the row height or day width, click the
+  track to jump. They carry no booking information.
+- **Booking bars** say more the room they have (measured, not guessed): the name always, then dates, status, nights,
+  room and times, packed into lines; what does not fit is left out, never cut in half. Colour carries meaning: check-in
+  green, check-out red, status in its own colour, each as a small chip on a near-white ground.
+- **Moving and stretching**: with On Hold, only holds can be dragged or stretched. Any other booking is picked with Select
+  and then dragged, or stretched by the white tabs at its ends, or nudged with the keyboard (Alt and the arrow keys; Shift
+  for check-out, Ctrl for check-in). The change waits for Save and is shown old to new: check-in green, check-out red.
 - **Mode banner**: On Hold, Select and Hand change what a tap does, so a banner under the calendar, in the same colour as the tool, says which mode
-  is on and how to use it, with a **Done** button that returns to Open. Open shows no banner. On a phone, On Hold returns
+  is on and how to use it, with a **Done** button that returns to Open. Open shows no banner. The banner and the selection strip that replaces it
+  once something is picked are exactly the same height (56px), so swapping them never moves the calendar. On a phone, On Hold returns
   to Open by itself after each hold.
 - **Primary button**: filled emerald, semibold, 48px on phones. One per screen or sheet.
 - **On Hold flow**: two taps (first night, last night) put the room on hold at once, with an Undo. A hold is confirmed from
@@ -102,7 +117,8 @@ One radius everywhere (8px). Status is told by shape too: on hold is dashed and 
 - **New Booking** is a tool like the others and appears once on each screen: first in the tool column (wide screens and a
   phone held sideways) or first in the second toolbar row (portrait phone and tablet). While it is on, nights drawn on the
   calendar are green and the draft bar has an X until the booking is created.
-- **Sheet**: rises from the bottom (slides in from the right on tablets and desktop); fades only with reduced motion.
+- **Sheet**: rises from the bottom (slides in from the right on tablets and desktop); fades only with reduced motion. It
+  leaves the same way, faster. Focus moves into it, stays inside it, and goes back when it closes.
 
 ## Glossary
 
@@ -114,8 +130,8 @@ One word per idea, everywhere in the interface and the docs.
 | On hold / hold | a room kept for someone, not yet confirmed | the tool or the press gesture |
 | Confirm Booking | turn a hold into a real booking | anything else |
 | Press and hold | keep a finger or button down (Hold to Delete) | status or tool |
-| Open | tap a booking to see it (touch) | picking several |
-| Select | pick several bookings to act on together | opening one |
+| Open | click or tap a booking to see it | picking several |
+| Select | tick bookings with a plain click or tap (no Ctrl) to move, stretch or delete them together | opening one |
 | Hand | drag the calendar to move around it | scrolling a list |
 | Done | leave a mode and return to Open | closing a sheet (that is Close) |
 
@@ -126,6 +142,7 @@ One word per idea, everywhere in the interface and the docs.
 - Don't add a second accent colour, a second radius, or Lucide icons (Phosphor only).
 - Don't use dashes in UI text.
 - Don't put controls on top of the calendar. Zoom, tools and Undo live outside it. The only things drawn over it are the
-  confirm bar after a first tap and the booking bars' own handles.
+  confirm bar after a first tap, the booking bars' own handles, and the booking panel on wide screens (which never
+  resizes the calendar).
 - Don't add a colour for decoration. Colour means status, floor, or the one emerald accent. Booking and guest colours are
   optional and limited to four swatches plus Custom.

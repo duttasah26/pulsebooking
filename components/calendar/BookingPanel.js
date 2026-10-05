@@ -44,6 +44,7 @@ export default function BookingPanel({
   if (selection) {
     return (
       <Dock
+        overlay
         open={formOpen}
         onToggle={onToggle}
         label="Selected bookings"
@@ -92,6 +93,7 @@ export default function BookingPanel({
 
   return (
     <Dock
+      overlay
       open={formOpen}
       onToggle={onToggle}
       label="Booking form"

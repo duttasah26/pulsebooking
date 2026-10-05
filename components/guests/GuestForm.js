@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Buildings, Envelope, Note, Phone, User } from '@phosphor-icons/react';
+import { Buildings, Envelope, GitMerge, Note, Phone, User } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
 import BookingSheet from '../booking/BookingSheet';
 import FieldLabel from '../FieldLabel';
@@ -9,7 +9,7 @@ import { api } from '../../lib/useApi';
 
 // A guest's details (name is required; phone, email and organization are optional) and, for an existing guest,
 // every stay with Book Again. isNew creates a guest; otherwise it edits one.
-export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast }) {
+export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toast, onMerge }) {
   const [form, setForm] = useState({
     name: guest?.name ?? '', phone: guest?.phone ?? '', email: guest?.email ?? '',
     organization: guest?.organization ?? '', notes: guest?.notes ?? '', color: guest?.color ?? null,
@@ -83,6 +83,15 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
             <FieldLabel icon={Note} htmlFor="g-notes">Notes</FieldLabel>
             <textarea id="g-notes" name="notes" rows={3} className="field" value={form.notes} onChange={set('notes')} />
           </div>
+          {!isNew && onMerge && (
+            <div className="rounded-lg border border-line bg-surface-2 p-3">
+              <p className="text-base font-semibold">Listed twice?</p>
+              <p className="mb-2 text-base text-ink/80">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
+              <button type="button" className="btn gap-1.5 px-3" onClick={onMerge}>
+                <GitMerge size={16} aria-hidden="true" /> Merge with another guest
+              </button>
+            </div>
+          )}
           {error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">{error}</p>}
         </form>
 

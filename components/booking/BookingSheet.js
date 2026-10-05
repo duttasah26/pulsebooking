@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Sheet from '../Sheet';
+import { useLeave } from '../useLeave';
 import BookingForm from './BookingForm';
 import ExistingBooking from './ExistingBooking';
 import EditButton from './EditButton';
@@ -8,7 +9,8 @@ import EditButton from './EditButton';
 //   mode="create": the form, to enter a new booking.
 //   mode="edit":   an existing booking as details, with a pencil that switches to the form.
 // The caller may control the pencil state (editing / onEditingChange); otherwise it is kept here.
-export default function BookingSheet({ onClose, editing: editingProp, onEditingChange, ...props }) {
+export default function BookingSheet({ onClose: closeNow, editing: editingProp, onEditingChange, ...props }) {
+  const [leaving, onClose] = useLeave(closeNow); // every way out (X, Cancel, Done, Escape) plays the exit
   const existing = props.mode === 'edit';
   const [localEditing, setLocalEditing] = useState(false);
   const editing = editingProp ?? localEditing;
@@ -18,6 +20,7 @@ export default function BookingSheet({ onClose, editing: editingProp, onEditingC
     <Sheet
       title={existing ? props.booking.name : 'New Booking'}
       onClose={onClose}
+      leaving={leaving}
       locked={!existing}
       actions={existing && !editing ? <EditButton onClick={() => setEditing(true)} disabled={props.booking.id < 0} /> : null}
     >

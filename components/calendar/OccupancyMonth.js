@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useSettings } from '../SettingsProvider';
+import { useHoldStep, useSlide } from './useDaySlide';
 import { roomShade } from '../../lib/colors';
 import { addMonths, dayOfMonth, daysInMonth, diffDays, fmtDayMonth, fmtMonth, fmtMonthShort, isWeekend, monthStart, range, today, weekdayIndex } from '../../lib/dates';
 
@@ -61,6 +62,14 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
     if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) onDate(addMonths(first, dx < 0 ? 1 : -1));
   };
 
+  // The strip glides by the months it moved; the calendar glides in from the side you moved towards.
+  const stripRef = useRef(null);
+  const bodyRef = useRef(null);
+  const monthsApart = (a, b) => (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + Number(b.slice(5, 7)) - Number(a.slice(5, 7));
+  useSlide(stripRef, first, { delta: monthsApart, unit: (el) => el.firstElementChild.offsetWidth + 4, max: 5, duration: 320 });
+  useSlide(bodyRef, first, { delta: monthsApart, distance: 28, fade: true, duration: 360 });
+  const hold = useHoldStep(); // hold an arrow or a month to keep moving that way
+
   const months = [-2, -1, 0, 1, 2].map((n) => addMonths(first, n));
   const lead = weekdayIndex(first);
 
@@ -93,19 +102,20 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
     <div className="space-y-3">
       {onDate && (
         <nav aria-label="Months" className="flex items-stretch gap-1.5">
-          <button type="button" className="btn btn-icon min-h-10 min-w-10 shrink-0 border-transparent" aria-label="Month before" onClick={() => onDate(addMonths(first, -1))}>
+          <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 border-transparent" aria-label="Month before" {...hold('prev', () => onDate(addMonths(first, -1)))}>
             <CaretLeft size={22} aria-hidden="true" />
           </button>
-          <ol className="grid min-w-0 flex-1 grid-cols-5 gap-1">
-            {months.map((m) => {
+          <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
+          <ol ref={stripRef} className="grid grid-cols-5 gap-1">
+            {months.map((m, i) => {
               const sel = m === first;
               return (
-                <li key={m}>
+                <li key={i}>
                   <button
                     type="button"
-                    onClick={() => onDate(m)}
+                    {...hold(`month-${i}`, () => onDate(addMonths(first, Math.sign(i - 2))), () => onDate(m))}
                     aria-current={sel ? 'date' : undefined}
-                    className={`flex min-h-11 w-full flex-col items-center justify-center rounded-lg border px-0.5 leading-tight ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'} ${m === monthStart(todayStr) ? 'ring-2 ring-accent ring-offset-1' : ''}`}
+                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border px-0.5 leading-tight transition-colors duration-200 active:scale-95 ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'} ${m === monthStart(todayStr) ? 'ring-2 ring-accent ring-offset-1' : ''}`}
                   >
                     <span className="text-base">{fmtMonthShort(m)}</span>
                     <span className="text-xs text-muted">{m.slice(0, 4)}</span>
@@ -114,12 +124,15 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
               );
             })}
           </ol>
-          <button type="button" className="btn btn-icon min-h-10 min-w-10 shrink-0 border-transparent" aria-label="Month after" onClick={() => onDate(addMonths(first, 1))}>
+          </div>
+          <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 border-transparent" aria-label="Month after" {...hold('next', () => onDate(addMonths(first, 1)))}>
             <CaretRight size={22} aria-hidden="true" />
           </button>
         </nav>
       )}
 
+      <div ref={bodyRef} className="space-y-3">
+        <p className="sr-only" role="status" aria-live="polite">{fmtMonth(first)}</p>
       <p className="px-1 text-base">
         <strong className="font-semibold">{fmtMonth(first)}</strong>
         <span className="text-ink/80">
@@ -174,6 +187,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
             </li>
           ))}
         </ul>
+      </div>
       </div>
     </div>
   );

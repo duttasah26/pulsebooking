@@ -24,7 +24,7 @@ export default function GhostBar({ g, rows, style: placement, tone, name, onRemo
           aria-label="Remove this new booking (it is not saved yet)"
           title="Remove this new booking. It is not saved yet"
           onClick={onRemove}
-          className="pointer-events-auto ml-auto grid size-6 shrink-0 place-items-center rounded-lg bg-transparent hover:bg-black/10 active:scale-90"
+          className="pointer-events-auto relative ml-auto grid size-6 shrink-0 place-items-center rounded-lg bg-transparent before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-black/10 active:scale-90 [@media(pointer:coarse)]:before:-inset-x-3"
         >
           <X size={14} weight="bold" />
         </button>

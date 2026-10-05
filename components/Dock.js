@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { useLeave } from './useLeave';
 
 // Column templates for a page that has a dock on the right (use as the page's grid classes, from lg up).
 // Written out in full so Tailwind can see them.
@@ -16,12 +17,16 @@ export const DOCK_GRID = {
     actions: extra buttons next to the hide button (a pencil, a New button)
     tab:     what the folded tab says (vertical), and tabMark: a small dot on it when something is open
 */
-export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, children }) {
+// overlay: lie over the right side of the parent (which must be position: relative), as tall as the parent, instead of taking
+// a column, so what is behind it does not move.
+export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, children }) {
   // The panel is as tall as the room left below where it starts (the toolbar sits above it), so its own scrolling reaches
   // everything, including the buttons at the bottom of a long form.
+  const [leaving, hide] = useLeave(() => onToggle(false), 170); // fades out before the column folds
   const box = useRef(null);
   const [maxH, setMaxH] = useState(null);
   useEffect(() => {
+    if (overlay) return undefined; // floating over the page, it is as tall as its parent and measures nothing
     const measure = () => {
       const el = box.current;
       if (!el) return;
@@ -38,20 +43,20 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure);
     };
-  }, [open]);
+  }, [open, overlay]);
   return (
     <>
       <aside
         ref={box}
         aria-label={label}
-        style={maxH ? { maxHeight: maxH } : undefined}
-        className={`no-scrollbar sticky top-[4.5rem] overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? '' : 'hidden'}`}
+        style={maxH && !overlay ? { maxHeight: maxH } : undefined}
+        className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.5rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? (leaving ? 'animate-dock-out' : 'animate-dock-in') : 'hidden'}`}
       >
         <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-1.5">
           <h2 className="min-w-0 truncate text-base font-semibold">{title}</h2>
           <div className="flex shrink-0 items-center gap-1">
             {actions}
-            <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => onToggle(false)}>
+            <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => hide()}>
               <CaretRight size={18} aria-hidden="true" />
             </button>
           </div>
@@ -66,7 +71,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           aria-expanded="false"
           title={`Show ${label.toLowerCase()}`}
           onClick={() => onToggle(true)}
-          className="sticky top-[4.5rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-sm font-medium hover:bg-surface-2"
+          className={`animate-fade sticky top-[4.5rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-sm font-medium hover:bg-surface-2`}
         >
           <CaretLeft size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>

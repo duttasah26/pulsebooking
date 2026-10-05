@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { diffDays, fmtDayMonth, isWeekend, nightsLabel, today } from '../../lib/dates';
+import { addDays, diffDays, fmtDayMonth, nightsLabel, today } from '../../lib/dates';
 import { HEAD, LABEL, barGeometry, cellSize, dayFraction, gridMinWidth, gridTemplate, placeAt } from './grid/gridLayout';
 import { useSettings } from '../SettingsProvider';
 import { useOccupancy } from './grid/useOccupancy';
@@ -7,6 +7,9 @@ import { useGridSelection } from './grid/useGridSelection';
 import { useMarquee } from './grid/useMarquee';
 import { useBarResize } from './grid/useBarResize';
 import TimelineNavigator from './grid/TimelineNavigator';
+import { createScrollBus, useScrollPos } from './grid/useScrollPos';
+import RoomNavigator, { NAV_WIDTH } from './grid/RoomNavigator';
+import Presence from '../Presence';
 import { ArrowCounterClockwise } from '@phosphor-icons/react';
 import { DayHeader, DayLabel, GridCorner, RoomHead } from './grid/GridHeaders';
 import GridCell from './grid/GridCell';
@@ -25,6 +28,8 @@ import { SelectionSummary, TouchBar } from './grid/SelectionOverlay';
 */
 export const MIN_WIDTH_SCALE = 0.5;
 export const MAX_WIDTH_SCALE = 3;
+const MAX_HEIGHT_SCALE = 6;
+const MAX_ROW_PX = 240;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
@@ -37,9 +42,13 @@ export default function RoomGrid({
   const scrollRef = useRef(null);
   const gridRef = useRef(null);
   const placing = holdEnabled; // pencil on: drag free nights to hold, drag a booking's end to stretch it
-  // Existing bookings can be moved or stretched only with the On Hold tool. New Booking only draws nights for the new booking.
+  // With the On Hold tool only holds can be moved or stretched. Other bookings are moved or stretched while picked (Select).
+  // New Booking only draws nights for the new booking.
   const editBars = placing && !drawing && Boolean(onPending);
   const selecting = !placing && (Boolean(picked?.size) || tapToPick); // something is picked (or phones chose Select): a tap now picks or unpicks a booking
+  // Picked bookings wear the same white end tabs as holds do in On Hold, so they can be stretched or moved without changing tool.
+  const tabsOnPicked = selecting && !drawing && Boolean(onPending) && Boolean(picked?.size);
+  const canEdit = (b) => b.id > 0 && ((editBars && b.status === 'on_hold') || (tabsOnPicked && Boolean(picked?.has(b.id))));
 
   // The grid is sized to the window so the page itself never needs to scroll: `avail` is the height from the top of the
   // grid down to the bottom of the screen (less room for the line under it). In the timeline the rows then share that
@@ -56,7 +65,7 @@ export default function RoomGrid({
       const navigator = rows && !touchUi ? 22 : 0; // the day width bar under the grid (not shown on touch screens)
       // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
-      const below = [...document.querySelectorAll('[data-below-grid]')].reduce((total, n) => total + n.offsetHeight + 8, 0);
+      const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
       const base = short ? 8 : window.innerWidth < 768 ? 84 : 36;
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
@@ -65,6 +74,7 @@ export default function RoomGrid({
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(document.body);
+    if (scrollRef.current) ro.observe(scrollRef.current); // the room bar beside the grid changes its width as the rows grow
     window.addEventListener('resize', measure);
     return () => {
       ro.disconnect();
@@ -82,7 +92,8 @@ export default function RoomGrid({
   const inViewF = fitW ? (boxW / zoom - LABEL) / cellW : visibleDays; // days in view, exactly (the navigator bar needs the fraction)
   const inView = Math.max(1, Math.round(inViewF));
   // The navigator bar widens or narrows the days; `anchor` is the day that must stay at the left edge afterwards.
-  const [scrollPos, setScrollPos] = useState(0);
+  const scrollBus = useRef(null);
+  if (!scrollBus.current) scrollBus.current = createScrollBus(); // the navigator bars follow the scroll through this, not through state here
   const anchor = useRef(null);
   const changeScale = (scale, anchorDay) => {
     anchor.current = anchorDay;
@@ -102,6 +113,10 @@ export default function RoomGrid({
   };
   // Back to the default: the chosen number of days fill the screen, from the start date.
   const resetNav = () => {
+    if (heightScale !== 1) {
+      rowAnchor.current = 0;
+      setHeightScale(1);
+    }
     if (widthScale !== 1) {
       anchor.current = lead;
       onWidthScale?.(1);
@@ -123,7 +138,30 @@ export default function RoomGrid({
     firstRef.current += added;
     scrollRef.current.scrollLeft = firstRef.current * dayPx;
   }, [lead]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cellH = rows && avail ? Math.min(160, Math.max(24, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
+  // Row height: by default every room fits the window; the room bar beside the grid makes the rows taller (`heightScale`),
+  // and the rooms then scroll. `rowAnchor` is the room that must stay at the top afterwards.
+  const [heightScale, setHeightScale] = useState(1);
+  const rowAnchor = useRef(null);
+  const topRowRef = useRef(0);
+  const fitRow = rows && avail ? Math.min(160, Math.max(24, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(24, Math.round(fitRow * heightScale))) : baseH;
+  const rowPx = cellH * zoom;
+  const boxH = Math.max(0, (avail ?? 0) - 2); // the scrolling box, less its border
+  const rowsInView = rows && avail ? (boxH / zoom - HEAD) / cellH : rooms.length; // rooms in view, exactly
+  const changeRowView = (view, anchorRow) => {
+    rowAnchor.current = anchorRow;
+    const target = (boxH / zoom - HEAD) / view; // the row height that shows `view` rooms
+    setHeightScale(Math.min(MAX_HEIGHT_SCALE, Math.max(1, Math.round((target / fitRow) * 100) / 100)));
+  };
+  // When the row height changes, keep the same room at the top.
+  useLayoutEffect(() => {
+    if (!rows || !scrollRef.current) return;
+    const room = rowAnchor.current !== null ? rowAnchor.current : topRowRef.current;
+    rowAnchor.current = null;
+    topRowRef.current = room;
+    scrollRef.current.scrollTop = room * rowPx;
+  }, [rowPx]); // eslint-disable-line react-hooks/exhaustive-deps
+  const navW = rows && !touchUi && avail && rooms.length > 1 ? NAV_WIDTH : 0;
   const place = (r, i, len) => placeAt(rows, r, i, len);
 
   const { settings } = useSettings();
@@ -132,7 +170,41 @@ export default function RoomGrid({
   const defaultOut = dayFraction(settings.checkOutTime, 0.5);
   // Changes made with the pencil show on the bars at once: the drag in progress, then `pending` (changes waiting for
   // Save, which lives in the booking details, not here). linkedFor(b) lists the bookings that move together with b.
-  const resize = useBarResize({ enabled: editBars, rows, days, rooms, gridRef, zoom, isBusy, linkedFor, onResize: onPending });
+  // The keyboard way to move or stretch picked bookings, one day at a time (the tabs and dragging need a pointer):
+  //   Alt + Left / Right: move them     Alt + Shift + Left / Right: change check-out     Alt + Ctrl + Left / Right: change check-in
+  // The change waits for Save like a dragged one. What happened (or why not) is said in a live region for screen readers.
+  const [announce, setAnnounce] = useState('');
+  const nudge = (edge, step) => {
+    const seen = new Map();
+    for (const b of drawn) {
+      if (!picked?.has(b.id) || b.id <= 0 || b.status === 'cancelled') continue;
+      seen.set(b.id, b);
+      for (const o of linkedFor?.(b) ?? []) if (o.id > 0) seen.set(o.id, drawn.find((x) => x.id === o.id) ?? o);
+    }
+    const items = [];
+    for (const b of seen.values()) {
+      let checkIn = b.check_in;
+      let checkOut = b.check_out;
+      if (edge === 'move') { checkIn = addDays(checkIn, step); checkOut = addDays(checkOut, step); }
+      else if (edge === 'end') checkOut = addDays(checkOut, step);
+      else checkIn = addDays(checkIn, step);
+      if (checkOut <= checkIn) return setAnnounce('A stay needs at least one night.');
+      for (let d = checkIn; d < checkOut; d = addDays(d, 1)) {
+        if (isBusy(b.room_id, d, b.id)) return setAnnounce(`Room ${b.room_number} is taken on ${fmtDayMonth(d)}.`);
+      }
+      items.push({ original: bookings.find((x) => x.id === b.id) ?? b, checkIn, checkOut, roomId: b.room_id });
+    }
+    if (!items.length) return;
+    onPending(items);
+    setAnnounce(`Changed, not saved yet: ${items.length === 1 ? items[0].original.name : `${items.length} bookings`}, ${fmtDayMonth(items[0].checkIn)} to ${fmtDayMonth(items[0].checkOut)}. Press Save in the details to keep it.`);
+  };
+  const onGridKey = (e) => {
+    if (!tabsOnPicked || !e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    e.preventDefault();
+    nudge(e.shiftKey ? 'end' : e.ctrlKey ? 'start' : 'move', e.key === 'ArrowRight' ? 1 : -1);
+  };
+
+  const resize = useBarResize({ enabled: editBars || tabsOnPicked, rows, days, rooms, gridRef, zoom, isBusy, linkedFor, onResize: onPending });
   const changes = resize.drag?.items ?? pending?.items ?? null;
   const drawn = useMemo(() => {
     if (!changes) return bookings;
@@ -175,7 +247,8 @@ export default function RoomGrid({
   const onTimelineScroll = (e) => {
     follow(scrollRef, topBar)();
     const el = e.currentTarget;
-    setScrollPos(el.scrollLeft);
+    scrollBus.current.emit({ left: el.scrollLeft, top: el.scrollTop });
+    topRowRef.current = el.scrollTop / rowPx;
     // Tell the page which day is now at the left edge (counted from the start date, so negative in the past), so its heading follows.
     firstRef.current = el.scrollLeft / dayPx;
     const first = Math.floor(firstRef.current + 0.05) - lead;
@@ -325,16 +398,22 @@ export default function RoomGrid({
           aria-hidden="true"
           onScroll={follow(topBar, scrollRef)}
           className="scroll-area mb-1 overflow-x-auto overflow-y-hidden rounded-lg border border-line bg-surface-2"
+          style={navW ? { marginRight: navW + 6 } : undefined} // stays the width of the grid, not of the room bar beside it
         >
           <div style={{ width: scrollW, height: 1 }} />
         </div>
       )}
+      <div className={navW ? 'flex items-start gap-1.5' : ''}>
       <div
         ref={scrollRef}
+        tabIndex={rows ? 0 : undefined}
+        role={rows ? 'region' : undefined}
+        aria-label={rows ? 'Room calendar. Use the arrow keys to scroll.' : undefined}
         onScroll={rows ? onTimelineScroll : undefined}
+        onKeyDown={rows ? onGridKey : undefined}
         className={`scroll-area rounded-lg border border-line bg-surface ${
-          rows ? 'no-scrollbar overflow-x-auto overscroll-x-contain' : 'min-h-64 overflow-auto overscroll-contain'
-        } [touch-action:pan-x_pan-y] ${pan ? (panning ? 'cursor-panning' : 'cursor-pan') : ''} ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
+          rows ? 'no-scrollbar overflow-auto overscroll-contain' : 'min-h-64 overflow-auto overscroll-contain'
+        } ${navW ? 'min-w-0 flex-1' : ''} [touch-action:pan-x_pan-y] ${pan ? (panning ? 'cursor-panning' : 'cursor-pan') : ''} ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
         style={avail ? { height: avail } : undefined} // a fixed window: zooming changes what is inside it, never its size
         onPointerMove={placing ? selection.onPointerMove : undefined}
         onPointerDown={(e) => { panStart(e); marquee.onPointerDown(e); }}
@@ -384,15 +463,15 @@ export default function RoomGrid({
               onPick={toggleBar}
               onView={onView}
               onOpenGroup={onOpenGroup}
-              movable={editBars && b.id > 0}
+              movable={canEdit(b)}
               onMoveStart={resize.startResize}
               resizing={Boolean(changes?.some((c) => c.original.id === b.id))}
               onDelete={onDelete}
             />
           ))}
 
-          {editBars && bars.map(({ b, r, g }) =>
-            b.id > 0 ? <BarHandles key={`h-${b.clientKey ?? b.id}`} b={b} g={g} rows={rows} style={place(r, g.a, g.len)} onStart={resize.startResize} /> : null,
+          {(editBars || tabsOnPicked) && bars.map(({ b, r, g }) =>
+            canEdit(b) ? <BarHandles key={`h-${b.clientKey ?? b.id}`} b={b} g={g} rows={rows} style={place(r, g.a, g.len)} onStart={resize.startResize} /> : null,
           )}
 
           {ghosts.map(({ room, roomId, checkIn, checkOut, r, g }) => (
@@ -400,6 +479,23 @@ export default function RoomGrid({
           ))}
         </div>
       </div>
+      {navW > 0 && (
+        <LiveRoomNavigator
+          bus={scrollBus.current}
+          scrollRef={scrollRef}
+          rooms={rooms}
+          inView={rowsInView}
+          width={navW}
+          height={avail}
+          minView={(boxH / zoom - HEAD) / MAX_ROW_PX}
+          maxView={(boxH / zoom - HEAD) / fitRow}
+          onView={changeRowView}
+          rowPx={rowPx}
+        />
+      )}
+      </div>
+
+      <p className="sr-only" role="status" aria-live="polite">{announce}</p>
 
       {resize.drag && resize.drag.x !== undefined && (
         <p
@@ -421,11 +517,11 @@ export default function RoomGrid({
       {rows && fitW > 0 && !touchUi && (
         <div className="mt-1.5 flex items-center gap-2 text-xs text-muted">
           <div className="min-w-0 flex-1">
-            <TimelineNavigator
+            <LiveTimelineNavigator
+              bus={scrollBus.current}
               scrollRef={scrollRef}
               n={n}
               dayPx={cellW * zoom}
-              first={scrollPos / (cellW * zoom)}
               inView={inViewF}
               span={visibleDays}
               minScale={MIN_WIDTH_SCALE}
@@ -440,7 +536,17 @@ export default function RoomGrid({
         </div>
       )}
       <SelectionSummary summary={summary} />
-      {sel?.pending && <TouchBar summary={summary} onCancel={selection.cancel} onHold={selection.confirm} />}
+      <Presence show={Boolean(sel?.pending)}><TouchBar summary={summary} onCancel={selection.cancel} onHold={selection.confirm} /></Presence>
     </div>
   );
+}
+
+// The two navigator bars, each following the scroll position on its own so the grid is not redrawn on every scroll frame.
+function LiveRoomNavigator({ bus, scrollRef, rowPx, ...rest }) {
+  const { top } = useScrollPos(bus, scrollRef);
+  return <RoomNavigator scrollRef={scrollRef} rowPx={rowPx} first={top / rowPx} {...rest} />;
+}
+function LiveTimelineNavigator({ bus, scrollRef, dayPx, ...rest }) {
+  const { left } = useScrollPos(bus, scrollRef);
+  return <TimelineNavigator scrollRef={scrollRef} dayPx={dayPx} first={left / dayPx} {...rest} />;
 }

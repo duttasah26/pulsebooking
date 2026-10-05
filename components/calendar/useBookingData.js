@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '../../lib/useApi';
-import { addDays, daysInMonth, monthStart } from '../../lib/dates';
+import { addDays, daysInMonth, diffDays, monthStart } from '../../lib/dates';
 
 // The dates the current view needs bookings for.
 // The timeline loads `windows` screens of `span` days after the start date (more as you scroll right) and `lead` days
 // before it (so past dates can be scrolled to), so the days around the visible ones are ready.
 function windowFor(view, date, span, windows, lead) {
   if (view === 'timeline') return { from: addDays(date, -lead), days: lead + span * windows };
-  if (view === 'day') return { from: addDays(date, -1), days: 3 };
+  if (view === 'day') {
+    // The whole strip (three days each side) shows arrivals and leavings. The window moves a week at a time, so holding an
+    // arrow to step through days does not send a request for every day.
+    const weekStart = addDays(date, -(((diffDays('2000-01-03', date) % 7) + 7) % 7));
+    return { from: addDays(weekStart, -7), days: 21 };
+  }
   const first = monthStart(date);
   return { from: first, days: daysInMonth(first) };
 }

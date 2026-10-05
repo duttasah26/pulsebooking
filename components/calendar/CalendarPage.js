@@ -14,8 +14,13 @@ import ToolRail from './ToolRail';
 import HelpGuide from './HelpGuide';
 
 // Wide screens: the slim tool pane on the left, then the calendar, then the booking dock (written out in full so Tailwind can see them).
-const WITH_TOOLS = { open: 'lg:grid-cols-[4rem_minmax(0,1fr)_23rem]', folded: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]' };
+// The calendar always leaves a slim column on the right (the width of the folded tab). Open, the booking panel lies over that
+// column and the calendar's right side (see Dock overlay); folded, its tab sits in the column. Either way the calendar never
+// changes size when the panel opens or closes.
+const WITH_TOOLS = { open: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]' };
 import { useToast } from '../Toast';
+import Presence from '../Presence';
+import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
@@ -39,6 +44,7 @@ import { addDays, diffDays, daysInMonth, monthStart, range, today, addMonths, fm
 export default function CalendarPage() {
   const router = useRouter();
   const toast = useToast();
+  const { ready: settingsReady } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
   const short = useMediaQuery('(orientation: landscape) and (max-height: 500px)'); // a phone held sideways
   const rail = wide || short; // the tool pane on the left (a phone held sideways has the width for it, not the height for the toolbar rows)
@@ -281,7 +287,7 @@ export default function CalendarPage() {
     if (message) toast({ message, duration: 3000 });
   };
 
-  if (!mounted || !router.isReady) return <PageSkeleton />;
+  if (!mounted || !router.isReady || !settingsReady) return <PageSkeleton />;
 
   const { floorKeys, shownFloors, visibleRooms } = deriveFloors(roomList, floors);
   const visibleIds = new Set(visibleRooms.map((r) => r.id));
@@ -324,32 +330,33 @@ export default function CalendarPage() {
 
   // What is picked, with View / Delete / Done. It sits in the line under the grid (where the hint is), so it never pushes
   // the calendar down when it appears.
-  const selectionStrip = selecting ? (
-    <div role="status" data-below-grid className="flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft px-2 py-1 text-sm">
-      <span className="min-w-0 flex-1 px-1 font-medium">
+  // Nothing picked yet: the Select banner below already says what to do (and has Done), so the strip waits for the first pick.
+  const selectionStrip = selecting && pickedBookings.length > 0 ? (
+    <div role="status" data-below-grid className="animate-fade no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg border-2 border-accent bg-accent-soft px-2 text-sm">
+      <span className="min-w-0 flex-1 shrink-0 whitespace-nowrap px-1 font-medium">
         {pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>
       {!wide && pickedBookings.length > 0 && (
-        <button type="button" className="btn min-h-11 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
-          <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? ` ${pickedBookings.length}` : ''}
+        <button type="button" className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
+          <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
         </button>
       )}
       {pickedHasBookings ? (
-        <HoldButton className="btn btn-danger min-h-11 lg:min-h-8" onConfirm={deletePicked}>
-          <Trash size={16} /> Hold to Delete {pickedBookings.length}
+        <HoldButton className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onConfirm={deletePicked}>
+          <Trash size={16} /> Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span>
         </HoldButton>
       ) : (
-        <button type="button" className="btn btn-danger min-h-11 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
-          <Trash size={16} /> Delete{pickedBookings.length > 0 ? ` ${pickedBookings.length}` : ''}
+        <button type="button" className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
+          <Trash size={16} /> Delete{pickedBookings.length > 0 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
         </button>
       )}
       <button
         type="button"
-        className="btn min-h-11 lg:min-h-8"
+        className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8"
         onClick={() => (pickedBookings.length === 0 ? toggleMouseTool() : stopSelecting())}
         title={pickedBookings.length === 0 ? 'Leave Select' : 'Let go of everything picked (or press Esc)'}
       >
-        <X size={16} /> {pickedBookings.length === 0 ? 'Done' : 'Unselect All'}
+        <X size={16} /> {pickedBookings.length === 0 ? 'Done' : <>Unselect<span className="max-sm:hidden"> All</span></>}
       </button>
     </div>
   ) : null;
@@ -402,7 +409,7 @@ export default function CalendarPage() {
         </p>
       )}
 
-      <div className={`lg:grid lg:items-start lg:gap-4 short:grid short:grid-cols-[4.5rem_minmax(0,1fr)] short:items-start short:gap-2 ${grid}`}>
+      <div className={`relative lg:grid lg:items-start lg:gap-4 short:grid short:grid-cols-[4.5rem_minmax(0,1fr)] short:items-start short:gap-2 ${grid}`}>
         {rail && roomList.length > 0 && (
           <ToolRail
             canTool={showGrid}
@@ -416,20 +423,23 @@ export default function CalendarPage() {
             onToggleSelect={toggleSelectTool}
             onToggleHold={toggleHoldTool}
             onToggleHand={toggleHandTool}
-            zoom={zoom}
-            onZoom={(z) => setZoom(clampZoom(z))}
             onHelp={() => setHelpOpen(true)}
             onNew={blank ? () => (drawing ? stopDrawing() : startNew()) : undefined}
           />
         )}
 
-        <div className="@container min-w-0 space-y-2">
+        {rail && roomList.length === 0 && (
+          // Holds the tool column's place until the rooms arrive, so the calendar does not slide into it and sit at the wrong edge.
+          <div aria-hidden="true" className={`h-60 rounded-lg ${rooms.loading || !rooms.data ? 'skeleton' : ''}`} />
+        )}
+
+        <div className="@container relative min-w-0 space-y-2">
           {rooms.loading || !rooms.data ? (
             <GridSkeleton />
           ) : roomList.length === 0 ? (
             <p className="rounded-lg border border-line bg-surface p-6 text-center text-muted">No rooms yet. Add rooms in the database to start booking.</p>
           ) : (
-            <div className={bookings.loading ? 'opacity-70 transition-opacity' : 'transition-opacity'}>
+            <div key={view} className={`animate-settle ${bookings.loading ? 'opacity-70 transition-opacity' : 'transition-opacity'}`}>
               {showGrid && (
                 <RoomGrid
                   key={`${view}-${shownFloors.join('')}`}
@@ -478,15 +488,15 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {showGrid && roomList.length > 0 && (drawing || quickHold || touchSelect || hand) && (
+          <Presence show={showGrid && roomList.length > 0 && (drawing || quickHold || hand || (touchSelect && pickedBookings.length === 0))}>
             <ModeBanner
               mode={drawing ? 'draw' : quickHold ? 'reserve' : touchSelect ? 'select' : 'hand'}
               touch={!wide}
               onExit={drawing ? stopDrawing : toggleMouseTool}
               onSkip={drawing && !wide ? () => { setDrawing(false); setNewOpen(true); } : undefined}
             />
-          )}
-          {showGrid && roomList.length > 0 && (rail ? selectionStrip : <ZoomBar zoom={zoom} tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} onChange={(z) => setZoom(clampZoom(z))} />)}
+          </Presence>
+          {showGrid && roomList.length > 0 && (rail ? selectionStrip : <ZoomBar tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} />)}
         </div>
 
         <BookingPanel
@@ -526,18 +536,25 @@ export default function CalendarPage() {
   );
 }
 
-// Loading looks like the calendar it will become, so nothing jumps when the data arrives.
+// Loading looks like the calendar it will become (dates down the side, rooms across the top, a few stays drawn in), so
+// nothing jumps when the data arrives. The shimmer sweeps once across all of it.
+const SKELETON_STAYS = { 1: [[0, 3]], 3: [[2, 2]], 4: [[0, 2]], 6: [[1, 3]], 8: [[3, 2]], 9: [[0, 1]], 11: [[2, 3]] };
 function GridSkeleton() {
+  const cols = 6;
   return (
     <div className="rounded-lg border border-line bg-surface p-2" aria-busy="true" aria-label="Loading calendar…">
-      <div className="mb-2 flex gap-1.5 pl-16">
-        {Array.from({ length: 10 }, (_, i) => <div key={i} className="h-8 flex-1 rounded-md bg-surface-2 motion-safe:animate-pulse" />)}
+      <div className="mb-2 grid gap-1.5" style={{ gridTemplateColumns: `3.5rem repeat(${cols}, minmax(0, 1fr))` }}>
+        <div />
+        {Array.from({ length: cols }, (_, i) => <div key={i} className="skeleton h-9 rounded-md" style={{ animationDelay: `${i * 80}ms` }} />)}
       </div>
       <div className="space-y-1.5">
-        {Array.from({ length: 14 }, (_, i) => (
-          <div key={i} className="flex gap-1.5">
-            <div className="h-5 w-14 shrink-0 rounded-md bg-surface-2 motion-safe:animate-pulse" />
-            <div className="h-5 flex-1 rounded-md bg-surface-2/60 motion-safe:animate-pulse" />
+        {Array.from({ length: 12 }, (_, r) => (
+          <div key={r} className="grid gap-1.5" style={{ gridTemplateColumns: `3.5rem repeat(${cols}, minmax(0, 1fr))` }}>
+            <div className="skeleton h-9 rounded-md" style={{ animationDelay: `${r * 60}ms` }} />
+            {Array.from({ length: cols }, (_, c) => {
+              const stay = (SKELETON_STAYS[r] ?? []).find(([col]) => col === c);
+              return <div key={c} className={`h-9 rounded-md ${stay ? 'skeleton' : 'bg-surface-2/50'}`} style={stay ? { animationDelay: `${(r + c) * 70}ms` } : undefined} />;
+            })}
           </div>
         ))}
       </div>
@@ -550,15 +567,15 @@ function PageSkeleton() {
   return (
     <div className="space-y-3" aria-busy="true" aria-label="Loading calendar…">
       <div className="flex flex-wrap items-center gap-2">
-        {[10, 14, 20, 28].map((w) => <div key={w} className="h-9 rounded-lg bg-surface-2 motion-safe:animate-pulse" style={{ width: `${w * 4}px` }} />)}
-        <div className="h-7 w-56 rounded-lg bg-surface-2 motion-safe:animate-pulse" />
+        {[10, 14, 20, 28].map((w) => <div key={w} className="h-9 rounded-lg bg-surface-2 skeleton" style={{ width: `${w * 4}px` }} />)}
+        <div className="h-7 w-56 rounded-lg bg-surface-2 skeleton" />
       </div>
       <div className="flex gap-4">
-        <div className="hidden h-60 w-16 rounded-lg bg-surface-2 motion-safe:animate-pulse lg:block" />
+        <div className="hidden h-60 w-16 rounded-lg bg-surface-2 skeleton lg:block" />
         <div className="min-w-0 flex-1">
           <GridSkeleton />
         </div>
-        <div className="hidden h-72 w-[23rem] rounded-lg bg-surface-2 motion-safe:animate-pulse lg:block" />
+        <div className="hidden h-72 w-[23rem] rounded-lg bg-surface-2 skeleton lg:block" />
       </div>
     </div>
   );

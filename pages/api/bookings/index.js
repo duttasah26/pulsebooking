@@ -14,6 +14,8 @@ const SORTS = {
   created: sql`b.created_at`,
 };
 const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hold'];
+const csv = (value) => String(value ?? '').split(',').map((v) => v.trim()).filter(Boolean);
+const escapeLike = (text) => text.replace(/[\\%_]/g, (c) => '\\' + c);
 
 // GET /api/bookings
 //   when=past|current|upcoming|all (default all)    deleted=hide|show|only (default hide)
@@ -21,10 +23,14 @@ const STATUSES = ['confirmed', 'checked_in', 'checked_out', 'cancelled', 'on_hol
 //   from=YYYY-MM-DD&to=YYYY-MM-DD  (bookings overlapping that range, to is exclusive)
 //   room_id, guest_id, q (guest name, organization or hold label contains), sort=check_in|check_out|room|guest|created, dir=asc|desc
 //   year & month (1-12) still work for the current calendar.
+//   Custom views: status, room_id and floor take several values separated by commas (status=confirmed,checked_in).
+//   floor=1,2 (first digit of the room number), org (organization contains), contact=yes|no (the guest has a phone or email),
+//   nights_min, nights_max, range_by=stay|check_in|check_out with range_from and range_to (both inclusive),
+//   sort2 and dir2: a second sort for ties.
 // deleted=only never lists on-hold bookings: removing a hold deletes it for good, so old ones are not "deleted records".
 async function list(req, res) {
   await autoCheckout(); // anything whose leaving day and time have passed becomes Checked out
-  const { when = 'all', deleted = 'hide', status, holds, room_id, guest_id, q, sort = 'check_in', dir = 'desc' } = req.query;
+  const { when = 'all', deleted = 'hide', status, holds, room_id, guest_id, q, sort = 'check_in', dir = 'desc', sort2, dir2 = 'asc', floor, org, contact, nights_min, nights_max, range_by = 'stay', range_from, range_to } = req.query;
   let { from, to } = req.query;
 
   if (req.query.year && req.query.month) {
@@ -47,8 +53,9 @@ async function list(req, res) {
   else if (when !== 'all') throw new HttpError(400, 'when must be past, current, upcoming or all');
 
   if (status) {
-    if (!STATUSES.includes(status)) throw new HttpError(400, `status must be one of ${STATUSES.join(', ')}`);
-    where.push(sql`b.status = ${status}`);
+    const list = csv(status);
+    for (const s of list) if (!STATUSES.includes(s)) throw new HttpError(400, `status must be one of ${STATUSES.join(', ')}`);
+    if (list.length) where.push(list.length === 1 ? sql`b.status = ${list[0]}` : sql`b.status IN ${sql(list)}`);
   }
   if (holds === 'hide') where.push(sql`b.status <> 'on_hold'`);
   if (from || to) {
@@ -56,7 +63,32 @@ async function list(req, res) {
     const b = to ? parseDate(to, 'to') : 'infinity';
     where.push(sql`b.stay && daterange(${a}::date, ${b}::date, '[)')`);
   }
-  if (room_id) where.push(sql`b.room_id = ${parseId(room_id, 'room_id')}`);
+  if (room_id) {
+    const ids = csv(room_id).map((v) => parseId(v, 'room_id'));
+    if (ids.length) where.push(ids.length === 1 ? sql`b.room_id = ${ids[0]}` : sql`b.room_id IN ${sql(ids)}`);
+  }
+  if (floor) {
+    const floors = csv(floor);
+    for (const f of floors) if (!/^[1-9]$/.test(f)) throw new HttpError(400, 'floor must be digits 1 to 9');
+    if (floors.length) where.push(sql`left(r.number, 1) IN ${sql(floors)}`);
+  }
+  if (org) {
+    const like = `%${escapeLike(String(org).trim().slice(0, 60))}%`;
+    where.push(sql`(b.organization ILIKE ${like} OR g.organization ILIKE ${like})`);
+  }
+  if (contact === 'yes') where.push(sql`(g.phone IS NOT NULL OR g.email IS NOT NULL)`);
+  else if (contact === 'no') where.push(sql`(g.id IS NULL OR (g.phone IS NULL AND g.email IS NULL))`);
+  else if (contact) throw new HttpError(400, 'contact must be yes or no');
+  if (nights_min) where.push(sql`(upper(b.stay) - lower(b.stay)) >= ${parseId(nights_min, 'nights_min')}`);
+  if (nights_max) where.push(sql`(upper(b.stay) - lower(b.stay)) <= ${parseId(nights_max, 'nights_max')}`);
+  if (range_from || range_to) {
+    const a = range_from ? parseDate(range_from, 'range_from') : '-infinity';
+    const z = range_to ? parseDate(range_to, 'range_to') : 'infinity';
+    if (range_by === 'check_in') where.push(sql`lower(b.stay) BETWEEN ${a}::date AND ${z}::date`);
+    else if (range_by === 'check_out') where.push(sql`upper(b.stay) BETWEEN ${a}::date AND ${z}::date`);
+    else if (range_by === 'stay') where.push(sql`b.stay && daterange(${a}::date, ${z}::date, '[]')`);
+    else throw new HttpError(400, 'range_by must be stay, check_in or check_out');
+  }
   if (guest_id) where.push(sql`b.guest_id = ${parseId(guest_id, 'guest_id')}`);
   if (q) {
     where.push(sql`(${nameMatch(q, [sql`g.name`, sql`b.organization`, sql`b.label`])})`);
@@ -65,6 +97,11 @@ async function list(req, res) {
   const orderBy = SORTS[sort];
   if (!orderBy) throw new HttpError(400, `sort must be one of ${Object.keys(SORTS).join(', ')}`);
   const direction = dir === 'asc' ? sql`ASC` : sql`DESC`;
+  let thenBy = sql``;
+  if (sort2 && sort2 !== sort) {
+    if (!SORTS[sort2]) throw new HttpError(400, `sort2 must be one of ${Object.keys(SORTS).join(', ')}`);
+    thenBy = sql`${SORTS[sort2]} ${dir2 === 'desc' ? sql`DESC` : sql`ASC`},`;
+  }
 
   const whereSql = where.length
     ? sql`WHERE ${where.reduce((acc, cond, i) => (i === 0 ? cond : sql`${acc} AND ${cond}`))}`
@@ -73,7 +110,7 @@ async function list(req, res) {
   const rows = await sql`
     SELECT ${bookingColumns} ${bookingJoins}
     ${whereSql}
-    ORDER BY ${orderBy} ${direction}, b.id ${direction}
+    ORDER BY ${orderBy} ${direction}, ${thenBy} b.id ${direction}
   `;
   res.status(200).json(rows);
 }

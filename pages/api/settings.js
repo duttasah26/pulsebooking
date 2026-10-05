@@ -1,6 +1,6 @@
 import sql from '../../lib/db';
 import { HttpError, parseColor, parseTime, route } from '../../lib/api';
-import { STATUS_COLOR_KEYS, STAY_COLOR_KEYS, mergeSettings, patchSettings } from '../../lib/settings';
+import { SPAN_CHOICES, STATUS_COLOR_KEYS, STAY_COLOR_KEYS, VIEW_CHOICES, mergeSettings, patchSettings } from '../../lib/settings';
 
 const KEY = 'app';
 
@@ -14,7 +14,8 @@ async function get(req, res) {
   res.status(200).json(await load());
 }
 
-// PATCH /api/settings  { floorColors?: {1: 'sky'}, statusColors?: {on_hold: '#f5d547'}, stayColors?: {checkIn: 'sky'}, checkInTime?, checkOutTime? }
+// PATCH /api/settings  { floorColors?: {1: 'sky'}, statusColors?: {on_hold: '#f5d547'}, stayColors?: {checkIn: 'sky'}, checkInTime?, checkOutTime?,
+//                         autoCheckout?: boolean, defaultView?: 'timeline'|'month'|'calendar'|'day', defaultSpan?: 'auto'|'7'|'14'|'30'|'month' }
 // A null colour goes back to the default. Only the parts sent are changed.
 async function patch(req, res) {
   const body = req.body ?? {};
@@ -42,6 +43,18 @@ async function patch(req, res) {
   }
   if ('checkInTime' in body) change.checkInTime = parseTime(body.checkInTime, 'checkInTime');
   if ('checkOutTime' in body) change.checkOutTime = parseTime(body.checkOutTime, 'checkOutTime');
+  if ('autoCheckout' in body) {
+    if (typeof body.autoCheckout !== 'boolean') throw new HttpError(400, 'autoCheckout must be true or false');
+    change.autoCheckout = body.autoCheckout;
+  }
+  if ('defaultView' in body) {
+    if (!VIEW_CHOICES.includes(body.defaultView)) throw new HttpError(400, `defaultView must be one of ${VIEW_CHOICES.join(', ')}`);
+    change.defaultView = body.defaultView;
+  }
+  if ('defaultSpan' in body) {
+    if (!SPAN_CHOICES.includes(String(body.defaultSpan))) throw new HttpError(400, `defaultSpan must be one of ${SPAN_CHOICES.join(', ')}`);
+    change.defaultSpan = String(body.defaultSpan);
+  }
   if (Object.keys(change).length === 0) throw new HttpError(400, 'Nothing to update');
 
   const next = patchSettings(await load(), change);

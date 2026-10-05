@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, Hand, MagnifyingGlassMinus, MagnifyingGlassPlus, PencilSimpleLine, Plus } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, Hand, PencilSimpleLine, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
+import { ZoomControl } from './ZoomBar';
 import RangePopover from './RangePopover';
 import { SPANS } from './useCalendarParams';
 import { daysInMonth, monthStart, today } from '../../lib/dates';
@@ -88,6 +89,7 @@ export default function CalendarToolbar({
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
+        {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
       </div>
 
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that

@@ -33,10 +33,12 @@ export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, 
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
       window.removeEventListener('pointercancel', end);
+      window.removeEventListener('blur', end);
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', end);
     window.addEventListener('pointercancel', end);
+    window.addEventListener('blur', end);
   };
 
   const jump = (e) => {

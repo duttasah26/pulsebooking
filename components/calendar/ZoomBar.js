@@ -1,5 +1,5 @@
 import { MagnifyingGlassMinus, MagnifyingGlassPlus, Question } from '@phosphor-icons/react';
-import { MousePill, PencilPill, SavePill } from './InlineIcons';
+import { MousePill, PencilPill } from './InlineIcons';
 
 const MIN = 0.6;
 const MAX = 1.6;
@@ -38,7 +38,46 @@ function HoldSteps() {
   );
 }
 
-export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp, touch = false }) {
+// The zoom control, in the top toolbar beside the month: minus, a slider (wide screens), plus, and the percentage, which
+// is also the way back to 100%. Smaller shows more of the calendar; larger makes the cells easier to hit.
+export function ZoomControl({ zoom, onChange }) {
+  const pct = Math.round(zoom * 100);
+  const fill = ((zoom - MIN) / (MAX - MIN)) * 100;
+  return (
+    <div role="group" aria-label="Zoom" className="flex shrink-0 items-center gap-0.5 rounded-lg border border-line bg-surface p-0.5">
+      <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
+        <MagnifyingGlassMinus size={20} aria-hidden="true" />
+      </button>
+      <input
+        type="range"
+        name="zoom"
+        min={MIN}
+        max={MAX}
+        step="0.05"
+        value={zoom}
+        onChange={(e) => onChange(clampZoom(Number(e.target.value)))}
+        aria-label="Calendar zoom"
+        aria-valuetext={`${pct} percent`}
+        className="zoom-range hidden w-28 lg:block"
+        style={{ '--fill': `${fill}%` }}
+      />
+      <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom in, make bigger" title="Zoom in: make bigger" disabled={zoom >= MAX} onClick={() => onChange(clampZoom(zoom + 0.1))}>
+        <MagnifyingGlassPlus size={20} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        className={`btn min-w-16 px-2 font-mono text-sm font-semibold tabular-nums ${pct === 100 ? 'border-transparent text-muted' : 'border-accent bg-accent-soft text-accent-text'}`}
+        onClick={() => onChange(1)}
+        aria-label={`Zoom is ${pct} percent. Press to go back to 100 percent`}
+        title="Back to 100%"
+      >
+        {pct}%
+      </button>
+    </div>
+  );
+}
+
+export default function ZoomBar({ tool = 'mouse', strip, onHelp, touch = false }) {
   return (
     <div data-below-grid className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1">
       {strip ? (
@@ -57,28 +96,6 @@ export default function ZoomBar({ zoom, onChange, tool = 'mouse', strip, onHelp,
           <Question size={18} weight="bold" aria-hidden="true" /> How to use
         </button>
       )}
-      <div className="flex shrink-0 items-center gap-1.5 text-muted">
-        <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out" onClick={() => onChange(clampZoom(zoom - 0.1))}>
-          <MagnifyingGlassMinus size={18} aria-hidden="true" />
-        </button>
-        <input
-          type="range"
-          name="zoom"
-          min={MIN}
-          max={MAX}
-          step="0.1"
-          value={zoom}
-          onChange={(e) => onChange(clampZoom(Number(e.target.value)))}
-          aria-label="Calendar zoom"
-          className="hidden w-24 accent-[var(--accent)] lg:block"
-        />
-        <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom in" onClick={() => onChange(clampZoom(zoom + 0.1))}>
-          <MagnifyingGlassPlus size={18} aria-hidden="true" />
-        </button>
-        <button type="button" className="btn min-w-14 border-transparent px-2 font-mono text-xs" onClick={() => onChange(1)} title="Reset zoom to 100%">
-          {Math.round(zoom * 100)}%
-        </button>
-      </div>
     </div>
   );
 }
