@@ -3,7 +3,7 @@ import { VIEWS } from './useCalendarParams';
 // Month / Timeline / Occupancy / Day. The labels turn into icons when the calendar column is narrow.
 export default function ViewTabs({ view, onChange }) {
   return (
-    <div role="tablist" aria-label="Calendar view" className="no-scrollbar flex max-w-full shrink-0 gap-0.5 overflow-x-auto rounded-lg border border-line bg-surface p-0.5">
+    <div role="tablist" aria-label="Calendar view" className="no-scrollbar flex max-w-full shrink-0 gap-0.5 overflow-x-auto rounded-lg border border-chrome-line bg-chrome p-0.5">
       {VIEWS.map((v) => (
         <button
           key={v.key}

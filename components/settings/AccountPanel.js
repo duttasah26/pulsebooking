@@ -49,7 +49,7 @@ export default function AccountPanel() {
       {/* Who you are, and the way out: Sign Out is the big button, not a small icon in a corner. */}
       <section className="space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5" aria-label="Who is signed in">
         <div className="flex items-center gap-4">
-          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-lg bg-accent-soft text-3xl font-bold text-accent-text">{me.loading ? '' : initial}</span>
+          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-lg bg-accent-soft text-3xl font-semibold text-accent-text">{me.loading ? '' : initial}</span>
           <div className="min-w-0 flex-1">
             <p className="text-base text-ink/80">Signed in as</p>
             <p className="break-words text-2xl font-semibold leading-tight">{me.loading ? '…' : name ?? 'Nobody'}</p>
@@ -95,7 +95,7 @@ export default function AccountPanel() {
               </p>
             )}
             <button type="submit" className="btn btn-primary w-full" disabled={busy || !current || !next || !again || Boolean(mismatch)}>
-              {busy ? 'Saving…' : 'Change Password'}
+              {busy ? 'Saving…' : <><LockKey size={18} aria-hidden="true" /> Change Password</>}
             </button>
           </form>
         </FoldSection>

@@ -29,11 +29,12 @@ import { SelectionSummary, TouchBar } from './grid/SelectionOverlay';
 export const MIN_WIDTH_SCALE = 0.5;
 export const MAX_WIDTH_SCALE = 3;
 const MAX_HEIGHT_SCALE = 6;
+const MIN_ROW_PX = 20; // every room fits in the window: rows shrink to this before the room bar has to scroll (text shrinks with them)
 const MAX_ROW_PX = 240;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
-  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft, extraReserve = 0,
+  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft, extraReserve = 0, onBlank, spot = null,
 }) {
   const rows = orientation === 'rows';
   const n = days.length;
@@ -41,6 +42,7 @@ export default function RoomGrid({
   const todayStr = today();
   const scrollRef = useRef(null);
   const gridRef = useRef(null);
+  const canPick = !holdEnabled && !pan && Boolean(onBlank); // Open and Select: a date or a room number is a button that highlights its column or row
   const placing = holdEnabled; // pencil on: drag free nights to hold, drag a booking's end to stretch it
   // With the On Hold tool only holds can be moved or stretched. Other bookings are moved or stretched while picked (Select).
   // New Booking only draws nights for the new booking.
@@ -143,8 +145,8 @@ export default function RoomGrid({
   const [heightScale, setHeightScale] = useState(1);
   const rowAnchor = useRef(null);
   const topRowRef = useRef(0);
-  const fitRow = rows && avail ? Math.min(160, Math.max(24, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
-  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(24, Math.round(fitRow * heightScale))) : baseH;
+  const fitRow = rows && avail ? Math.min(160, Math.max(MIN_ROW_PX, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(MIN_ROW_PX, Math.round(fitRow * heightScale))) : baseH;
   const rowPx = cellH * zoom;
   const boxH = Math.max(0, (avail ?? 0) - 2); // the scrolling box, less its border
   const rowsInView = rows && avail ? (boxH / zoom - HEAD) / cellH : rooms.length; // rooms in view, exactly
@@ -386,6 +388,9 @@ export default function RoomGrid({
       r={r}
       rows={rows}
       active={Boolean(activeRoomIds?.includes(room.id))}
+      spot={spot?.roomId === room.id}
+      onPick={canPick ? () => onBlank({ roomId: room.id }) : undefined}
+      compact={rows && cellH < 30}
       onToggle={onToggleRoom}
     />
   ));
@@ -427,8 +432,8 @@ export default function RoomGrid({
           style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), zoom }}
         >
           <GridCorner />
-          {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} isToday={d === todayStr} />) : heads}
-          {rows ? heads : days.map((d, i) => <DayLabel key={d} d={d} i={i} isToday={d === todayStr} />)}
+          {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} isToday={d === todayStr} narrow={cellW * zoom < 36} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />) : heads}
+          {rows ? heads : days.map((d, i) => <DayLabel key={d} d={d} i={i} isToday={d === todayStr} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />)}
 
           {rooms.map((room, r) =>
             days.map((d, i) => (
@@ -445,6 +450,8 @@ export default function RoomGrid({
                 style={place(r, i)}
                 onPointerDown={placing ? (e) => selection.onPointerDown(e, r, i) : undefined}
                 onClick={placing ? (e) => selection.onClick(e, r, i) : undefined}
+                onBlank={!placing && !pan ? onBlank : undefined}
+                spot={Boolean(spot && (spot.roomId == null || spot.roomId === room.id) && (spot.d == null || spot.d === d))}
               />
             )),
           )}
@@ -457,6 +464,7 @@ export default function RoomGrid({
               rows={rows}
               style={place(r, g.a, g.len)}
               active={Boolean(activeIds?.has(b.id))}
+              faded={Boolean(preview?.replaces?.includes(b.id))}
               selectMode={selecting}
               picked={Boolean(picked?.has(b.id))}
               onOpen={onOpen}
@@ -475,7 +483,7 @@ export default function RoomGrid({
           )}
 
           {ghosts.map(({ room, roomId, checkIn, checkOut, r, g }) => (
-            <GhostBar key={room} g={g} rows={rows} style={place(r, g.a, g.len)} tone={preview.tone} name={preview.name} onRemove={onRemoveDraft && !preview.locked ? () => onRemoveDraft(roomId, checkIn, checkOut) : undefined} />
+            <GhostBar key={room} g={g} rows={rows} style={place(r, g.a, g.len)} tone={preview.tone} name={preview.name} hold={preview.status === 'on_hold'} onRemove={onRemoveDraft && !preview.locked ? () => onRemoveDraft(roomId, checkIn, checkOut) : undefined} />
           ))}
         </div>
       </div>
@@ -500,7 +508,7 @@ export default function RoomGrid({
       {resize.drag && resize.drag.x !== undefined && (
         <p
           aria-live="polite"
-          className="pointer-events-none fixed z-[60] rounded-lg bg-ink px-2.5 py-1 text-xs font-medium text-canvas shadow-lg"
+          className="pointer-events-none fixed z-[60] rounded-lg bg-ink px-2.5 py-1 text-sm font-medium text-canvas shadow-lg"
           style={{ left: resize.drag.x + 14, top: resize.drag.y + 16 }}
         >
           {rooms.find((r) => r.id === resize.drag.roomId)?.number ? `Room ${rooms.find((r) => r.id === resize.drag.roomId).number}: ` : ''}
@@ -515,7 +523,7 @@ export default function RoomGrid({
         />
       )}
       {rows && fitW > 0 && !touchUi && (
-        <div className="mt-1.5 flex items-center gap-2 text-xs text-muted">
+        <div className="mt-1.5 flex items-center gap-2 text-sm text-muted">
           <div className="min-w-0 flex-1">
             <LiveTimelineNavigator
               bus={scrollBus.current}
@@ -529,7 +537,7 @@ export default function RoomGrid({
               onScale={changeScale}
             />
           </div>
-          <span className="w-16 shrink-0 text-right font-mono">{inView} days</span>
+          <span className="w-16 shrink-0 text-right tabular-nums"><span className="font-mono">{inView}</span> days</span>
           <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 lg:min-h-7 lg:min-w-7" title={`Default view: ${visibleDays} days fill the screen, from the first day`} aria-label="Reset to the default view" onClick={resetNav}>
             <ArrowCounterClockwise size={15} aria-hidden="true" />
           </button>

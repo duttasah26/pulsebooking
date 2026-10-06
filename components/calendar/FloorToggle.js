@@ -9,7 +9,7 @@ export default function FloorToggle({ floorKeys, shownFloors, onToggle }) {
   const { settings } = useSettings();
   if (floorKeys.length < 2) return null;
   return (
-    <div role="group" aria-label="Floors" className="no-scrollbar flex max-w-full shrink-0 items-center gap-0.5 overflow-x-auto rounded-lg border border-line bg-surface p-0.5">
+    <div role="group" aria-label="Floors" className="no-scrollbar flex max-w-full shrink-0 items-center gap-0.5 overflow-x-auto rounded-lg border border-chrome-line bg-chrome p-0.5">
       <Stairs size={16} aria-hidden="true" className="mx-1.5 shrink-0 text-muted" />
       {floorKeys.map((f) => {
         const on = shownFloors.includes(f);

@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  ArrowLeft, ArrowRight, Baby, Plus, Suitcase, Bed, Buildings, CalendarBlank, Check, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Tag, User, Users, WarningCircle, X,
-} from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Clock, Eraser, Plus, X } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import DateRangePicker from '../DateRangePicker';
@@ -10,6 +8,7 @@ import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import RoomPicker from './RoomPicker';
 import StatusPicker from './StatusPicker';
+import ColorPicker from './ColorPicker';
 import { Card, Moment, MomentPair, Stepper } from './formParts';
 import MoreOptions from './MoreOptions';
 import { RATE_PLANS } from './bookingOptions';
@@ -32,21 +31,21 @@ function StayLine({ room, checkIn, checkOut, inTime, outTime }) {
   const { settings } = useSettings();
   const shade = roomShade({ number: room }, settings);
   const chip = (
-    <span className="rounded px-2 py-0.5 font-mono text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
-      Room {room}
+    <span className="rounded px-2 py-0.5 text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
+      Room <span className="font-mono">{room}</span>
     </span>
   );
   // A new booking starts with no days chosen: say so instead of trying to write a date that is not there.
   if (!checkIn || !checkOut) {
     return (
-      <li className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2 text-base">
+      <li className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2.5 text-base">
         {chip}
         <span className="text-muted">No days chosen yet</span>
       </li>
     );
   }
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2 text-base">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2.5 text-base">
       {chip}
       <span><span className="text-muted">Check-in</span> <strong className="font-semibold">{fmtShort(checkIn)}</strong>{inTime && <span className="text-muted">, {formatTime(inTime)}</span>}</span>
       <span><span className="text-muted">Check-out</span> <strong className="font-semibold text-danger">{fmtShort(checkOut)}</strong>{outTime && <span className="text-muted">, {formatTime(outTime)}</span>}</span>
@@ -281,17 +280,19 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         if (step < 2) go(step + 1);
         else confirm();
       }}
-      className="space-y-4 lg:space-y-3"
+      className="form-area flex flex-1 flex-col gap-5"
     >
       <StepList step={step} done={done} onGo={go} />
 
       <div>
         <h2 className="text-lg font-semibold leading-tight">{ASKS[step].title}</h2>
-        <p className="text-sm leading-snug text-ink/70">{ASKS[step].help}</p>
+        <p className="text-base leading-snug text-ink/70">{ASKS[step].help}</p>
       </div>
 
+      {hint && (guestProblem || stayProblem || extraProblem) ? <p key={hint} className="animate-shake flex items-center gap-2 rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-2 text-base" role="alert"><WarningCircle size={20} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
+
       {/* Step 1: the guest (and organization). */}
-      <div className={`space-y-3 ${step === 0 ? '' : 'hidden'}`}>
+      <div className={`space-y-4 ${step === 0 ? 'animate-step' : 'hidden'}`}>
         <Card icon={User} title="Guest">
           <GuestPicker initial={f.initialGuest} onChange={f.setGuestChoice} onQuery={f.setTypedGuest} />
         </Card>
@@ -303,12 +304,15 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <Stepper icon={Users} label="Adults" value={f.adults} min={1} onChange={f.setAdults} />
             <Stepper icon={Baby} label="Children" value={f.children} onChange={f.setChildren} />
           </div>
-          {allIds.length > 1 && <p className="text-sm text-muted">One adult per room to start: {allIds.length} rooms, {allIds.length} guests. Change it if more are coming.</p>}
+          {allIds.length > 1 && <p className="text-base text-muted">One adult per room to start: {allIds.length} rooms, {allIds.length} guests. Change it if more are coming.</p>}
+        </Card>
+        <Card icon={Palette} title="Colour on the calendar (optional)">
+          <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} hint="Auto uses the guest's colour, else the status colour." />
         </Card>
       </div>
 
       {/* Step 2: rooms, dates and times. */}
-      <div className={`space-y-3 ${step === 1 ? '' : 'hidden'}`}>
+      <div className={`space-y-4 ${step === 1 ? 'animate-step' : 'hidden'}`}>
         <Card icon={Bed} title={allIds.length > 1 ? `Rooms (${allIds.length} chosen)` : 'Room'}>
           <RoomPicker rooms={rooms} roomIds={allIds} roomTaken={activeTaken} onToggle={toggleAny} />
         </Card>
@@ -325,10 +329,10 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
                       type="button"
                       aria-pressed={id === activeId}
                       onClick={() => setChosenRoom(id)}
-                      className={`btn min-h-11 px-3 font-mono font-semibold ${id === activeId ? 'ring-2 ring-ink ring-offset-1' : ''}`}
+                      className={`btn min-h-11 px-3 font-semibold ${id === activeId ? 'animate-chip ring-2 ring-ink' : ''}`}
                       style={{ backgroundColor: shade.fill, borderColor: shade.edge }}
                     >
-                      Room {numberOf(id)}
+                      Room <span className="font-mono">{numberOf(id)}</span>
                     </button>
                   );
                 })}
@@ -345,31 +349,31 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         <div>
           {allIds.length > 1 && <p className="mb-1 text-base font-medium">Times for Room {numberOf(activeId)}</p>}
           <MomentPair>
-            <Moment icon={SignIn} label="Check-in time" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
-            <Moment icon={SignOut} label="Check-out time" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
+            <Moment icon={SignIn} label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
+            <Moment icon={SignOut} label="Check-out" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
           </MomentPair>
         </div>
         {f.nights >= 3 && (
           <Card icon={Suitcase} title="Going away for a few days?">
             {f.away ? (
               <>
-                <p className="text-sm leading-snug text-ink/70">The room is kept for them. It is saved as two stays for the same guest.</p>
+                <p className="text-base leading-snug text-ink/70">The room is kept for them. It is saved as two stays for the same guest.</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label htmlFor="away-from" className="text-xs font-medium text-muted">They leave on</label>
-                    <input id="away-from" type="date" className="field min-w-0 px-2 text-sm font-semibold" value={f.away.from} min={addDays(f.checkIn, 1)} max={addDays(f.checkOut, -2)} onChange={(e) => e.target.value && f.setAway({ from: e.target.value, to: f.away.to > e.target.value ? f.away.to : addDays(e.target.value, 1) })} />
+                    <label htmlFor="away-from" className="label">They leave on</label>
+                    <input id="away-from" type="date" className="field min-w-0 px-2 font-semibold" value={f.away.from} min={addDays(f.checkIn, 1)} max={addDays(f.checkOut, -2)} onChange={(e) => e.target.value && f.setAway({ from: e.target.value, to: f.away.to > e.target.value ? f.away.to : addDays(e.target.value, 1) })} />
                   </div>
                   <div>
-                    <label htmlFor="away-to" className="text-xs font-medium text-muted">They come back on</label>
-                    <input id="away-to" type="date" className="field min-w-0 px-2 text-sm font-semibold" value={f.away.to} min={addDays(f.away.from, 1)} max={addDays(f.checkOut, -1)} onChange={(e) => e.target.value && f.setAway({ ...f.away, to: e.target.value })} />
+                    <label htmlFor="away-to" className="label">They come back on</label>
+                    <input id="away-to" type="date" className="field min-w-0 px-2 font-semibold" value={f.away.to} min={addDays(f.away.from, 1)} max={addDays(f.checkOut, -1)} onChange={(e) => e.target.value && f.setAway({ ...f.away, to: e.target.value })} />
                   </div>
                 </div>
-                <button type="button" className="btn min-h-10 w-full lg:min-h-10" onClick={() => f.setAway(null)}>
+                <button type="button" className="btn w-full" onClick={() => f.setAway(null)}>
                   <X size={16} aria-hidden="true" /> No break
                 </button>
               </>
             ) : (
-              <button type="button" className="btn min-h-11 w-full lg:min-h-11" onClick={() => f.setAway({ from: addDays(f.checkIn, 1), to: addDays(f.checkIn, 2) })}>
+              <button type="button" className="btn w-full" onClick={() => f.setAway({ from: addDays(f.checkIn, 1), to: addDays(f.checkIn, 2) })}>
                 <Plus size={16} aria-hidden="true" /> Add a break
               </button>
             )}
@@ -378,16 +382,16 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
       </div>
 
       {/* Step 3: the box with everything to check, then the more options. */}
-      <div className={`space-y-3 ${step === 2 ? '' : 'hidden'}`}>
-        <Card icon={Tag} title="Is it confirmed?">
+      <div className={`space-y-4 ${step === 2 ? 'animate-step' : 'hidden'}`}>
+        <Card icon={Tag} title="Book it, or only hold the room?">
           <StatusPicker value={f.status} onChange={f.setStatus} hideLabel only={['confirmed', 'on_hold']} />
-          <p className="text-sm leading-snug text-ink/70">
-            <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> only keeps the room.
+          <p className="text-base leading-snug text-ink/70">
+            <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> keeps the room for now, until the guest is sure.
           </p>
         </Card>
         {f.isHold && (
           <div>
-            <FieldLabel icon={Tag} htmlFor="b-label">Hold Label (optional)</FieldLabel>
+            <FieldLabel icon={Tag} htmlFor="b-label">Hold label (optional)</FieldLabel>
             <input id="b-label" name="label" className="field" placeholder="For example, Sharma wedding party…" value={f.label} onChange={(e) => f.setLabel(e.target.value)} autoComplete="off" />
           </div>
         )}
@@ -432,30 +436,29 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           </dl>
         </section>
 
-        <MoreOptions f={f} hideParty hideStatus />
+        <MoreOptions f={f} hideParty hideStatus hideColor />
       </div>
 
-      {hint && (guestProblem || stayProblem || extraProblem) ? <p className="flex items-center gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm" role="alert"><WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
-      {f.error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">{f.error}</p>}
+      {f.error && <p role="alert" className="animate-shake rounded-lg border-2 border-danger bg-red-50 px-3 py-2 text-base text-danger">{f.error}</p>}
 
-      <div className="sticky bottom-0 -mx-4 flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-2 lg:pt-2">
+      <div className="sticky bottom-0 -mx-4 mt-auto flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
         {step > 0 ? (
-          <button type="button" className="btn min-h-12 px-4 text-base lg:min-h-12" onClick={() => go(step - 1)} disabled={f.busy}>
+          <button type="button" className="btn btn-quiet min-h-12 px-4" onClick={() => go(step - 1)} disabled={f.busy}>
             <ArrowLeft size={18} aria-hidden="true" /> Back
           </button>
         ) : (
-          <button type="button" className="btn min-h-12 px-4 text-base lg:min-h-12" onClick={() => (onCancel ? onCancel() : onClear())} disabled={f.busy}>
-            <X size={18} aria-hidden="true" /> {onCancel ? 'Cancel' : 'Clear'}
+          <button type="button" className="btn btn-quiet min-h-12 px-4" onClick={() => (onCancel ? onCancel() : onClear())} disabled={f.busy}>
+            {onCancel ? <X size={18} aria-hidden="true" /> : <Eraser size={18} aria-hidden="true" />} {onCancel ? 'Cancel' : 'Clear'}
           </button>
         )}
         {/* Different keys: with one shared button React would turn Next into a submit button mid-click and submit the form. */}
         {step < 2 ? (
-          <button key="next" type="button" className="btn btn-primary min-h-12 flex-1 text-base lg:min-h-12" onClick={() => go(step + 1)}>
+          <button key="next" type="button" className="btn btn-primary flex-1" onClick={() => go(step + 1)}>
             Next: {STEPS[step + 1]} <ArrowRight size={18} aria-hidden="true" />
           </button>
         ) : (
-          <button key="confirm" type="submit" className="btn btn-primary min-h-12 flex-1 text-base lg:min-h-12" disabled={f.busy}>
-            {f.busy ? 'Saving…' : <><Check size={20} weight="bold" aria-hidden="true" /> {confirmLabel}</>}
+          <button key="confirm" type="submit" className="btn btn-primary flex-1" disabled={f.busy}>
+            {f.busy ? 'Saving…' : <>{f.isHold ? <Clock size={18} aria-hidden="true" /> : <Check size={18} weight="bold" aria-hidden="true" />} {confirmLabel}</>}
           </button>
         )}
       </div>

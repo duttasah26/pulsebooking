@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Buildings, Envelope, MagnifyingGlass, Phone, Plus, User, UserCircle } from '@phosphor-icons/react';
+import { Buildings, Envelope, MagnifyingGlass, Phone, Plus, User, UserCircle, ArrowLeft, UserSwitch } from '@phosphor-icons/react';
 import FieldLabel from './FieldLabel';
 import ColorPicker from './booking/ColorPicker';
 import { useApi, useDebounced } from '../lib/useApi';
@@ -40,7 +40,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
   if (selected) {
     return (
       <div>
-        <FieldLabel as="span" icon={User} hidden>Guest</FieldLabel>
+        <FieldLabel icon={User} as="span" hidden>Guest</FieldLabel>
         <div
           className="flex items-center gap-3 rounded-lg border border-line p-3"
           style={(tone ?? resolveColor(selected.color)) ? { backgroundColor: (tone ?? resolveColor(selected.color)).bg, borderColor: (tone ?? resolveColor(selected.color)).border } : undefined}
@@ -49,11 +49,11 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{selected.name}</p>
             <p className="truncate text-sm text-muted">
-              {[contact(selected) || 'No contact saved', selected.organization].filter(Boolean).join(', ')}
+              {[contact(selected) || 'No phone or email', selected.organization].filter(Boolean).join(', ')}
             </p>
           </div>
           <button type="button" className="btn" onClick={() => { setSelected(null); setQuery(''); }}>
-            Change
+            <UserSwitch size={18} aria-hidden="true" /> Change
           </button>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
     const set = (k) => (e) => setDraft({ ...draft, [k]: e.target.value });
     return (
       <fieldset className="space-y-3">
-        <FieldLabel as="legend" icon={User}>New Guest</FieldLabel>
+        <FieldLabel icon={User} as="legend">New Guest</FieldLabel>
         <div>
           <FieldLabel icon={User} htmlFor="ng-name">Name</FieldLabel>
           <input id="ng-name" name="guest-name" className="field" value={draft.name} onChange={set('name')} autoComplete="off" autoFocus />
@@ -93,7 +93,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
         />
         <p className="text-sm text-muted">Phone and email are optional. Add one if two guests share a name.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
-          Back to Search
+          <ArrowLeft size={18} aria-hidden="true" /> Back to Search
         </button>
       </fieldset>
     );
@@ -123,7 +123,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
               <button type="button" className="flex min-h-14 w-full flex-col items-start justify-center px-3 py-2 text-left hover:bg-surface-2" onClick={() => setSelected(g)}>
                 <span className="font-medium">{g.name}</span>
                 <span className="text-sm text-muted">
-                  {contact(g) || 'No contact saved'}
+                  {contact(g) || 'No phone or email'}
                   {g.organization ? `, ${g.organization}` : ''}
                   {Number(g.stays) > 0 && `, ${g.stays} stay${Number(g.stays) === 1 ? '' : 's'}, last ${fmtDayMonthYear(g.last_check_in)}`}
                 </span>

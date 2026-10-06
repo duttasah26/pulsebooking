@@ -27,7 +27,7 @@ export default function Layout({ title, wide = false, children }) {
       <Head>
         <title>{title ? `${title} | Pulse Rooms` : 'Pulse Rooms'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#f3f3ef" />
+        <meta name="theme-color" content="#e6e5de" />
         <link rel="icon" href="/icon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </Head>
@@ -39,7 +39,7 @@ export default function Layout({ title, wide = false, children }) {
         Skip to Main Content
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-line bg-surface">
+      <header className="sticky top-0 z-30 border-b border-chrome-line bg-chrome">
         <div className={`mx-auto grid h-14 short:h-12 ${max} grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] items-center px-4`}>
           <Link href="/" className="flex shrink-0 items-center gap-2 justify-self-start rounded-lg" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-8 w-auto" />
@@ -53,7 +53,7 @@ export default function Layout({ title, wide = false, children }) {
             activeIndex={TABS.findIndex((t) => t.href === here)}
           />
           {/* Below the desktop width the assistant's button lives here, not floating over the page. */}
-          <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
+          <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent hover:bg-surface lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
             <ChatCircleDots size={24} aria-hidden="true" />
           </button>
           </div>
@@ -64,7 +64,7 @@ export default function Layout({ title, wide = false, children }) {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden short:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-chrome-line bg-chrome pb-[env(safe-area-inset-bottom)] md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
           const active = here === href;
@@ -73,8 +73,8 @@ export default function Layout({ title, wide = false, children }) {
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
-              className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
-                active ? 'text-accent-text' : 'text-muted'
+              className={`flex min-h-14 flex-col items-center justify-center gap-0.5 border-t-2 text-sm font-medium ${
+                active ? 'border-accent text-accent-text' : 'border-transparent text-ink/75'
               }`}
             >
               <Icon size={22} weight={active ? 'fill' : 'regular'} />

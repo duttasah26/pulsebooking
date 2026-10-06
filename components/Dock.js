@@ -50,7 +50,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
         ref={box}
         aria-label={label}
         style={maxH && !overlay ? { maxHeight: maxH } : undefined}
-        className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.5rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? (leaving ? 'animate-dock-out' : 'animate-dock-in') : 'hidden'}`}
+        className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.5rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? `flex flex-col ${leaving ? 'animate-dock-out' : 'animate-dock-in'}` : 'hidden'}`}
       >
         {/* Docked at the top of the panel however far its contents are scrolled: the name, Edit and Hide stay in reach. */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-line bg-surface px-4 py-1.5">
@@ -62,7 +62,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
             </button>
           </div>
         </div>
-        <div className="px-4 pt-3">{children}</div>
+        <div className="flex flex-1 flex-col bg-canvas px-4 pt-3">{children}</div>
       </aside>
 
       {!open && (

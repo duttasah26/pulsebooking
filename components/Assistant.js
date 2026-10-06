@@ -16,6 +16,7 @@ const SUGGESTIONS = [
   'Total guests this month?',
   'Who is arriving today?',
   'Best quiet days next month?',
+  'Book two rooms for a guest',
 ];
 
 // An answer with the room numbers drawn as chips in their floor colour (the same colours as the calendar) and **bold** kept
@@ -39,8 +40,8 @@ function Answer({ text, rooms }) {
 
 /*
   The chat assistant: a round button at the bottom right that opens a small chat panel (like the chat on a hotel website).
-  It answers questions about rooms and bookings from the database (see pages/api/assistant.js); for now it only reads,
-  it cannot book anything. The conversation is kept while you move between pages, and the Reset button clears it.
+  It answers questions about rooms and bookings from the database (see pages/api/assistant.js); it can read everything and book a new stay or hold when you give it the details and say yes
+  (it never edits or deletes). The conversation is kept while you move between pages, and the Reset button clears it.
 */
 export default function Assistant() {
   const { pathname } = useRouter();
@@ -81,7 +82,8 @@ export default function Assistant() {
     setDraft('');
     setBusy(true);
     try {
-      const { reply } = await api('/api/assistant', { method: 'POST', body: { messages: next.map(({ role, text }) => ({ role, text })) } });
+      const { reply, booked } = await api('/api/assistant', { method: 'POST', body: { messages: next.map(({ role, text }) => ({ role, text })) } });
+      if (booked) window.dispatchEvent(new Event('pulse:bookings-changed')); // the calendar reloads at once to show what was just booked
       setMessages([...next, { role: 'assistant', text: reply }]);
     } catch (err) {
       setMessages([...next, { role: 'assistant', text: err.message, error: true }]);
@@ -167,7 +169,7 @@ export default function Assistant() {
           ref={input}
           name="question"
           className="field"
-          placeholder="Ask about rooms, nights, guests…"
+          placeholder="Ask, or say what to book…"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           autoComplete="off"

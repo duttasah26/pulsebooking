@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowClockwise } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
 import GuestForm from './GuestForm';
 import MergeSheet from './MergeSheet';
@@ -44,7 +45,7 @@ export default function GuestSheet({ id, onClose, onChanged }) {
         {detail.error ? (
           <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-base text-danger">
             Could not load this guest: {detail.error.message}
-            <button type="button" className="btn ml-3" onClick={detail.reload}>Try again</button>
+            <button type="button" className="btn ml-3" onClick={detail.reload}><ArrowClockwise size={16} aria-hidden="true" /> Try again</button>
           </p>
         ) : (
           <GuestSkeleton />

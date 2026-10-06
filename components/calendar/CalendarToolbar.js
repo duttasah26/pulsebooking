@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, Hand, PencilSimpleLine, Plus } from '@phosphor-icons/react';
+import { useRef, useState } from 'react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, Hand, PencilSimpleLine, Plus, CalendarDot } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
@@ -11,7 +11,7 @@ import { daysInMonth, monthStart, today } from '../../lib/dates';
 // A small group of tool buttons in one outlined strip.
 function Strip({ label, children }) {
   return (
-    <div role="group" aria-label={label} className="flex shrink-0 items-center gap-0.5 rounded-lg border border-line bg-surface p-0.5">
+    <div role="group" aria-label={label} className="flex shrink-0 items-center gap-0.5 rounded-lg border border-chrome-line bg-chrome p-0.5">
       {children}
     </div>
   );
@@ -47,9 +47,22 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
 // scrolls sideways beside the first.
 export default function CalendarToolbar({
   view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor,
-  monthAligned, onHome, onResetView, wide, canTool, quickHold, drawing, touchSelect, hand, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, zoom, onZoom, onNew,
+  monthAligned, onHome, onResetView, wide, phone = false, summary = null, canTool, quickHold, drawing, touchSelect, hand, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, zoom, onZoom, onNew,
 }) {
   const [rangeOpen, setRangeOpen] = useState(false);
+  const swipe = useRef(null);
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    swipe.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e) => {
+    const s = swipe.current;
+    swipe.current = null;
+    if (!s) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x;
+    if (Math.abs(dx) > 70 && Math.abs(t.clientY - s.y) < 40) onStep(dx < 0 ? 1 : -1); // left: later days, right: earlier days
+  };
   const show = ({ date: d, span: n }) => {
     setRangeOpen(false);
     onResetView();
@@ -57,14 +70,20 @@ export default function CalendarToolbar({
   };
   return (
     <div className="space-y-2 short:flex short:items-center short:gap-1.5 short:space-y-0">
-      <div className="flex flex-wrap items-center gap-1.5 short:shrink-0 short:flex-nowrap">
+      {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
+      <div
+        className="flex flex-wrap items-center gap-1.5 short:shrink-0 short:flex-nowrap"
+        onTouchStart={phone ? onTouchStart : undefined}
+        onTouchEnd={phone ? onTouchEnd : undefined}
+        onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
+      >
         <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(-1)} aria-label="Previous">
           <CaretLeft size={18} />
         </button>
         <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(1)} aria-label="Next">
           <CaretRight size={18} />
         </button>
-        <button type="button" className="btn shrink-0 px-3" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
+        <button type="button" className="btn shrink-0 px-3" onClick={() => { set({ date: today() }); onHome(); }}><CalendarDot size={16} aria-hidden="true" /> Today</button>
         <div className="relative shrink-0">
           <button
             type="button"
@@ -79,9 +98,18 @@ export default function CalendarToolbar({
           </button>
           {rangeOpen && <RangePopover date={date} span={span} onShow={show} onClose={() => setRangeOpen(false)} />}
         </div>
-        <div className="mx-2 flex min-w-0 flex-1 basis-48 items-center gap-2 short:flex-none short:basis-auto">
-          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl short:max-w-36 short:truncate short:text-base">{title}</h1>
+        {phone && onNew && (
+          <button type="button" className="btn btn-icon ml-auto shrink-0" onClick={onNew} aria-label="New booking" title="New booking">
+            <Plus size={20} weight="bold" aria-hidden="true" />
+          </button>
+        )}
+        <div className="flex min-w-0 flex-1 basis-48 items-center gap-2 max-md:basis-full md:mx-2 short:flex-none short:basis-auto">
+          <div className="min-w-0 flex-1">
+            <h1 className="min-w-0 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl short:max-w-36 short:truncate short:text-base">{title}</h1>
+            {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
+          </div>
         </div>
+        {summary && <div className="hidden shrink-0 pr-1 md:block short:hidden">{summary}</div>}
       </div>
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
@@ -94,7 +122,7 @@ export default function CalendarToolbar({
 
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that
           scrolls sideways when it is wider than the screen. */}
-      {!wide && (
+      {!wide && !phone && (
         <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto">
           {onNew && (
             <Strip label="New">

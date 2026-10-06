@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
+import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag, ArrowClockwise } from '@phosphor-icons/react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import BookingSheet from '../components/booking/BookingSheet';
@@ -159,7 +159,7 @@ export default function Bookings() {
     { key: 'leave', label: 'Leaving today', on: rby === 'check_out' && df === todayStr && dt === todayStr, tone: toneBg(stayColor('checkOut', settings)), onToggle: () => setParams(rby === 'check_out' && df === todayStr && dt === todayStr ? { rby: '', df: '', dt: '' } : { rby: 'check_out', df: todayStr, dt: todayStr }) },
     { key: 'house', label: 'In house', on: tab === 'current', onToggle: () => setParams({ tab: tab === 'current' ? 'upcoming' : 'current', dir: '' }) },
     { key: 'long', label: 'Long stays', on: nmin === '7' && !nmax, onToggle: () => setParams(nmin === '7' && !nmax ? { nmin: '' } : { nmin: '7', nmax: '' }) },
-    { key: 'nocontact', label: 'No contact', on: contact === 'no', onToggle: () => setParams({ contact: contact === 'no' ? '' : 'no' }) },
+    { key: 'nocontact', label: 'No phone or email', on: contact === 'no', onToggle: () => setParams({ contact: contact === 'no' ? '' : 'no' }) },
   ].filter(Boolean);
   const panel = (
     <FilterSortPanel
@@ -262,7 +262,7 @@ export default function Bookings() {
           {list.error && (
             <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
               Could not load bookings: {list.error.message}. Check the connection and try again.
-              <button type="button" className="btn ml-3" onClick={list.reload}>Retry</button>
+              <button type="button" className="btn ml-3" onClick={list.reload}><ArrowClockwise size={16} aria-hidden="true" /> Retry</button>
             </p>
           )}
 

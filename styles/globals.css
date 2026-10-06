@@ -16,6 +16,9 @@
   --accent: #047857;      /* emerald: fills, borders, selected states */
   --accent-ink: #fafafa;  /* text on an emerald fill */
   --accent-soft: #d8f0e6;
+  --chrome: #e6e5de;      /* the bars you press (header, tools, tabs, zoom, bottom nav): a light warm stone from the same neutral family, so controls read apart from the white calendar. Light, never dark, never green. */
+  --chrome-line: #cac8bd;
+  --grid-line: #d0cfc5;   /* the lines between days and rooms in the calendar grid: one step darker than --line, so rows and columns read clearly */
   --accent-text: #047857; /* emerald as text on white (5.5:1) */
   --danger: #b42318;
 }
@@ -33,6 +36,9 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-chrome: var(--chrome);
+  --color-chrome-line: var(--chrome-line);
+  --color-grid-line: var(--grid-line);
   --color-accent-text: var(--accent-text);
   --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -104,14 +110,44 @@ body {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-  .label {
-    @apply mb-1.5 block text-base font-medium text-ink lg:mb-0.5 lg:text-xs;
+  .field {
+    @apply border-muted/40 transition-[border-color,box-shadow] duration-150 ease-out hover:border-muted;
   }
+  /* One focus edge on a field: a 2px green line (border + 1px) and a soft halo, never an outline on top of them. */
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-soft);
+  }
+  /* A dropdown shows its own arrow, so it reads as a choice and not as a text box. */
+  select.field {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 256 256'%3E%3Cpath fill='%236f655c' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+  .label {
+    @apply mb-1.5 block text-base font-semibold text-ink;
+  }
+  /* One button feel everywhere: the edge darkens on hover and the button sinks a touch when pressed. Nothing floats. */
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line bg-surface px-4 text-base font-medium text-ink transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out hover:-translate-y-px hover:border-muted/50 hover:bg-surface-2 hover:shadow-sm active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none lg:min-h-8 lg:text-sm;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-muted/40 bg-surface px-4 text-base font-medium text-ink transition-[background-color,border-color,color,transform,filter] duration-150 ease-out hover:border-muted hover:bg-surface-2 active:scale-[0.98] disabled:opacity-50 disabled:hover:border-muted/40 disabled:hover:bg-surface disabled:active:scale-100 lg:min-h-8 lg:text-sm;
   }
   .btn-primary {
-    @apply min-h-12 border-transparent bg-accent font-semibold text-accent-ink shadow-sm shadow-black/15 hover:border-transparent hover:bg-accent hover:opacity-90 hover:shadow-md lg:min-h-9;
+    @apply min-h-12 border-transparent bg-accent font-semibold text-accent-ink hover:border-transparent hover:bg-accent hover:brightness-90 disabled:hover:bg-accent lg:min-h-9;
+  }
+  /* The calm button for leaving or going back (Cancel, Back, Clear): words only, no frame until you point at it. */
+  .btn-quiet {
+    @apply border-transparent bg-transparent text-ink/80 hover:border-transparent hover:bg-surface-2 hover:text-ink disabled:hover:bg-transparent;
+  }
+  /* Forms are for hands and eyes of every age: the same large type and 44px targets on a desktop as on a phone. */
+  .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
+  .form-area .btn-primary { @apply min-h-12 lg:min-h-12; }
+  .form-area .label { @apply lg:mb-1.5 lg:text-base; }
+  /* A choice that is on or off (booked via, rate plan): a soft green fill and a tick when chosen. */
+  .chip-on {
+    @apply border-accent bg-accent-soft font-semibold text-accent-text hover:border-accent hover:bg-accent-soft;
   }
   .btn-danger {
     @apply text-danger;
@@ -132,6 +168,11 @@ body {
   }
   .btn-icon {
     @apply min-h-11 min-w-11 px-0 lg:min-h-8 lg:min-w-8;
+  }
+  /* A card: a flat white sheet with a thin edge, sitting on the page's warm canvas. Groups of fields,
+     a guest, a summary. Never a card inside a card. */
+  .card {
+    @apply rounded-lg border border-line bg-surface p-4;
   }
   .badge {
     @apply inline-flex items-center rounded-lg border border-line px-2 py-0.5 text-sm font-medium text-muted lg:text-xs;
@@ -252,6 +293,36 @@ body {
 }
 .animate-nudge { animation: nudge 1800ms ease-out; }
 
+/* Form motion: a step rises in a little as it opens, a number ticks when it changes, a chosen chip pops, and a message that
+   needs attention shakes once, so the eye goes to it. All short, none looping. */
+@keyframes step-in {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tick {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: none; }
+}
+@keyframes chip-pop {
+  0% { transform: scale(0.96); }
+  60% { transform: scale(1.03); }
+  100% { transform: none; }
+}
+@keyframes shake {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+.animate-step { animation: step-in 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-tick { animation: tick 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-chip { animation: chip-pop 200ms cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-shake { animation: shake 360ms ease-out, fade-in 200ms ease-out; }
+/* Folded sections open with a soft rise instead of a jump. */
+details[open] > .details-body { animation: step-in 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+
 /* Leaving: everything that slides or fades in also goes out the same way, only faster (exits are quicker than arrivals).
    `forwards` holds the last frame until the component is removed a moment later. */
 @keyframes fade-out {
@@ -312,6 +383,10 @@ body {
   .skeleton { animation: none; background-image: none; }
   .animate-sheet { animation-name: fade-in; }
   .animate-pop, .animate-bar-in { animation-duration: 120ms; }
+  .animate-step, details[open] > .details-body { animation-name: fade-in; }
+  .animate-tick, .animate-chip { animation: none; }
+  .animate-shake { animation-name: fade-in; }
+  .btn:active { transform: none; }
   .animate-march { animation: none; }
   .animate-nudge { animation-duration: 1800ms; } /* a colour wash only, no movement, so it stays */
   .active\:scale-95:active, .active\:scale-90:active, .active\:scale-\[0\.98\]:active, .active\:translate-y-px:active { transform: none; }

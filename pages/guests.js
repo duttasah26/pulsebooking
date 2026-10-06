@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
+import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack, ArrowClockwise } from '@phosphor-icons/react';
 import Head from 'next/head';
 import FieldLabel from '../components/FieldLabel';
 import Layout from '../components/Layout';
@@ -94,7 +94,7 @@ export default function Guests() {
     { key: 'regulars', label: 'Regulars', on: smin === '3' && !smax, onToggle: () => setParams(smin === '3' && !smax ? { smin: '' } : { smin: '3', smax: '' }) },
     { key: 'month', label: 'Stayed this month', on: from === monthStart(today()) && to === today(), onToggle: () => setParams(from === monthStart(today()) && to === today() ? { from: '', to: '' } : { from: monthStart(today()), to: today() }) },
     { key: 'phone', label: 'Has a phone', on: contact === 'phone', onToggle: () => setParams({ contact: contact === 'phone' ? '' : 'phone' }) },
-    { key: 'nocontact', label: 'No contact', on: contact === 'none', onToggle: () => setParams({ contact: contact === 'none' ? '' : 'none' }) },
+    { key: 'nocontact', label: 'No phone or email', on: contact === 'none', onToggle: () => setParams({ contact: contact === 'none' ? '' : 'none' }) },
   ];
   const panel = (
     <FilterSortPanel
@@ -109,7 +109,7 @@ export default function Guests() {
           </FoldSection>
           <FoldSection id="guests-dates" title="Stayed between" icon={CalendarBlank} badge={from || to ? 1 : 0}>
             <div>
-              <FieldLabel as="span" icon={CalendarBlank}>Any stay overlapping these days</FieldLabel>
+              <FieldLabel icon={CalendarBlank} as="span">Any stay overlapping these days</FieldLabel>
               <div className="grid grid-cols-2 gap-2">
                 <input type="date" name="from" aria-label="Stayed from" className="field min-w-0 px-2 text-sm" value={from} max={to || undefined} onChange={(e) => setParams({ from: e.target.value })} />
                 <input type="date" name="to" aria-label="Stayed until" className="field min-w-0 px-2 text-sm" value={to} min={from || undefined} onChange={(e) => setParams({ to: e.target.value })} />
@@ -178,7 +178,7 @@ export default function Guests() {
           {list.error && (
             <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
               Could not load guests: {list.error.message}. Check the connection and try again.
-              <button type="button" className="btn ml-3" onClick={list.reload}>Retry</button>
+              <button type="button" className="btn ml-3" onClick={list.reload}><ArrowClockwise size={16} aria-hidden="true" /> Retry</button>
             </p>
           )}
 

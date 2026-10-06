@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Buildings, Envelope, Note, Phone, UserCircle } from '@phosphor-icons/react';
+import { ArrowRight, Buildings, Envelope, Note, Phone, UserCircle, GitMerge, X } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
 import HoldButton from '../HoldButton';
 import { useToast } from '../Toast';
@@ -83,9 +83,9 @@ export default function MergeSheet({ a, b, onClose, onDone }) {
       footer={
         <div className="space-y-2">
           <HoldButton onConfirm={merge} disabled={busy} title="Press and hold to merge" className="btn btn-primary w-full">
-            {busy ? 'Merging…' : `Hold to Merge into “${keepGuest.name}”`}
+            {busy ? 'Merging…' : <><GitMerge size={18} aria-hidden="true" /> {`Hold to Merge into “${keepGuest.name}”`}</>}
           </HoldButton>
-          <button type="button" className="btn w-full" onClick={onClose} disabled={busy}>Cancel, change nothing</button>
+          <button type="button" className="btn w-full" onClick={onClose} disabled={busy}><X size={18} aria-hidden="true" /> Cancel, change nothing</button>
         </div>
       }
     >

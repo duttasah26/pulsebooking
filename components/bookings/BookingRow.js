@@ -1,8 +1,8 @@
-import { ArrowUUpLeft, Bed, Buildings, CalendarBlank, Check, Phone, X } from '@phosphor-icons/react';
+import { ArrowUUpLeft, Bed, Buildings, CalendarBlank, Check, Clock, Phone, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
-import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
+import { fmtBooked, fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
 
 // The columns a view can show or hide. The guest's name is always there.
 export const BOOKING_COLUMNS = [
@@ -53,7 +53,13 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
               {show('contact') && (
                 <span className="flex min-w-0 items-center gap-1">
                   {contact && <Phone size={14} aria-hidden="true" className="shrink-0" />}
-                  <span className="truncate">{b.guest_id ? contact || 'No contact saved' : 'No guest yet'}</span>
+                  <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
+                </span>
+              )}
+              {b.created_at && (
+                <span className="hidden min-w-0 items-center gap-1 lg:flex" title="When this booking was made">
+                  <Clock size={14} aria-hidden="true" className="shrink-0" />
+                  <span className="truncate">Booked {fmtBooked(b.created_at)}</span>
                 </span>
               )}
             </span>

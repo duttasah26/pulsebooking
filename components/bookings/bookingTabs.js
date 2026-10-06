@@ -19,5 +19,5 @@ export const SORTS = [
   ['check_in', 'Check-in date'],
   ['guest', 'Guest name'],
   ['room', 'Room'],
-  ['created', 'Date added'],
+  ['created', 'Date booked'],
 ];
