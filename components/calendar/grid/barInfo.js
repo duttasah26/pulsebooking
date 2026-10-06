@@ -6,10 +6,10 @@ import { dayOfMonth, fmtShort, nightsLabel } from '../../../lib/dates';
 // Colour carries meaning, as on the Day tab: arriving green, leaving red, status in its own colour. Each coloured bit is a
 // small chip on a near-white ground, so it stays readable on whatever colour the booking itself has.
 
-export const LINE = 16; // px per line of 12px text, with its gap
+export const LINE = 20; // px per line of 14px text, with its gap
 const GAP = 4;
-// px per character, a little generous so a line errs on the short side: 12px text on desktop, 14px below lg.
-let CH = 7;
+// px per character of 14px mono text, a little generous so a line errs on the short side.
+let CH = 8.4;
 const CHIP_PAD = 8;
 
 const CHIP = {
@@ -64,7 +64,7 @@ function items(b, roomTone, hold) {
 
 // `width` is the room for text beside the bar's icons; `height` is the whole bar. Returns lines of nodes (after the name line).
 export function packInfo(b, roomTone, hold, width, height, big = false) {
-  CH = big ? 8.4 : 7;
+  CH = 8.4;
   const maxLines = Math.floor((height - 6) / LINE) - 1; // the name takes the first line
   if (maxLines < 1 || width < 70) return [];
   const lines = [{ used: 0, nodes: [] }];

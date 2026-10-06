@@ -56,7 +56,7 @@ export default function Sheet({ title, onClose: closeNow, children, footer, acti
             </button>
           </div>
         </div>
-        <div className={`no-scrollbar flex-1 overflow-y-auto overscroll-contain scroll-pb-24 px-4 pt-4 ${footer ? 'pb-4' : ''}`}>{children}</div>
+        <div className={`no-scrollbar flex flex-1 flex-col overflow-y-auto bg-canvas overscroll-contain scroll-pb-24 px-4 pt-4 ${footer ? 'pb-4' : ''}`}>{children}</div>
         {footer && (
           <div className="border-t border-line px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div>
         )}

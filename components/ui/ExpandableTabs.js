@@ -14,7 +14,7 @@ import Link from 'next/link';
 */
 export function ExpandableTabs({ tabs, activeIndex = -1, label, className = '' }) {
   return (
-    <nav aria-label={label} className={`items-center gap-1 rounded-lg border border-line bg-surface p-1 ${className}`}>
+    <nav aria-label={label} className={`items-center gap-1 rounded-lg border border-chrome-line bg-surface p-1 ${className}`}>
       {tabs.map((tab, index) => {
         if (tab.type === 'separator') {
           return <span key={`separator-${index}`} aria-hidden="true" className="mx-1 h-6 w-px bg-line" />;
@@ -31,7 +31,7 @@ export function ExpandableTabs({ tabs, activeIndex = -1, label, className = '' }
             className={`inline-flex min-h-11 items-center rounded-lg border transition-[gap,padding,background-color,border-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
               selected
                 ? 'gap-2 border-accent bg-accent-soft px-3.5 text-accent-text short:gap-0 short:px-2.5'
-                : 'gap-0 border-transparent px-2.5 text-ink hover:bg-surface-2'
+                : 'gap-0 border-transparent px-2.5 text-ink hover:bg-chrome'
             }`}
           >
             <Icon size={24} weight={selected ? 'fill' : 'regular'} aria-hidden="true" className="shrink-0" />

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Clock, Eye, Trash, X } from '@phosphor-icons/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Clock, Eye, Trash, X, ArrowClockwise, FloppyDisk } from '@phosphor-icons/react';
 import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
@@ -25,12 +25,13 @@ import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
+import TodaySummary from './TodaySummary';
 import { useBookingData } from './useBookingData';
 import { useHistory } from './useHistory';
 import { useHoldActions } from './useHoldActions';
 import { calendarTitle, stepDate } from './calendarNav';
 import { deriveFloors } from './floors';
-import { addDays, diffDays, daysInMonth, monthStart, range, today, addMonths, fmtMonth } from '../../lib/dates';
+import { addDays, diffDays, daysInMonth, monthStart, range, today, addMonths, fmtMonth, fmtShort } from '../../lib/dates';
 
 /*
   The calendar page. How booking works here:
@@ -49,6 +50,7 @@ export default function CalendarPage() {
   const wide = useMediaQuery('(min-width: 1024px)');
   const short = useMediaQuery('(orientation: landscape) and (max-height: 500px)'); // a phone held sideways
   const rail = wide || short; // the tool pane on the left (a phone held sideways has the width for it, not the height for the toolbar rows)
+  const phone = useMediaQuery('(max-width: 767px)') && !short; // a phone held upright: the calendar comes first, with no tool strip
   const { view, date, span, floors, set } = useCalendarParams();
 
   const [quickHold, setQuickHold] = useStoredState('pulse.quickHold', false, { parse: (raw) => raw === '1', serialize: (v) => (v ? '1' : '0') }); // off: dragging selects
@@ -63,6 +65,8 @@ export default function CalendarPage() {
   const [helpOpen, setHelpOpen] = useState(false); // the "How to use" guide
   const [newOpen, setNewOpen] = useState(false); // phones: the New Booking sheet
   const [pending, setPending] = useState(null); // dates changed by dragging, waiting for Save in the details: { items }
+  const keepPending = useRef(false); // set while Undo brings a dropped change back
+  const [spot, setSpot] = useState(null); // the empty cell last clicked, marked like a selected cell in a spreadsheet: { roomId, d }
   const [editSelection, setEditSelection] = useState(false); // the selected bookings' names as editable cells
   const [viewPicked, setViewPicked] = useState(false); // show the details of everything picked, side by side
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
@@ -138,6 +142,16 @@ export default function CalendarPage() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [pending]);
+  // Changing what is picked (a click on empty calendar, another booking, Unselect) drops a dragged change that belongs to the old
+  // selection. It only runs when the selection itself changes, so a change just dragged is never dropped by its own drag.
+  useEffect(() => {
+    if (keepPending.current) {
+      keepPending.current = false;
+      return;
+    }
+    if (pending && !pending.items.every((i) => picked.has(i.original.id))) setPending(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [picked]);
   useEffect(() => {
     if (pending && !quickHold) setPending(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,7 +188,43 @@ export default function CalendarPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [picked.size]);
   // The Select and Hold tools (in the pane on the left, or the toolbar on narrow screens, which also has Open and Select).
+  // A click on empty calendar (no booking under it) clears everything: the open panel, the selection, and any change waiting for
+  // Save. Nothing is asked and nothing is saved. The tool stays as it is.
+  const clearAll = (where) => {
+    if (pending) {
+      const dropped = pending;
+      // A click on empty calendar clears the selection a moment before this runs, so what was picked is read back from the change
+      // itself: the bookings it moves or stretches are the ones to pick again.
+      const wasPicked = picked.size ? new Set(picked) : new Set(dropped.items.map((i) => i.original.id));
+      toast({
+        message: 'Change not saved',
+        actionLabel: 'Undo',
+        important: true,
+        onAction: () => {
+          keepPending.current = true; // the selection comes back with it, so the change is not dropped again
+          setPicked(wasPicked);
+          setPending(dropped);
+        },
+      });
+    }
+    setPending(null);
+    setEditSelection(false);
+    closePanel();
+    stopSelecting();
+    setSpot(where && (where.roomId != null || where.d) ? where : null);
+  };
+  // The mark goes as soon as anything else is happening: a booking opened or picked, or another tool in use.
+  useEffect(() => {
+    if (panel || picked.size > 0 || drawing || quickHold || hand) setSpot(null);
+  }, [panel, picked, drawing, quickHold, hand]);
+  // Open is the way out of every other tool. If anything was left unsaved (a dragged move or stretch waiting for Save, a half-edited
+  // form, a selection being changed) it is simply dropped and the panel closes: no question, nothing saved.
   const toggleMouseTool = () => {
+    if (pending || picked.size > 0 || editSelection || panel?.editing) {
+      setPending(null);
+      setEditSelection(false);
+      closePanel();
+    }
     setDrawing(false);
     stopSelecting();
     setTouchSelect(false);
@@ -288,7 +338,58 @@ export default function CalendarPage() {
     if (message) toast({ message, duration: 3000 });
   };
 
+  // Arrivals, departures and stays beside the title. They follow what you clicked: nothing is Today; a date is that day; a room is that
+  // room over the days on screen; a cell is that room on that day. Counted from the bookings already loaded (cancelled ones left out).
+  const todaySummary = useMemo(() => {
+    const room = spot?.roomId != null ? (rooms.data ?? []).find((r) => r.id === spot.roomId) : null;
+    let from;
+    let to;
+    let label;
+    if (spot?.d) {
+      from = spot.d;
+      to = spot.d;
+      label = fmtShort(spot.d) + (room ? `, Room ${room.number}` : '');
+    } else if (room) {
+      from = shownDate;
+      to = addDays(shownDate, (view === 'timeline' ? span : 1) - 1);
+      label = `Room ${room.number}`;
+    } else {
+      from = today();
+      to = from;
+      label = 'Today';
+    }
+    const live = bookingList.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
+    return (
+      <TodaySummary
+        label={label}
+        arriving={live.filter((b) => b.check_in >= from && b.check_in <= to).length}
+        leaving={live.filter((b) => b.check_out >= from && b.check_out <= to).length}
+        staying={live.filter((b) => b.check_in <= to && b.check_out > from).length}
+      />
+    );
+  }, [bookingList, spot, rooms.data, shownDate, span, view]);
+  // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
+  useEffect(() => {
+    if (!phone) return;
+    setQuickHold(false);
+    setTouchSelect(false);
+    setHand(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone]);
   if (!mounted || !router.isReady || !settingsReady) return <PageSkeleton />;
+
+  // Keyboard, as in other booking calendars: T jumps to today, N starts a new booking. Only while focus is inside the calendar
+  // area (it takes focus when you click it), so a single key never fires from elsewhere on the page (WCAG 2.1.4), and never while
+  // typing in a field.
+  const onCalendarKey = (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+    if (e.key === 't' || e.key === 'T') {
+      set({ date: today() });
+      setHomeKey((k) => k + 1);
+    } else if ((e.key === 'n' || e.key === 'N') && roomList.length > 0 && !drawing) {
+      startNew();
+    }
+  };
 
   const { floorKeys, shownFloors, visibleRooms } = deriveFloors(roomList, floors);
   const visibleIds = new Set(visibleRooms.map((r) => r.id));
@@ -304,6 +405,7 @@ export default function CalendarPage() {
   const showGrid = view === 'timeline' || view === 'month';
   // The strip with View, Delete and Unselect shows while anything is picked.
   const selecting = showGrid && (picked.size > 0 || touchSelect);
+  const selectOnly = touchSelect && !drawing && !quickHold && !hand; // Select is the only mode on
   const pickedBookings = bookingList.filter((b) => picked.has(b.id) && visibleIds.has(b.room_id)); // never delete what a floor filter hides
   const deletePicked = () => {
     removeMany(pickedBookings);
@@ -337,37 +439,51 @@ export default function CalendarPage() {
   // the calendar down when it appears.
   // Nothing picked yet: the Select banner below already says what to do (and has Done), so the strip waits for the first pick.
   const selectionStrip = selecting && pickedBookings.length > 0 ? (
-    <div role="status" data-below-grid className="animate-fade no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg border-2 border-accent bg-accent-soft px-2 text-sm">
+    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg border-2 border-accent bg-accent-soft px-2 text-sm">
       <span className="min-w-0 flex-1 shrink-0 whitespace-nowrap px-1 font-medium">
-        {pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
+        {pending ? 'Change not saved yet' : pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>
-      {!wide && pickedBookings.length > 0 && (
-        <button type="button" className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
-          <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
-        </button>
-      )}
-      {holdable.length > 0 && (
-        <button type="button" className="btn min-h-11 shrink-0 border-amber-400 bg-amber-100 text-amber-800 hover:bg-amber-100 max-sm:px-2.5 lg:min-h-8" onClick={() => holdPicked()} title="Put the confirmed bookings picked back on hold">
-          <Clock size={16} /> On Hold<span className="max-sm:hidden"> {holdable.length}</span>
-        </button>
-      )}
-      {pickedHasBookings ? (
-        <HoldButton className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onConfirm={deletePicked}>
-          <Trash size={16} /> Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span>
-        </HoldButton>
+      {/* A stretched or moved booking waits here, always in view, for a plain choice: keep it or drop it. */}
+      {pending ? (
+        <>
+          <button type="button" className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={() => setPending(null)} title="Put the booking back as it was (or press Esc)">
+            <X size={18} aria-hidden="true" /> Cancel Change
+          </button>
+          <button type="button" className="btn btn-primary min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={savePending}>
+            <FloppyDisk size={18} aria-hidden="true" /> Save Change
+          </button>
+        </>
       ) : (
-        <button type="button" className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
-          <Trash size={16} /> Delete{pickedBookings.length > 0 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
+        <>
+        {!wide && pickedBookings.length > 0 && (
+          <button type="button" className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
+            <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
+          </button>
+        )}
+        {holdable.length > 0 && (
+          <button type="button" className="btn min-h-11 shrink-0 border-amber-400 bg-amber-100 text-amber-800 hover:bg-amber-100 max-sm:px-2.5 lg:min-h-8" onClick={() => holdPicked()} title="Put the confirmed bookings picked back on hold">
+            <Clock size={16} /> On Hold<span className="max-sm:hidden"> {holdable.length}</span>
+          </button>
+        )}
+        {pickedHasBookings ? (
+          <HoldButton className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onConfirm={deletePicked}>
+            <Trash size={16} /> Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span>
+          </HoldButton>
+        ) : (
+          <button type="button" className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
+            <Trash size={16} /> Delete{pickedBookings.length > 0 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
+          </button>
+        )}
+        <button
+          type="button"
+          className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8"
+          onClick={() => (pickedBookings.length === 0 ? toggleMouseTool() : stopSelecting())}
+          title={pickedBookings.length === 0 ? 'Leave Select' : 'Let go of everything picked (or press Esc)'}
+        >
+          <X size={16} /> {pickedBookings.length === 0 ? 'Done' : <>Unselect<span className="max-sm:hidden"> All</span></>}
         </button>
+        </>
       )}
-      <button
-        type="button"
-        className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8"
-        onClick={() => (pickedBookings.length === 0 ? toggleMouseTool() : stopSelecting())}
-        title={pickedBookings.length === 0 ? 'Leave Select' : 'Let go of everything picked (or press Esc)'}
-      >
-        <X size={16} /> {pickedBookings.length === 0 ? 'Done' : <>Unselect<span className="max-sm:hidden"> All</span></>}
-      </button>
     </div>
   ) : null;
 
@@ -399,6 +515,8 @@ export default function CalendarPage() {
             setHomeKey((k) => k + 1);
           }}
           wide={rail}
+          phone={phone}
+          summary={todaySummary}
           canTool={showGrid}
           quickHold={quickHold}
           drawing={drawing}
@@ -422,7 +540,7 @@ export default function CalendarPage() {
       {failed && (
         <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
           Could not load the calendar: {failed.message}. Check the connection and try again.
-          <button type="button" className="btn ml-3" onClick={() => { rooms.reload(); bookings.reload(); }}>Retry</button>
+          <button type="button" className="btn ml-3" onClick={() => { rooms.reload(); bookings.reload(); }}><ArrowClockwise size={16} aria-hidden="true" /> Retry</button>
         </p>
       )}
 
@@ -450,7 +568,7 @@ export default function CalendarPage() {
           <div aria-hidden="true" className={`h-60 rounded-lg ${rooms.loading || !rooms.data ? 'skeleton' : ''}`} />
         )}
 
-        <div className="@container relative min-w-0 space-y-2">
+        <div className="@container relative min-w-0 space-y-2 outline-none" tabIndex={-1} onKeyDown={onCalendarKey}>
           {rooms.loading || !rooms.data ? (
             <GridSkeleton />
           ) : roomList.length === 0 ? (
@@ -485,6 +603,8 @@ export default function CalendarPage() {
                   isBusy={isBusy}
                   pending={pending}
                   onPending={holdPending}
+                  onBlank={clearAll}
+                  spot={spot}
                   linkedFor={linkedFor}
                   picked={picked}
                   onPick={setPicked}
@@ -506,7 +626,12 @@ export default function CalendarPage() {
           )}
 
           <div className={wide && formOpen ? 'mr-[19.5rem] space-y-2' : 'space-y-2'}>{/* the open booking panel covers the right 19.5rem of this row */}
-          <Presence show={showGrid && roomList.length > 0 && (drawing || quickHold || hand || (touchSelect && pickedBookings.length === 0))}>
+          {/* Select mode is the one mode whose banner comes and goes while you work (dragging a box picks and drops bookings many times
+              a second), so it has no fade and no exit: the banner and the picked strip swap in one fixed 56px slot, and nothing moves. */}
+          {showGrid && roomList.length > 0 && selectOnly && pickedBookings.length === 0 && (
+            <ModeBanner still mode="select" touch={!wide} onExit={toggleMouseTool} />
+          )}
+          <Presence show={showGrid && roomList.length > 0 && (drawing || quickHold || hand)}>
             <ModeBanner
               mode={drawing ? 'draw' : quickHold ? 'reserve' : touchSelect ? 'select' : 'hand'}
               touch={!wide}
@@ -514,14 +639,14 @@ export default function CalendarPage() {
               onSkip={drawing && !wide ? () => { setDrawing(false); setNewOpen(true); } : undefined}
             />
           </Presence>
-          {showGrid && roomList.length > 0 && (rail ? selectionStrip : <ZoomBar tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} />)}
+          {showGrid && roomList.length > 0 && (rail || phone ? selectionStrip : <ZoomBar tool={drawing ? 'draw' : quickHold ? 'pencil' : touchSelect ? 'select' : hand ? 'hand' : 'mouse'} touch={!wide} strip={selectionStrip} onHelp={() => setHelpOpen(true)} />)}
           </div>
         </div>
 
         <BookingPanel
           wide={wide}
           formOpen={formOpen}
-          onToggle={setFormOpen}
+          onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change
           panel={panel}
           setPanel={setPanel}
           panelBooking={panelBooking}

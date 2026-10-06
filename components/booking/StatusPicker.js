@@ -1,5 +1,5 @@
-import { Check, Tag } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
+import { Tag } from '@phosphor-icons/react';
 import { STATUS_ICON } from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import { statusColor } from '../../lib/colors';
@@ -13,18 +13,18 @@ export default function StatusPicker({ value, onChange, hideLabel = false, only 
   return (
     <fieldset>
       {hideLabel ? <legend className="sr-only">Status</legend> : <FieldLabel as="legend" icon={Tag}>Status</FieldLabel>}
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-2 gap-2">
         {STATUS_OPTIONS.filter(([key]) => !only || only.includes(key)).map(([key, label]) => {
           const c = statusColor(key, settings);
           const on = value === key;
-          const Icon = on ? Check : STATUS_ICON[key];
+          const Icon = STATUS_ICON[key];
           return (
             <button
               key={key}
               type="button"
               aria-pressed={on}
               onClick={() => onChange(key)}
-              className={`btn min-h-11 justify-start gap-2 border-2 px-2.5 lg:min-h-8 ${key === 'on_hold' ? 'border-dashed' : ''} ${on ? 'font-semibold' : ''}`}
+              className={`btn min-h-11 justify-start gap-2 border-2 px-3 ${key === 'on_hold' ? 'border-dashed' : ''} ${on ? 'animate-chip font-semibold' : ''}`}
               style={{ backgroundColor: c.bg, borderColor: on ? 'var(--ink)' : c.border }}
             >
               <Icon size={15} weight="bold" aria-hidden="true" className="shrink-0" />

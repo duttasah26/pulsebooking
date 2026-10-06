@@ -15,7 +15,7 @@ function Option({ g, onPick }) {
           <span className="block truncate font-medium">{g.name}</span>
           <span className="flex items-center gap-1 text-sm text-muted">
             {g.phone && <><Phone size={14} aria-hidden="true" />{g.phone}</>}
-            {!g.phone && (g.email || g.organization || 'No contact saved')}
+            {!g.phone && (g.email || g.organization || 'No phone or email')}
           </span>
         </span>
         <span className="shrink-0 font-mono text-sm font-semibold">{g.stays} {Number(g.stays) === 1 ? 'stay' : 'stays'}</span>

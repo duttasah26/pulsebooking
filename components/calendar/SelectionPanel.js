@@ -1,4 +1,4 @@
-import { Bed, Buildings, CalendarBlank, Check, Clock, ListBullets, Phone, Tag, TextAa, Trash, Users, X } from '@phosphor-icons/react';
+import { Bed, Buildings, CalendarBlank, Clock, ListBullets, Phone, Tag, TextAa, Users, X, Check, Trash } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import HoldButton from '../HoldButton';
 import RoomChips from '../RoomChips';
@@ -134,11 +134,11 @@ export default function SelectionPanel({
 
           {/* Docked at the bottom of the panel however far it is scrolled: the buttons that change the state of everything picked, then
               Delete last and apart, because it is the one you cannot take back lightly (real bookings need a hold; holds delete with a click). */}
-          <div className="sticky bottom-0 -mx-4 space-y-2 border-t border-line bg-surface px-4 py-3">
+          <div className="sticky bottom-0 -mx-4 grid grid-cols-2 gap-2 border-t border-line bg-surface px-4 py-3">
 
                 {holds.length > 0 && (
-                  <button type="button" className="btn btn-block btn-block-primary" onClick={() => onConfirmAll(holds)}>
-                    <Check size={18} aria-hidden="true" /> Confirm {holds.length === bookings.length ? 'All' : `${holds.length} Hold${holds.length === 1 ? '' : 's'}`}
+                  <button type="button" className="btn btn-block btn-block-primary col-span-2" onClick={() => onConfirmAll(holds)}>
+                    <Check size={18} weight="bold" aria-hidden="true" /> Confirm {holds.length === bookings.length ? 'All' : `${holds.length} Hold${holds.length === 1 ? '' : 's'}`}
                   </button>
                 )}
                 {onHoldAll && holdable.length > 0 && (
@@ -148,11 +148,11 @@ export default function SelectionPanel({
                 )}
               
             {bookings.some((b) => b.status !== 'on_hold') ? (
-              <HoldButton className="btn btn-block btn-block-danger" onConfirm={onDeleteAll}>
+              <HoldButton className={`btn btn-block btn-block-danger ${onHoldAll && holdable.length > 0 ? '' : 'col-span-2'}`} onConfirm={onDeleteAll}>
                 <Trash size={18} aria-hidden="true" /> Hold to Delete {bookings.length}
               </HoldButton>
             ) : (
-              <button type="button" className="btn btn-block btn-block-danger" onClick={onDeleteAll}>
+              <button type="button" className="btn btn-block btn-block-danger col-span-2" onClick={onDeleteAll}>
                 <Trash size={18} aria-hidden="true" /> Delete {bookings.length}
               </button>
             )}

@@ -13,7 +13,7 @@ import ToolButton from './ToolButton';
 export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, onHelp }) {
   const openOn = !quickHold && !touchSelect && !hand && !drawing;
   return (
-    <nav aria-label="Tools" className="no-scrollbar sticky top-[4.5rem] flex max-h-[calc(100dvh-5rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
+    <nav aria-label="Tools" className="no-scrollbar sticky top-[4.5rem] flex max-h-[calc(100dvh-5rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-chrome-line bg-chrome p-1 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
       {/* Book: start a booking, or reserve nights. */}
       {onNew && (
         <ToolButton vertical icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />

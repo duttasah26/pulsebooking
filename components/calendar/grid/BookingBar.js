@@ -36,7 +36,7 @@ function MarchingDashes({ color }) {
 // packed into lines like words, and whatever does not fit is left out rather than cut in half.
 // Bars adapt to the width they get (container queries): icons appear from 70px, and in the month sheet a narrow
 // bar runs the name down its tall side instead of cutting it to three letters.
-export default function BookingBar({ b, g, rows, style: placement, active, selectMode, picked, onOpen, onPick, onView, onOpenGroup, onDelete, resizing, movable, onMoveStart }) {
+export default function BookingBar({ b, g, rows, style: placement, active, selectMode, picked, onOpen, onPick, onView, onOpenGroup, onDelete, resizing, movable, onMoveStart, faded = false }) {
   const { settings } = useSettings();
   const c = colorFor(b, settings);
   const hold = b.status === 'on_hold';
@@ -82,7 +82,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
 
-  const shape = `animate-bar-in @container relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border text-left text-sm font-medium lg:text-xs ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
+  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? 'text-sm' : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
     hold ? 'border-dashed' : ''
   } ${
     g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
@@ -103,7 +103,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   // Room for text beside the bar's own padding, icons, room chip and (on a hold) the remove button.
   const beside = (b.status === 'checked_in' || hold ? 18 : 0) + (hold && size.w >= 96 ? 40 : 0) + (hold ? 28 : 0);
   const lines = useMemo(
-    () => (rows ? packInfo(b, roomTone, hold, size.w - 4 - beside, size.h, typeof window !== 'undefined' && window.innerWidth < 1024) : []),
+    () => (rows ? packInfo(b, roomTone, hold, size.w - 4 - beside, size.h, true) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rows, b, roomTone.fill, roomTone.edge, hold, size.w, size.h, beside],
   );
@@ -115,7 +115,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
       {hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
       {hold && (
         <span
-          className="hidden shrink-0 rounded px-1 font-mono text-xs font-semibold leading-4 @min-[96px]:inline-block"
+          className="hidden shrink-0 rounded px-1 font-mono text-sm font-semibold leading-5 @min-[96px]:inline-block"
           style={{ backgroundColor: roomTone.fill, boxShadow: `inset 0 0 0 1px ${roomTone.edge}` }}
         >
           {b.room_number}

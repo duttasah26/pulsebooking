@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Buildings, Envelope, GitMerge, Note, Phone, User } from '@phosphor-icons/react';
+import { Buildings, Envelope, Note, Phone, User, FloppyDisk, GitMerge, UserPlus } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
 import BookingSheet from '../booking/BookingSheet';
 import FieldLabel from '../FieldLabel';
@@ -31,7 +31,23 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
       };
       if (isNew) await api('/api/guests', { method: 'POST', body });
       else await api(`/api/guests/${guest.id}`, { method: 'PATCH', body });
-      toast({ message: isNew ? 'Guest added' : 'Guest updated', duration: 3000 });
+      if (isNew) toast({ message: 'Guest added', duration: 3000 });
+      else {
+        // Undo puts the details back as they were before this save.
+        const before = { name: guest.name, phone: guest.phone ?? null, email: guest.email ?? null, organization: guest.organization ?? null, notes: guest.notes ?? null, color: guest.color ?? null };
+        toast({
+          message: 'Guest updated',
+          actionLabel: 'Undo',
+          onAction: async () => {
+            try {
+              await api(`/api/guests/${guest.id}`, { method: 'PATCH', body: before });
+              onChanged();
+            } catch (err) {
+              toast({ message: `Could not undo: ${err.message}` });
+            }
+          },
+        });
+      }
       onChanged();
       if (isNew) onClose();
       setBusy(false);
@@ -47,12 +63,13 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
         title={isNew ? 'New Guest' : guest.name}
         onClose={onClose}
         footer={
-          <button type="submit" form="guest-form" className="btn btn-primary w-full" disabled={busy}>
-            {busy ? 'Saving…' : isNew ? 'Add Guest' : 'Save'}
+          <button type="submit" form="guest-form" className="btn btn-primary min-h-12 w-full lg:min-h-12" disabled={busy}>
+            {busy ? 'Saving…' : isNew ? <><UserPlus size={18} aria-hidden="true" /> Add Guest</> : <><FloppyDisk size={18} aria-hidden="true" /> Save</>}
           </button>
         }
       >
-        <form id="guest-form" onSubmit={save} className="space-y-4">
+        <form id="guest-form" onSubmit={save} className="form-area space-y-4">
+          <div className="card space-y-4">
           <div>
             <FieldLabel icon={User} htmlFor="g-name">Name</FieldLabel>
             <input id="g-name" name="name" className="field" value={form.name} onChange={set('name')} autoComplete="off" />
@@ -67,8 +84,10 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
               <input id="g-email" name="email" type="email" inputMode="email" className="field" value={form.email} onChange={set('email')} autoComplete="off" spellCheck={false} placeholder="name@example.com" />
             </div>
           </div>
+          </div>
+          <div className="card space-y-4">
           <div>
-            <FieldLabel icon={Buildings} htmlFor="g-org">Organization (optional)</FieldLabel>
+            <FieldLabel icon={Buildings} htmlFor="g-org">Company or group (optional)</FieldLabel>
             <input id="g-org" name="organization" className="field" value={form.organization} onChange={set('organization')} autoComplete="off" />
           </div>
           <ColorPicker
@@ -83,16 +102,17 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
             <FieldLabel icon={Note} htmlFor="g-notes">Notes</FieldLabel>
             <textarea id="g-notes" name="notes" rows={3} className="field" value={form.notes} onChange={set('notes')} />
           </div>
+          </div>
           {!isNew && onMerge && (
-            <div className="rounded-lg border border-line bg-surface-2 p-3">
+            <div className="card">
               <p className="text-base font-semibold">Listed twice?</p>
               <p className="mb-2 text-base text-ink/80">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
-              <button type="button" className="btn gap-1.5 px-3" onClick={onMerge}>
-                <GitMerge size={16} aria-hidden="true" /> Merge with another guest
+              <button type="button" className="btn px-3" onClick={onMerge}>
+                <GitMerge size={18} aria-hidden="true" /> Merge with another guest
               </button>
             </div>
           )}
-          {error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="animate-shake rounded-lg border-2 border-danger bg-red-50 px-3 py-2 text-base text-danger">{error}</p>}
         </form>
 
         {!isNew && <GuestStays guest={guest} rooms={rooms} onBookAgain={setBooking} />}

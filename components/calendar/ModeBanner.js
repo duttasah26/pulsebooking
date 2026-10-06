@@ -1,4 +1,4 @@
-import { CheckSquare, Hand, PencilSimpleLine, Plus, X } from '@phosphor-icons/react';
+import { CheckSquare, Hand, PencilSimpleLine, Plus, X, Keyboard } from '@phosphor-icons/react';
 
 // What the pointer does right now, said once, large, under the calendar, with a way out. Open (the plain mode) shows
 // nothing. On Hold, Select and Hand change what a tap or drag does, so they announce themselves and Done returns to Open.
@@ -40,17 +40,17 @@ const MODES = {
   },
 };
 
-export default function ModeBanner({ mode, touch, onExit, onSkip }) {
+export default function ModeBanner({ mode, touch, onExit, onSkip, still = false }) {
   const m = MODES[mode];
   const Icon = m.icon;
   return (
-    <div role="status" data-below-grid className={`animate-fade flex h-14 items-center gap-3 overflow-hidden rounded-lg border-2 px-3 ${m.box}`}>
+    <div role="status" data-below-grid className={`${still ? '' : 'animate-fade '}flex h-14 items-center gap-3 overflow-hidden rounded-lg border-2 px-3 ${m.box}`}>
       <Icon size={22} weight="fill" aria-hidden="true" className={`shrink-0 ${m.iconTone}`} />
       <p className="line-clamp-2 min-w-0 flex-1 text-sm leading-snug sm:text-base">
         <strong className="font-semibold">{m.name} mode.</strong> {touch ? m.touch : m.mouse}
       </p>
       {onSkip && (
-        <button type="button" className="btn shrink-0 px-3" onClick={onSkip}>Type dates<span className="max-sm:hidden"> instead</span></button>
+        <button type="button" className="btn shrink-0 px-3" onClick={onSkip}><Keyboard size={18} aria-hidden="true" /> Type dates<span className="max-sm:hidden"> instead</span></button>
       )}
       <button type="button" className="btn shrink-0 gap-1.5 px-3" onClick={onExit}>
         <X size={18} aria-hidden="true" /> {mode === 'draw' ? 'Cancel' : 'Done'}

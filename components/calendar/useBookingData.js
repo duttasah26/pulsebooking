@@ -34,6 +34,29 @@ export function useBookingData({ view, date, span, windows = 1, lead = 0, enable
   );
   const fetched = bookings.data;
 
+  // Two or three people share this calendar, so what a phone or a tab showed a while ago may be out of date. When you come back to
+  // it (switch back to the tab, or unlock the phone) it reloads, at most once every 15 seconds.
+  const lastReload = useRef(0);
+  useEffect(() => {
+    if (!enabled) return undefined;
+    const refresh = () => {
+      if (document.visibilityState !== 'visible' || Date.now() - lastReload.current < 15000) return;
+      lastReload.current = Date.now();
+      bookings.reload();
+    };
+    lastReload.current = Date.now();
+    const now = () => bookings.reload(); // the assistant just booked something
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('pulse:bookings-changed', now);
+    return () => {
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('pulse:bookings-changed', now);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, bookings.reload]);
+
   const [extra, setExtra] = useState([]);
   const [removed, setRemoved] = useState(() => new Set());
   const [patches, setPatches] = useState(() => new Map());

@@ -1,16 +1,27 @@
-import { diffDays } from '../../../lib/dates';
+import { diffDays, today } from '../../../lib/dates';
+
+// Today's date, formatted at most twice a minute: every cell and header asks, and formatting a date is not free.
+export const todayCached = (() => {
+  let at = 0;
+  let value = '';
+  return () => {
+    const now = Date.now();
+    if (now - at > 30000) { value = today(); at = now; }
+    return value;
+  };
+})();
 
 // Sizes in px. The grid has two layouts:
 //   rows (timeline):  rooms down the side, days across
 //   cols (month):     days down the side, rooms across
-export const LABEL = 64; // label column in the timeline
-export const HEAD = 38; // header row in the timeline
-export const DATE_LABEL = 92; // date column in the month sheet (one line: "Thu 1 Oct")
-export const MONTH_HEAD = 30; // room header row in the month sheet
+export const LABEL = 64; // label column in the timeline (a room number in 16px type fits, and a phone keeps its width for the days)
+export const HEAD = 48; // header row in the timeline (weekday in 14px over the day in 16px)
+export const DATE_LABEL = 116; // date column in the month sheet (one line: "Thu 1 Oct", 14px)
+export const MONTH_HEAD = 38; // room header row in the month sheet
 const GAP = 3; // space around a bar
 
 // Minimum cell width (cells stretch to fill the width) and fixed cell height. Short rows fit a month with little scrolling.
-export const cellSize = (rows) => ({ cellW: rows ? 40 : 56, cellH: rows ? 40 : 28 });
+export const cellSize = (rows) => ({ cellW: rows ? 44 : 60, cellH: rows ? 44 : 34 });
 
 // CSS grid placement of cell (r, i), spanning len cells along the day axis.
 export const placeAt = (rows, r, i, len = 1) =>

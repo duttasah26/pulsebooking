@@ -3,7 +3,7 @@
 // the booking is not made until it is confirmed.
 import { X } from '@phosphor-icons/react';
 
-export default function GhostBar({ g, rows, style: placement, tone, name, onRemove }) {
+export default function GhostBar({ g, rows, style: placement, tone, name, onRemove, hold = false }) {
   return (
     <div
       aria-hidden={onRemove ? undefined : 'true'}
@@ -15,6 +15,8 @@ export default function GhostBar({ g, rows, style: placement, tone, name, onRemo
         ...g.margin,
         backgroundColor: `color-mix(in srgb, ${tone.border} ${tone.fillPct ?? 18}%, transparent)`,
         borderColor: tone.border,
+        // A hold is drawn hatched, as on the calendar, so a change to On hold is seen as such.
+        ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
       }}
     >
       <span className={`min-w-0 truncate opacity-70 ${rows ? '' : '[writing-mode:vertical-rl] @min-[84px]:[writing-mode:horizontal-tb]'}`}>{name || 'New Booking'}</span>

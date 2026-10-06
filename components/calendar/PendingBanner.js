@@ -16,7 +16,7 @@ function End({ label, tone, was, now }) {
           <p className="flex items-center gap-1.5 text-sm text-muted line-through decoration-1">{fmtDayMonth(was)}</p>
           <p className="flex items-center gap-1.5">
             <ArrowRight size={16} weight="bold" aria-hidden="true" className={`shrink-0 ${t.ink}`} />
-            <span className={`font-mono text-base font-bold ${t.ink}`}>{fmtDayMonth(now)}</span>
+            <span className={`font-mono text-base font-semibold ${t.ink}`}>{fmtDayMonth(now)}</span>
           </p>
         </>
       ) : (
@@ -43,12 +43,12 @@ function Change({ item: i, rooms, showName }) {
         {showName && <span className="min-w-0 break-words font-semibold">{was.name}</span>}
         {roomChanged ? (
           <span className="flex items-center gap-1">
-            <span className="rounded bg-surface-2 px-1.5 font-mono text-muted line-through">Room {was.room_number}</span>
+            <span className="rounded bg-surface-2 px-1.5 text-muted line-through">Room <span className="font-mono">{was.room_number}</span></span>
             <ArrowRight size={14} weight="bold" aria-hidden="true" />
-            <span className="rounded bg-amber-200 px-1.5 font-mono font-bold">Room {nowRoom}</span>
+            <span className="rounded bg-amber-200 px-1.5 font-semibold">Room <span className="font-mono">{nowRoom}</span></span>
           </span>
         ) : (
-          <span className="rounded bg-surface-2 px-1.5 font-mono font-semibold">Room {nowRoom}</span>
+          <span className="rounded bg-surface-2 px-1.5 font-semibold">Room <span className="font-mono">{nowRoom}</span></span>
         )}
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -61,7 +61,7 @@ function Change({ item: i, rooms, showName }) {
         {delta !== 0 && <ArrowRight size={14} weight="bold" aria-hidden="true" />}
         <span className="font-semibold">{nightsLabel(nowNights)}</span>
         {delta !== 0 && (
-          <span className={`rounded px-1.5 font-mono font-bold ${delta > 0 ? 'bg-accent-soft text-accent-text' : 'bg-danger/15 text-danger'}`}>{delta > 0 ? '+' : ''}{delta}</span>
+          <span className={`rounded px-1.5 font-mono font-semibold ${delta > 0 ? 'bg-accent-soft text-accent-text' : 'bg-danger/15 text-danger'}`}>{delta > 0 ? '+' : ''}{delta}</span>
         )}
       </p>
     </li>

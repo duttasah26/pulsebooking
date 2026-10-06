@@ -19,7 +19,7 @@ export function Mark({ on, tone }) {
 export function ChipGroup({ legend, icon, options, value, onToggle, empty, legendHidden = false }) {
   return (
     <fieldset>
-      <FieldLabel as="legend" icon={icon} hidden={legendHidden}>{legend}</FieldLabel>
+      <FieldLabel icon={icon} as="legend" hidden={legendHidden}>{legend}</FieldLabel>
       {options.length === 0 ? (
         <p className="text-sm text-muted">{empty}</p>
       ) : (
@@ -40,7 +40,7 @@ export function ChipGroup({ legend, icon, options, value, onToggle, empty, legen
 export function Segmented({ legend, icon, options, value, onChange, legendHidden = false }) {
   return (
     <fieldset>
-      <FieldLabel as="legend" icon={icon} hidden={legendHidden}>{legend}</FieldLabel>
+      <FieldLabel icon={icon} as="legend" hidden={legendHidden}>{legend}</FieldLabel>
       {/* As many per row as fit (at least 7rem each), the rest on the next row, and a long label wraps inside its button: nothing runs into its neighbour. */}
       <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(7rem, 1fr))' }}>
         {options.map(([v, label, tone]) => (
@@ -58,7 +58,7 @@ export function Segmented({ legend, icon, options, value, onChange, legendHidden
 export function NumberRange({ legend, icon, from, to, onFrom, onTo, unit }) {
   return (
     <fieldset>
-      <FieldLabel as="legend" icon={icon}>{legend}</FieldLabel>
+      <FieldLabel icon={icon} as="legend">{legend}</FieldLabel>
       <div className="grid grid-cols-2 gap-2">
         <input type="number" inputMode="numeric" min="0" name={`${legend}-min`} aria-label={`${legend}, at least`} placeholder="At least" className="field min-w-0 px-2" value={from} onChange={(e) => onFrom(e.target.value.replace(/\D/g, ''))} />
         <input type="number" inputMode="numeric" min="0" name={`${legend}-max`} aria-label={`${legend}, at most`} placeholder="At most" className="field min-w-0 px-2" value={to} onChange={(e) => onTo(e.target.value.replace(/\D/g, ''))} />

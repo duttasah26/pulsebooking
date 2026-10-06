@@ -158,7 +158,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                 className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : 'p-1.5 sm:p-2'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
               >
                 <span className="flex w-full items-baseline justify-between gap-1">
-                  <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-bold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
+                  <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-semibold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
                   <span className="font-mono text-xs leading-none text-ink/70 sm:text-sm">{counts[i]}/{total}</span>
                 </span>
                 <span className="flex flex-col" style={{ gap: gapY }} aria-hidden="true">

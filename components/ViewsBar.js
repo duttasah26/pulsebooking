@@ -106,8 +106,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
             autoComplete="off"
             onChange={(e) => setName(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary px-4" disabled={!name.trim()}>Save view</button>
-          <button type="button" className="btn px-3" onClick={() => { setNaming(false); setName(''); }}>Cancel</button>
+          <button type="submit" className="btn btn-primary px-4" disabled={!name.trim()}><BookmarkSimple size={16} aria-hidden="true" /> Save view</button>
+          <button type="button" className="btn px-3" onClick={() => { setNaming(false); setName(''); }}><X size={16} aria-hidden="true" /> Cancel</button>
         </form>
       )}
     </section>

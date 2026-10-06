@@ -1,20 +1,15 @@
-import { Check, Clock, FloppyDisk, Plus, X } from '@phosphor-icons/react';
+import { Check, Clock, FloppyDisk, X } from '@phosphor-icons/react';
 
-// The buttons pinned to the bottom of the form: Cancel, Hold (create) and the main action. Deleting is done from the
-// details (hold the button there), not from the form.
+// The buttons pinned to the bottom of the form. One filled green button says what happens next; leaving is a quiet word.
+// Deleting is done from the details (hold the button there), not from the form.
 export default function FormFooter({ f, onCancel }) {
   const { edit, busy, unconfirmed, roomIds, isHoldEdit } = f;
   const saving = busy || unconfirmed;
   return (
-    <div className="sticky bottom-0 -mx-4 flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-2 lg:pt-2">
+    <div className="sticky bottom-0 -mx-4 mt-auto flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
       {onCancel && (
-        <button type="button" className="btn" onClick={onCancel} disabled={busy}>
-          <X size={16} aria-hidden="true" /> Cancel
-        </button>
-      )}
-      {!edit && (
-        <button type="button" className="btn" onClick={() => f.submit(true)} disabled={busy}>
-          <Clock size={18} aria-hidden="true" /> Hold
+        <button type="button" className="btn btn-quiet" onClick={onCancel} disabled={busy}>
+          <X size={18} aria-hidden="true" /> Cancel
         </button>
       )}
       {/* A hold has two clear endings: keep holding it, or turn it into a real booking. */}
@@ -29,15 +24,7 @@ export default function FormFooter({ f, onCancel }) {
         className="btn btn-primary flex-1"
         disabled={saving}
       >
-        {saving ? (
-          'Saving…'
-        ) : isHoldEdit ? (
-          <><Check size={18} weight="bold" aria-hidden="true" /> Confirm Booking</>
-        ) : edit ? (
-          <><FloppyDisk size={18} aria-hidden="true" /> Save Changes</>
-        ) : (
-          <><Plus size={18} aria-hidden="true" /> {roomIds.length > 1 ? `Book ${roomIds.length} Rooms` : 'Create Booking'}</>
-        )}
+        {saving ? 'Saving…' : isHoldEdit ? <><Check size={18} weight="bold" aria-hidden="true" /> Confirm Booking</> : edit ? <><FloppyDisk size={18} aria-hidden="true" /> Save Changes</> : <><Check size={18} weight="bold" aria-hidden="true" /> {roomIds.length > 1 ? `Confirm ${roomIds.length} Rooms` : 'Confirm Booking'}</>}
       </button>
     </div>
   );

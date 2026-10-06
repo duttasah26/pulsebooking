@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Buildings, CalendarBlank, Check, Clock, Minus, Note, Plus, SignIn, SignOut, Tag, TextAa, X } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, Buildings, CalendarBlank, Check, Clock, Minus, Note, Plus, SignIn, SignOut, Tag, TextAa, X, ArrowCounterClockwise } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import TimeSelect from '../TimeSelect';
 import ColorPicker from '../booking/ColorPicker';
@@ -39,7 +39,7 @@ function Stepper({ label, icon, text, on, minus, plus, minusLabel, plusLabel }) 
   const btn = 'btn size-12 shrink-0 border-line p-0 lg:size-12';
   return (
     <div>
-      <FieldLabel as="span" icon={icon}>{label}</FieldLabel>
+      <FieldLabel icon={icon} as="span">{label}</FieldLabel>
       <div className="flex items-center gap-2">
         <button type="button" className={btn} aria-label={minusLabel} onClick={minus}><Minus size={20} weight="bold" aria-hidden="true" /></button>
         <span className={`min-w-0 flex-1 rounded-lg border-2 px-3 py-2.5 text-center text-lg font-semibold transition-colors duration-150 ${on ? 'border-accent bg-accent-soft text-accent-text' : 'border-line text-muted'}`} aria-live="polite">{text}</span>
@@ -188,7 +188,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
           </div>
           <p className="-mt-2 flex items-center justify-between text-sm text-muted">
             <span>Quick moves, in days</span>
-            {shift !== 0 && <button type="button" className="btn min-h-9 border-transparent px-2 text-sm" onClick={() => setShift(0)}>Reset</button>}
+            {shift !== 0 && <button type="button" className="btn min-h-11 border-transparent px-2 text-sm lg:min-h-9" onClick={() => setShift(0)}><ArrowCounterClockwise size={16} aria-hidden="true" /> Reset</button>}
           </p>
           <Stepper
             label="Make every stay longer or shorter"

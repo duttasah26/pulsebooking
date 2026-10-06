@@ -44,7 +44,7 @@ export function ZoomControl({ zoom, onChange }) {
   const pct = Math.round(zoom * 100);
   const fill = ((zoom - MIN) / (MAX - MIN)) * 100;
   return (
-    <div role="group" aria-label="Zoom" className="flex shrink-0 items-center gap-0.5 rounded-lg border border-line bg-surface p-0.5">
+    <div role="group" aria-label="Zoom" className="flex shrink-0 items-center gap-0.5 rounded-lg border border-chrome-line bg-chrome p-0.5">
       <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
         <MagnifyingGlassMinus size={20} aria-hidden="true" />
       </button>

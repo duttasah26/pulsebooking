@@ -134,6 +134,7 @@ export default function BookingPanel({
           pending={pending}
           onSavePending={onSavePending}
           onCancelPending={onCancelPending}
+          onPreview={onPreview}
         />
       ) : (
         <BookingForm key={`blank-${blank.resetKey ?? 0}`} {...blank} rooms={rooms} isBusy={isBusy} onSaved={onSaved} onDone={blank.onDone ?? (() => {})} />
