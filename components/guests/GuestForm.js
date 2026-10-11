@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Buildings, Envelope, Note, Phone, User, FloppyDisk, GitMerge, UserPlus } from '@phosphor-icons/react';
+import { Buildings, Envelope, Note, Phone, User } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
 import BookingSheet from '../booking/BookingSheet';
 import FieldLabel from '../FieldLabel';
@@ -63,8 +63,8 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
         title={isNew ? 'New Guest' : guest.name}
         onClose={onClose}
         footer={
-          <button type="submit" form="guest-form" className="btn btn-primary min-h-12 w-full lg:min-h-12" disabled={busy}>
-            {busy ? 'Saving…' : isNew ? <><UserPlus size={18} aria-hidden="true" /> Add Guest</> : <><FloppyDisk size={18} aria-hidden="true" /> Save</>}
+          <button type="submit" form="guest-form" className="btn btn-primary btn-block" disabled={busy}>
+            {busy ? 'Saving…' : isNew ? 'Add Guest' : 'Save Changes'}
           </button>
         }
       >
@@ -92,7 +92,7 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
           </div>
           <ColorPicker
             id="g-color-label"
-            label="Guest Colour (optional)"
+            label="Guest colour (optional)"
             autoLabel="None"
             hint="This guest's bookings use this colour on the calendar. None uses the status colour."
             color={form.color}
@@ -105,14 +105,14 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
           </div>
           {!isNew && onMerge && (
             <div className="card">
-              <p className="text-base font-semibold">Listed twice?</p>
-              <p className="mb-2 text-base text-ink/80">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
+              <p className="t-headline">Listed twice?</p>
+              <p className="t-footnote mb-3">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
               <button type="button" className="btn px-3" onClick={onMerge}>
-                <GitMerge size={18} aria-hidden="true" /> Merge with another guest
+                Merge with Another Guest
               </button>
             </div>
           )}
-          {error && <p role="alert" className="animate-shake rounded-lg border-2 border-danger bg-red-50 px-3 py-2 text-base text-danger">{error}</p>}
+          {error && <p role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}
         </form>
 
         {!isNew && <GuestStays guest={guest} rooms={rooms} onBookAgain={setBooking} />}

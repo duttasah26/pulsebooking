@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowUUpLeft, WarningCircle, X } from '@phosphor-icons/react';
+import { WarningCircle, X } from '@phosphor-icons/react';
 
 const ToastContext = createContext(() => {});
 export const useToast = () => useContext(ToastContext);
@@ -44,16 +44,16 @@ export function ToastProvider({ children }) {
       {children}
       <div role="status" aria-live="polite" className="pointer-events-none fixed bottom-16 left-3 right-3 z-50 flex justify-start md:bottom-4 lg:left-24 lg:right-[26rem]">
         {toast && (
-          <div className="pointer-events-auto flex min-h-11 max-w-full items-center gap-2 rounded-lg border border-amber-400 bg-amber-50 py-1 pl-3 pr-1 text-sm shadow-lg">
-            <WarningCircle size={18} weight="fill" aria-hidden="true" className="shrink-0 text-amber-500" />
-            <span key={toast.id} className="min-w-0 animate-bar-in font-medium">{toast.message}</span>
+          <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-lg bg-ink py-1.5 pl-4 pr-1.5 text-[0.9375rem] text-white shadow-lg">
+            {!toast.actionLabel && <WarningCircle size={20} weight="fill" aria-hidden="true" className="shrink-0 text-[#f0d27a]" />}
+            <span key={toast.id} className="min-w-0 animate-bar-in">{toast.message}</span>
             {toast.actionLabel && (
-              <button type="button" className="btn btn-quiet min-h-8 shrink-0 px-3 font-semibold lg:min-h-8" onClick={() => { toast.onAction?.(); clear(); }}>
-                <ArrowUUpLeft size={16} aria-hidden="true" /> {toast.actionLabel}
+              <button type="button" className="btn btn-sm btn-inverse btn-quiet shrink-0 font-semibold text-[#8fd3b4]" onClick={() => { toast.onAction?.(); clear(); }}>
+                {toast.actionLabel}
               </button>
             )}
-            <button type="button" className="btn btn-icon min-h-8 min-w-8 shrink-0 border-transparent lg:min-h-8 lg:min-w-8" onClick={clear} aria-label="Clear message">
-              <X size={14} aria-hidden="true" />
+            <button type="button" className="btn btn-sm btn-icon btn-inverse btn-quiet shrink-0" onClick={clear} aria-label="Clear message">
+              <X size={16} weight="bold" aria-hidden="true" />
             </button>
           </div>
         )}

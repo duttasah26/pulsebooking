@@ -1,19 +1,19 @@
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, Check, Cursor, PencilSimple, PencilSimpleLine, Trash, X } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, Check, Clock, Cursor, PencilSimple, Trash, X } from '@phosphor-icons/react';
 
-// In the instructions, a button or tool is shown as it looks on screen: its own icon with its name, in a small outlined
-// pill, so it can be found by shape and colour and not only by reading. Same icons and colours as the buttons.
+// In the instructions, a button or tool is shown as it looks on screen: its own symbol with its name, on the same tinted
+// fill as the button, so it can be found by shape and not only by reading.
 export const TONES = {
-  ink: 'border-ink/30 bg-surface-2 text-ink',
-  amber: 'border-amber-400 bg-amber-100 text-amber-700',
-  sky: 'border-sky-400 bg-sky-100 text-sky-700',
-  green: 'border-accent bg-accent-soft text-accent-text',
-  red: 'border-danger bg-red-50 text-danger',
+  ink: 'bg-tint text-ink',
+  amber: 'border-dashed border-hold-edge bg-hold text-hold-ink',
+  sky: 'bg-tint text-ink',
+  green: 'bg-accent text-accent-ink',
+  red: 'bg-danger-soft text-danger',
 };
 
 export function Pill({ icon: Icon, tone = 'ink', children }) {
   return (
-    <span className={`mx-0.5 inline-flex items-center gap-1 whitespace-nowrap rounded-md border-2 px-1.5 py-px align-middle text-[0.95em] font-semibold leading-snug ${TONES[tone]}`}>
-      <Icon size={16} weight="bold" aria-hidden="true" />
+    <span className={`mx-0.5 inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-transparent px-1.5 py-px align-middle text-[0.95em] font-semibold leading-snug ${TONES[tone]}`}>
+      <Icon size={16} aria-hidden="true" />
       {children}
     </span>
   );
@@ -21,7 +21,7 @@ export function Pill({ icon: Icon, tone = 'ink', children }) {
 
 // The two tools on the left, and the buttons the instructions name.
 export const MousePill = () => <Pill icon={Cursor}>Select</Pill>;
-export const PencilPill = () => <Pill icon={PencilSimpleLine} tone="amber">On Hold</Pill>;
+export const PencilPill = () => <Pill icon={Clock} tone="amber">On Hold</Pill>;
 export const UndoPill = () => <Pill icon={ArrowUUpLeft}>Undo</Pill>;
 export const RedoPill = () => <Pill icon={ArrowUUpRight}>Redo</Pill>;
 export const SavePill = () => <Pill icon={Check} tone="green">Save</Pill>;

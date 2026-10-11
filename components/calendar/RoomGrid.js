@@ -538,7 +538,7 @@ export default function RoomGrid({
             />
           </div>
           <span className="w-16 shrink-0 text-right tabular-nums"><span className="font-mono">{inView}</span> days</span>
-          <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 lg:min-h-7 lg:min-w-7" title={`Default view: ${visibleDays} days fill the screen, from the first day`} aria-label="Reset to the default view" onClick={resetNav}>
+          <button type="button" className="btn btn-sm btn-icon shrink-0" title={`Default view: ${visibleDays} days fill the screen, from the first day`} aria-label="Reset to the default view" onClick={resetNav}>
             <ArrowCounterClockwise size={15} aria-hidden="true" />
           </button>
         </div>

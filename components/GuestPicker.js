@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Buildings, Envelope, MagnifyingGlass, Phone, Plus, User, UserCircle, ArrowLeft, UserSwitch } from '@phosphor-icons/react';
+import { Buildings, Envelope, MagnifyingGlass, Phone, Plus, User } from '@phosphor-icons/react';
 import FieldLabel from './FieldLabel';
 import ColorPicker from './booking/ColorPicker';
 import { useApi, useDebounced } from '../lib/useApi';
@@ -42,18 +42,18 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
       <div>
         <FieldLabel icon={User} as="span" hidden>Guest</FieldLabel>
         <div
-          className="flex items-center gap-3 rounded-lg border border-line p-3"
+          className="flex items-center gap-3 rounded-lg border border-line bg-surface p-4"
           style={(tone ?? resolveColor(selected.color)) ? { backgroundColor: (tone ?? resolveColor(selected.color)).bg, borderColor: (tone ?? resolveColor(selected.color)).border } : undefined}
         >
-          <UserCircle size={28} className="shrink-0 text-muted" />
+          
           <div className="min-w-0 flex-1">
-            <p className="truncate font-medium">{selected.name}</p>
-            <p className="truncate text-sm text-muted">
+            <p className="truncate text-[1.0625rem] font-semibold">{selected.name}</p>
+            <p className="truncate text-[0.9375rem] text-muted">
               {[contact(selected) || 'No phone or email', selected.organization].filter(Boolean).join(', ')}
             </p>
           </div>
           <button type="button" className="btn" onClick={() => { setSelected(null); setQuery(''); }}>
-            <UserSwitch size={18} aria-hidden="true" /> Change
+            Change
           </button>
         </div>
       </div>
@@ -85,15 +85,15 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
         </div>
         <ColorPicker
           id="ng-color-label"
-          label="Guest Colour (optional)"
+          label="Guest colour (optional)"
           autoLabel="None"
           hint="Their bookings use this colour on the calendar. None uses the status colour."
           color={draft.color}
           onChange={(color) => setDraft({ ...draft, color })}
         />
-        <p className="text-sm text-muted">Phone and email are optional. Add one if two guests share a name.</p>
+        <p className="t-footnote">Phone and email are optional. Add one if two guests share a name.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
-          <ArrowLeft size={18} aria-hidden="true" /> Back to Search
+          Back to Search
         </button>
       </fieldset>
     );
@@ -103,13 +103,13 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
     <div>
       <FieldLabel icon={User} htmlFor="guest-search" hidden>Guest</FieldLabel>
       <div className="relative">
-        <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+        <MagnifyingGlass size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
         <input
           id="guest-search"
           name="guest-search"
           type="search"
           spellCheck={false}
-          className="field pl-10"
+          className="field pl-11"
           placeholder="Search by name, phone or email…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -117,12 +117,12 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
         />
       </div>
       {debounced.length >= 2 && (
-        <ul className="mt-2 divide-y divide-line rounded-lg border border-line">
+        <ul className="mt-2 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
           {matches.map((g) => (
             <li key={g.id}>
-              <button type="button" className="flex min-h-14 w-full flex-col items-start justify-center px-3 py-2 text-left hover:bg-surface-2" onClick={() => setSelected(g)}>
-                <span className="font-medium">{g.name}</span>
-                <span className="text-sm text-muted">
+              <button type="button" className="flex min-h-14 w-full flex-col items-start justify-center px-4 py-2.5 text-left hover:bg-surface-2" onClick={() => setSelected(g)}>
+                <span className="font-semibold">{g.name}</span>
+                <span className="text-[0.9375rem] text-muted">
                   {contact(g) || 'No phone or email'}
                   {g.organization ? `, ${g.organization}` : ''}
                   {Number(g.stays) > 0 && `, ${g.stays} stay${Number(g.stays) === 1 ? '' : 's'}, last ${fmtDayMonthYear(g.last_check_in)}`}
@@ -130,11 +130,11 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
               </button>
             </li>
           ))}
-          {search.loading && matches.length === 0 && <li className="px-3 py-3 text-sm text-muted">Searching…</li>}
+          {search.loading && matches.length === 0 && <li className="px-4 py-3 text-[0.9375rem] text-muted">Searching…</li>}
           <li>
             <button
               type="button"
-              className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium text-accent-text hover:bg-surface-2"
+              className="flex min-h-12 w-full items-center gap-2 px-4 py-2 text-left font-semibold text-accent-text hover:bg-surface-2"
               onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '', color: null }); }}
             >
               <Plus size={18} aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest

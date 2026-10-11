@@ -23,7 +23,7 @@ export default function ColorPicker({
           type="button"
           aria-pressed={color === null}
           onClick={() => onChange(null)}
-          className={`btn px-3 ${color === null ? 'border-ink bg-surface-2 font-semibold' : ''}`}
+          className={`btn px-4 ${color === null ? 'font-semibold ring-2 ring-ink ring-offset-2' : ''}`}
         >
           {autoLabel}
         </button>
@@ -35,15 +35,15 @@ export default function ColorPicker({
             title={c.name}
             aria-pressed={color === c.key}
             onClick={() => onChange(c.key)}
-            className={`cell grid size-11 place-items-center rounded-lg border-2 transition-[transform,box-shadow] duration-150 active:scale-95 lg:size-11 ${color === c.key ? 'animate-chip border-ink' : ''}`}
-            style={{ backgroundColor: c.bg, borderColor: color === c.key ? undefined : c.border }}
+            className={`cell grid size-11 place-items-center rounded-lg border transition-shadow duration-150 lg:size-11 ${color === c.key ? 'ring-2 ring-ink ring-offset-2' : ''}`}
+            style={{ backgroundColor: c.bg, borderColor: c.border }}
           >
           </button>
         ))}
         {/* Any colour: the native colour picker sits invisibly over this swatch. */}
         <label
           title="Pick any colour"
-          className={`cell relative flex h-11 cursor-pointer items-center gap-1.5 rounded-lg border-2 px-3 text-base font-medium transition-transform active:scale-95 focus-within:outline-2 focus-within:outline-accent ${custom ? 'border-ink' : 'border-line bg-surface'}`}
+          className={`cell relative flex h-11 cursor-pointer items-center gap-1.5 rounded-lg border px-3 text-base font-medium focus-within:outline-2 focus-within:outline-accent ${custom ? 'border-transparent ring-2 ring-ink ring-offset-2' : 'border-transparent bg-tint'}`}
           style={custom ? { backgroundColor: `color-mix(in srgb, ${color} 28%, white)` } : undefined}
         >
           <Eyedropper size={16} aria-hidden="true" />
@@ -57,7 +57,7 @@ export default function ColorPicker({
           />
         </label>
       </div>
-      {hint && <p className="mt-1.5 text-base text-muted">{hint}</p>}
+      {hint && <p className="t-footnote mt-2">{hint}</p>}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Buildings, Envelope, Note, Phone, UserCircle, GitMerge, X } from '@phosphor-icons/react';
+import { ArrowRight, Buildings, Envelope, Note, Phone, UserCircle } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
 import HoldButton from '../HoldButton';
 import { useToast } from '../Toast';
@@ -18,13 +18,13 @@ const lastStay = (guest) => (guest.bookings ?? []).filter((b) => !b.deleted_at).
 
 function Card({ guest, keep, onKeep }) {
   return (
-    <label className={`block cursor-pointer rounded-lg border-2 p-3 transition-colors duration-150 ${keep ? 'border-accent bg-accent-soft' : 'border-line bg-surface hover:bg-surface-2'}`}>
+    <label className={`block cursor-pointer rounded-lg border-2 p-4 transition-colors duration-150 ${keep ? 'border-accent bg-accent-soft' : 'border-line bg-surface hover:bg-surface-2'}`}>
       <span className="flex items-center gap-2">
         <input type="radio" name="keep" className="size-5 accent-[var(--accent)]" checked={keep} onChange={onKeep} />
         <span className="font-semibold">{keep ? 'Keep this guest' : 'Merge into the other'}</span>
       </span>
       <span className="mt-2 flex items-center gap-2 text-lg font-semibold"><UserCircle size={24} aria-hidden="true" className="shrink-0 text-muted" /><span className="min-w-0 break-words">{guest.name}</span></span>
-      <dl className="mt-1 space-y-0.5 text-base text-ink/80">
+      <dl className="mt-1 space-y-0.5 text-base text-muted">
         <div className="flex items-center gap-2"><Phone size={16} aria-hidden="true" className="shrink-0 text-muted" /><dt className="sr-only">Phone</dt><dd>{guest.phone || <span className="text-muted">No phone</span>}</dd></div>
         <div className="flex items-center gap-2"><Envelope size={16} aria-hidden="true" className="shrink-0 text-muted" /><dt className="sr-only">Email</dt><dd className="min-w-0 break-words">{guest.email || <span className="text-muted">No email</span>}</dd></div>
         <div className="flex items-center gap-2"><Buildings size={16} aria-hidden="true" className="shrink-0 text-muted" /><dt className="sr-only">Organization</dt><dd>{guest.organization || <span className="text-muted">No organization</span>}</dd></div>
@@ -82,10 +82,10 @@ export default function MergeSheet({ a, b, onClose, onDone }) {
       wide
       footer={
         <div className="space-y-2">
-          <HoldButton onConfirm={merge} disabled={busy} title="Press and hold to merge" className="btn btn-primary w-full">
-            {busy ? 'Merging…' : <><GitMerge size={18} aria-hidden="true" /> {`Hold to Merge into “${keepGuest.name}”`}</>}
+          <HoldButton onConfirm={merge} disabled={busy} title="Press and hold to merge" className="btn btn-primary btn-block">
+            {busy ? 'Merging…' : <>{`Hold to Merge into “${keepGuest.name}”`}</>}
           </HoldButton>
-          <button type="button" className="btn w-full" onClick={onClose} disabled={busy}><X size={18} aria-hidden="true" /> Cancel, change nothing</button>
+          <button type="button" className="btn btn-quiet btn-block" onClick={onClose} disabled={busy}>Cancel</button>
         </div>
       }
     >
@@ -97,7 +97,7 @@ export default function MergeSheet({ a, b, onClose, onDone }) {
         </div>
 
         <section className="space-y-2 rounded-lg border border-line bg-surface-2 p-4" aria-label="What will happen">
-          <h3 className="text-lg font-semibold">What will happen</h3>
+          <h3 className="t-headline">What will happen</h3>
           <ul className="space-y-2 text-base leading-relaxed">
             <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="mt-1 shrink-0" /> All <strong>{stayCount(other)} {stayCount(other) === 1 ? 'stay' : 'stays'}</strong> of “{other.name}” move to “{keepGuest.name}”, who then has <strong>{stayCount(keepGuest) + stayCount(other)}</strong> in total.</li>
             <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="mt-1 shrink-0" /> The name stays “{keepGuest.name}”.{filled.length > 0 ? ` The ${filled.map((k) => label[k]).join(' and ')} that “${keepGuest.name}” does not have yet will be filled in from “${other.name}”.` : ' Their own details stay as they are.'}</li>

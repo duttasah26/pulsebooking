@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Clock, Eraser, Plus, X } from '@phosphor-icons/react';
+import { ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Plus, X } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import DateRangePicker from '../DateRangePicker';
@@ -31,7 +31,7 @@ function StayLine({ room, checkIn, checkOut, inTime, outTime }) {
   const { settings } = useSettings();
   const shade = roomShade({ number: room }, settings);
   const chip = (
-    <span className="rounded px-2 py-0.5 text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
+    <span className="rounded-md px-2 py-0.5 text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
       Room <span className="font-mono">{room}</span>
     </span>
   );
@@ -58,17 +58,17 @@ function StayLine({ room, checkIn, checkOut, inTime, outTime }) {
 function Fact({ label, children }) {
   return (
     <div className="min-w-0">
-      <dt className="text-sm text-ink/70">{label}</dt>
+      <dt className="text-[0.9375rem] text-muted">{label}</dt>
       <dd className="break-words font-semibold">{children}</dd>
     </div>
   );
 }
 
-// The three steps as tabs: tap any to jump there. A step you have moved past without filling it in shows a yellow
-// exclamation mark in place of its number.
+// The three steps as a segmented control: tap any to jump there. A finished step shows a tick on green; a step you have
+// moved past without filling it in shows a red exclamation mark in place of its number.
 function StepList({ step, done, onGo }) {
   return (
-    <ol className="grid grid-cols-3 gap-1.5" aria-label="Booking steps">
+    <ol className="seg grid w-full grid-cols-3" aria-label="Booking steps">
       {STEPS.map((name, i) => {
         const current = i === step;
         const missing = done[i] === false && step > i; // only once you have moved on without filling it in
@@ -78,16 +78,14 @@ function StepList({ step, done, onGo }) {
               type="button"
               onClick={() => onGo(i)}
               aria-current={current ? 'step' : undefined}
-              className={`btn w-full min-h-11 gap-1.5 px-2 text-sm lg:min-h-10 ${
-                current ? 'border-accent bg-accent-soft text-accent-text' : done[i] ? 'bg-surface-2' : 'text-muted'
-              }`}
+              className="seg-item min-h-11 w-full gap-2 px-2 lg:min-h-10"
             >
               {/* The step number turns into an exclamation mark while the step is not filled in. */}
               {missing ? (
-                <WarningCircle size={20} weight="fill" className="shrink-0 text-amber-500" />
+                <WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />
               ) : (
-                <span className={`grid size-6 place-items-center rounded-full text-xs ${current ? 'bg-accent text-accent-ink' : 'bg-surface-2'}`}>
-                  {done[i] && !current ? <Check size={12} weight="bold" /> : i + 1}
+                <span className={`grid size-6 place-items-center rounded-md font-mono text-sm font-semibold ${current ? 'bg-ink text-white' : done[i] ? 'bg-accent text-accent-ink' : 'bg-ink/10'}`}>
+                  {done[i] && !current ? <Check size={14} /> : i + 1}
                 </span>
               )}
               {name}
@@ -280,16 +278,16 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         if (step < 2) go(step + 1);
         else confirm();
       }}
-      className="form-area flex flex-1 flex-col gap-5"
+      className="form-area flex flex-1 flex-col gap-6"
     >
       <StepList step={step} done={done} onGo={go} />
 
       <div>
-        <h2 className="text-lg font-semibold leading-tight">{ASKS[step].title}</h2>
-        <p className="text-base leading-snug text-ink/70">{ASKS[step].help}</p>
+        <h2 className="t-title">{ASKS[step].title}</h2>
+        <p className="t-footnote mt-1">{ASKS[step].help}</p>
       </div>
 
-      {hint && (guestProblem || stayProblem || extraProblem) ? <p key={hint} className="animate-shake flex items-center gap-2 rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-2 text-base" role="alert"><WarningCircle size={20} weight="fill" className="shrink-0 text-amber-500" />{hint}</p> : null}
+      {hint && (guestProblem || stayProblem || extraProblem) ? <p key={hint} className="animate-shake flex items-center gap-2 rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger" role="alert"><WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />{hint}</p> : null}
 
       {/* Step 1: the guest (and organization). */}
       <div className={`space-y-4 ${step === 0 ? 'animate-step' : 'hidden'}`}>
@@ -329,7 +327,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
                       type="button"
                       aria-pressed={id === activeId}
                       onClick={() => setChosenRoom(id)}
-                      className={`btn min-h-11 px-3 font-semibold ${id === activeId ? 'animate-chip ring-2 ring-ink' : ''}`}
+                      className={`btn px-3 font-semibold ${id === activeId ? 'ring-2 ring-ink ring-offset-2' : ''}`}
                       style={{ backgroundColor: shade.fill, borderColor: shade.edge }}
                     >
                       Room <span className="font-mono">{numberOf(id)}</span>
@@ -357,7 +355,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           <Card icon={Suitcase} title="Going away for a few days?">
             {f.away ? (
               <>
-                <p className="text-base leading-snug text-ink/70">The room is kept for them. It is saved as two stays for the same guest.</p>
+                <p className="t-footnote">The room is kept for them. It is saved as two stays for the same guest.</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label htmlFor="away-from" className="label">They leave on</label>
@@ -369,12 +367,12 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
                   </div>
                 </div>
                 <button type="button" className="btn w-full" onClick={() => f.setAway(null)}>
-                  <X size={16} aria-hidden="true" /> No break
+                  No Break
                 </button>
               </>
             ) : (
               <button type="button" className="btn w-full" onClick={() => f.setAway({ from: addDays(f.checkIn, 1), to: addDays(f.checkIn, 2) })}>
-                <Plus size={16} aria-hidden="true" /> Add a break
+                <Plus size={18} aria-hidden="true" /> Add a Break
               </button>
             )}
           </Card>
@@ -385,7 +383,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
       <div className={`space-y-4 ${step === 2 ? 'animate-step' : 'hidden'}`}>
         <Card icon={Tag} title="Book it, or only hold the room?">
           <StatusPicker value={f.status} onChange={f.setStatus} hideLabel only={['confirmed', 'on_hold']} />
-          <p className="text-base leading-snug text-ink/70">
+          <p className="t-footnote">
             <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> keeps the room for now, until the guest is sure.
           </p>
         </Card>
@@ -395,17 +393,17 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <input id="b-label" name="label" className="field" placeholder="For example, Sharma wedding party…" value={f.label} onChange={(e) => f.setLabel(e.target.value)} autoComplete="off" />
           </div>
         )}
-        <section aria-label="Booking summary" className="space-y-3 rounded-lg border-2 p-3" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
+        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-5" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="break-words text-xl font-semibold leading-tight">{guestName ?? 'No guest yet'}</h3>
-              {(guest?.phone || guest?.email) && <p className="mt-0.5 break-words text-base text-ink/80">{[guest.phone, guest.email].filter(Boolean).join(', ')}</p>}
+              <h3 className="t-title break-words">{guestName ?? 'No guest yet'}</h3>
+              {(guest?.phone || guest?.email) && <p className="mt-0.5 break-words text-base text-muted">{[guest.phone, guest.email].filter(Boolean).join(', ')}</p>}
             </div>
             <StatusBadge status={f.status} />
           </div>
 
           <div>
-            <h4 className="mb-1.5 text-base font-semibold">Rooms and days</h4>
+            <h4 className="mb-2 text-[1.0625rem] font-semibold">Rooms and days</h4>
             <ul className="space-y-2">
               {allIds.map((id) => rooms.find((r) => r.id === id)?.number).filter(Boolean).sort().map((number) => {
                 const own = f.extraStays.find((x) => x.roomIds[0] === rooms.find((r) => r.number === number)?.id);
@@ -439,26 +437,26 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         <MoreOptions f={f} hideParty hideStatus hideColor />
       </div>
 
-      {f.error && <p role="alert" className="animate-shake rounded-lg border-2 border-danger bg-red-50 px-3 py-2 text-base text-danger">{f.error}</p>}
+      {f.error && <p role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{f.error}</p>}
 
-      <div className="sticky bottom-0 -mx-4 mt-auto flex gap-2 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
+      <div className="sticky bottom-0 -mx-5 mt-auto flex gap-3 border-t border-line bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-4">
         {step > 0 ? (
-          <button type="button" className="btn btn-quiet min-h-12 px-4" onClick={() => go(step - 1)} disabled={f.busy}>
-            <ArrowLeft size={18} aria-hidden="true" /> Back
+          <button type="button" className="btn btn-lg btn-quiet" onClick={() => go(step - 1)} disabled={f.busy}>
+            Back
           </button>
         ) : (
-          <button type="button" className="btn btn-quiet min-h-12 px-4" onClick={() => (onCancel ? onCancel() : onClear())} disabled={f.busy}>
-            {onCancel ? <X size={18} aria-hidden="true" /> : <Eraser size={18} aria-hidden="true" />} {onCancel ? 'Cancel' : 'Clear'}
+          <button type="button" className="btn btn-lg btn-quiet" onClick={() => (onCancel ? onCancel() : onClear())} disabled={f.busy}>
+            {onCancel ? 'Cancel' : 'Clear'}
           </button>
         )}
         {/* Different keys: with one shared button React would turn Next into a submit button mid-click and submit the form. */}
         {step < 2 ? (
-          <button key="next" type="button" className="btn btn-primary flex-1" onClick={() => go(step + 1)}>
+          <button key="next" type="button" className="btn btn-lg btn-primary flex-1" onClick={() => go(step + 1)}>
             Next: {STEPS[step + 1]} <ArrowRight size={18} aria-hidden="true" />
           </button>
         ) : (
-          <button key="confirm" type="submit" className="btn btn-primary flex-1" disabled={f.busy}>
-            {f.busy ? 'Saving…' : <>{f.isHold ? <Clock size={18} aria-hidden="true" /> : <Check size={18} weight="bold" aria-hidden="true" />} {confirmLabel}</>}
+          <button key="confirm" type="submit" className="btn btn-lg btn-primary flex-1" disabled={f.busy}>
+            {f.busy ? 'Saving…' : confirmLabel}
           </button>
         )}
       </div>

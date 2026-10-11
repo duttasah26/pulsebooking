@@ -1,4 +1,3 @@
-import { Bed } from '@phosphor-icons/react';
 import { useSettings } from './SettingsProvider';
 import { roomShade } from '../lib/colors';
 
@@ -8,11 +7,11 @@ export default function RoomChips({ numbers, note }) {
   const { settings } = useSettings();
   const list = [...new Set(numbers)].sort();
   return (
-    <div className="rounded-lg border border-line bg-surface p-3">
-      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted">
-        <Bed size={14} aria-hidden="true" /> {list.length === 1 ? 'Room' : 'Rooms'}
+    <div className="rounded-lg border border-line bg-surface p-5">
+      <p className="t-group">
+        {list.length === 1 ? 'Room' : 'Rooms'}
       </p>
-      <p className="mt-1.5 flex flex-wrap gap-1.5">
+      <p className="mt-2 flex flex-wrap gap-2">
         {list.map((n) => {
           const shade = roomShade({ number: n }, settings);
           return (

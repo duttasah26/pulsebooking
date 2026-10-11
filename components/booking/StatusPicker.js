@@ -24,10 +24,10 @@ export default function StatusPicker({ value, onChange, hideLabel = false, only 
               type="button"
               aria-pressed={on}
               onClick={() => onChange(key)}
-              className={`btn min-h-11 justify-start gap-2 border-2 px-3 ${key === 'on_hold' ? 'border-dashed' : ''} ${on ? 'animate-chip font-semibold' : ''}`}
-              style={{ backgroundColor: c.bg, borderColor: on ? 'var(--ink)' : c.border }}
+              className={`btn justify-start gap-2 px-3 ${key === 'on_hold' ? 'border-dashed' : ''} ${on ? 'font-semibold ring-2 ring-ink ring-offset-2' : ''}`}
+              style={{ backgroundColor: c.bg, borderColor: c.border }}
             >
-              <Icon size={15} weight="bold" aria-hidden="true" className="shrink-0" />
+              <Icon size={18} aria-hidden="true" className="shrink-0" />
               {label}
             </button>
           );

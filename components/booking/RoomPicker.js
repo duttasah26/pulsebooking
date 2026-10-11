@@ -22,8 +22,8 @@ export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
     <div className="space-y-2" role="group" aria-label="Rooms">
       {byFloor(rooms).map(([floor, list]) => (
         <div key={floor}>
-          <p className="mb-1 text-base font-medium text-muted">{FLOOR_NAME[floor] ?? `Floor ${floor}`}</p>
-          <div className="grid grid-cols-6 gap-1.5">
+          <p className="t-group mb-2">{FLOOR_NAME[floor] ?? `Floor ${floor}`}</p>
+          <div className="grid grid-cols-6 gap-2">
             {list.map((r) => {
               const on = roomIds.includes(r.id);
               const taken = roomTaken(r.id);
@@ -37,7 +37,7 @@ export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
                   disabled={busy}
                   title={busy ? `Room ${r.number} is booked on these days` : `Room ${r.number}`}
                   onClick={() => onToggle(r.id)}
-                  className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-0.5 rounded-lg border px-0 font-mono text-base font-semibold transition-[transform,box-shadow] duration-150 active:scale-95 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'animate-chip ring-2 ring-ink' : ''}`}
+                  className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-0.5 rounded-lg border px-0 font-mono text-base font-semibold transition-shadow duration-150 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-2' : ''}`}
                   style={busy ? undefined : { backgroundColor: shade.fill, borderColor: shade.edge }}
                 >
                   {r.number}

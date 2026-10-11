@@ -26,7 +26,7 @@ function MiniCalendar() {
       <div className="grid grid-cols-[3.25rem_repeat(6,minmax(0,1fr))] gap-1.5 rounded-lg border border-line bg-surface-2 p-3" aria-hidden="true">
         <span style={{ gridRow: 1, gridColumn: 1 }} />
         {days.map((d, i) => (
-          <span key={d} style={{ gridRow: 1, gridColumn: i + 2 }} className="rounded-md bg-white py-1 text-center font-mono text-sm font-semibold ring-2 ring-sky-300">{d}</span>
+          <span key={d} style={{ gridRow: 1, gridColumn: i + 2 }} className="rounded-md bg-white py-1 text-center font-mono text-sm font-semibold ring-2 ring-ink/25">{d}</span>
         ))}
         {rooms.map((n, r) => {
           const shade = roomShade({ number: n }, settings);
@@ -41,7 +41,7 @@ function MiniCalendar() {
         <span style={{ gridRow: 3, gridColumn: '2 / span 2', backgroundColor: hold.bg, borderColor: hold.border, backgroundImage: HOLD_HATCH }} className="z-[1] flex h-8 items-center gap-1 rounded-lg border border-dashed px-2 text-sm font-semibold"><Clock size={14} aria-hidden="true" /> Hold</span>
       </div>
       <figcaption className="grid gap-3 text-base sm:grid-cols-3">
-        <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded bg-white ring-2 ring-sky-300" aria-hidden="true" /> A <strong>column</strong> is a day</p>
+        <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded bg-white ring-2 ring-ink/25" aria-hidden="true" /> A <strong>column</strong> is a day</p>
         <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded bg-surface-2 ring-2 ring-line" aria-hidden="true" /> A <strong>row</strong> is a room</p>
         <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded ring-2 ring-accent" style={{ backgroundColor: stay.bg }} aria-hidden="true" /> A <strong>bar</strong> is a booking</p>
       </figcaption>
@@ -74,7 +74,7 @@ function BarKey() {
               {Icon && <Icon size={14} weight="bold" />}
               Ana
             </span>
-            <span className="min-w-0 leading-snug"><strong className="block font-semibold">{name}</strong><span className="text-ink/80">{says}</span></span>
+            <span className="min-w-0 leading-snug"><strong className="block font-semibold">{name}</strong><span className="text-muted">{says}</span></span>
           </li>
         );
       })}
@@ -85,10 +85,10 @@ function BarKey() {
 // The tools, as drawn on the buttons: the same icon and the colour it turns when it is on.
 const TOOLS = [
   { icon: Plus, name: 'New', says: 'Draw the nights of a new booking with a guest', tone: 'text-accent-text', on: 'border-accent bg-accent-soft' },
-  { icon: PencilSimpleLine, name: 'On Hold', says: 'Drag over free nights to keep a room', tone: 'text-amber-600', on: 'border-amber-400 bg-amber-100' },
+  { icon: Clock, name: 'On Hold', says: 'Drag over free nights to keep a room', tone: 'text-hold-ink', on: 'border-dashed border-hold-edge bg-hold' },
   { icon: Cursor, name: 'Open', says: 'Tap a bar to see the booking', tone: 'text-ink', on: 'border-ink bg-surface-2' },
-  { icon: CheckSquare, name: 'Select', says: 'Pick several bookings at once', tone: 'text-violet-600', on: 'border-violet-400 bg-violet-100' },
-  { icon: Hand, name: 'Hand', says: 'Drag the calendar to move around', tone: 'text-sky-600', on: 'border-sky-400 bg-sky-100' },
+  { icon: CheckSquare, name: 'Select', says: 'Pick several bookings at once', tone: 'text-ink', on: 'border-ink bg-surface-2' },
+  { icon: Hand, name: 'Hand', says: 'Drag the calendar to move around', tone: 'text-ink', on: 'border-ink bg-surface-2' },
   { icon: ArrowUUpLeft, name: 'Undo', says: 'Take back the last change', tone: 'text-ink', on: 'border-line bg-surface-2' },
 ];
 
@@ -100,7 +100,7 @@ function ToolKey() {
           <span className={`grid size-12 shrink-0 place-items-center rounded-lg border-2 ${on}`} aria-hidden="true">
             <Icon size={24} weight="fill" className={tone} />
           </span>
-          <span className="min-w-0 leading-snug"><strong className="block font-semibold">{name}</strong><span className="text-ink/80">{says}</span></span>
+          <span className="min-w-0 leading-snug"><strong className="block font-semibold">{name}</strong><span className="text-muted">{says}</span></span>
         </li>
       ))}
     </ul>
@@ -120,12 +120,12 @@ function Recipe({ icon: Icon, title, steps, note, open = false }) {
         <ol className="space-y-4">
           {steps.map((step, i) => (
             <li key={i} className="flex gap-4">
-              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink font-mono text-sm font-semibold text-canvas" aria-hidden="true">{i + 1}</span>
+              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-ink font-mono text-sm font-semibold text-canvas" aria-hidden="true">{i + 1}</span>
               <p className="min-w-0 pt-0.5 text-base leading-loose"><span className="sr-only">Step {i + 1}: </span>{step}</p>
             </li>
           ))}
         </ol>
-        {note && <p className="rounded-lg bg-surface-2 px-4 py-3 text-base leading-relaxed text-ink/80">{note}</p>}
+        {note && <p className="rounded-lg bg-surface-2 px-4 py-3 text-base leading-relaxed text-muted">{note}</p>}
       </div>
     </details>
   );
@@ -134,7 +134,7 @@ function Recipe({ icon: Icon, title, steps, note, open = false }) {
 function Section({ title, children }) {
   return (
     <section className="space-y-4">
-      <h3 className="border-b border-line pb-2 text-xl font-semibold">{title}</h3>
+      <h3 className="t-title border-b border-line pb-3">{title}</h3>
       {children}
     </section>
   );

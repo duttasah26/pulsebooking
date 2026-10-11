@@ -16,7 +16,7 @@ const CHIP = {
   in: 'bg-white/80 text-accent-text',
   out: 'bg-white/80 text-danger',
   confirmed: 'bg-accent-soft text-accent-text',
-  on_hold: 'bg-amber-100 text-amber-800',
+  on_hold: 'bg-hold text-hold-ink',
   checked_in: 'bg-accent text-accent-ink',
   checked_out: 'bg-surface-2 text-muted',
   cancelled: 'bg-surface-2 text-muted',
@@ -33,10 +33,10 @@ function items(b, roomTone, hold) {
   const out = [];
   const sameMonth = b.check_in.slice(0, 7) === b.check_out.slice(0, 7);
   const dateVariants = [
-    { w: chipW(fmtShort(b.check_in)) + chipW(fmtShort(b.check_out)) + 2 * GAP + 14, node: (<><Chip tone="in">{fmtShort(b.check_in)}</Chip><span aria-hidden="true" className="text-ink/70">to</span><Chip tone="out">{fmtShort(b.check_out)}</Chip></>) },
+    { w: chipW(fmtShort(b.check_in)) + chipW(fmtShort(b.check_out)) + 2 * GAP + 14, node: (<><Chip tone="in">{fmtShort(b.check_in)}</Chip><span aria-hidden="true" className="text-muted">to</span><Chip tone="out">{fmtShort(b.check_out)}</Chip></>) },
   ];
   if (sameMonth) {
-    dateVariants.push({ w: chipW(dayOfMonth(b.check_in)) + chipW(fmtShort(b.check_out)) + 2 * GAP + 14, node: (<><Chip tone="in">{dayOfMonth(b.check_in)}</Chip><span aria-hidden="true" className="text-ink/70">to</span><Chip tone="out">{fmtShort(b.check_out)}</Chip></>) });
+    dateVariants.push({ w: chipW(dayOfMonth(b.check_in)) + chipW(fmtShort(b.check_out)) + 2 * GAP + 14, node: (<><Chip tone="in">{dayOfMonth(b.check_in)}</Chip><span aria-hidden="true" className="text-muted">to</span><Chip tone="out">{fmtShort(b.check_out)}</Chip></>) });
   }
   out.push({ key: 'dates', variants: dateVariants });
 

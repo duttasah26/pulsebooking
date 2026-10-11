@@ -1,4 +1,4 @@
-import { Bed, Buildings, CalendarBlank, Clock, ListBullets, Phone, Tag, TextAa, Users, X, Check, Trash } from '@phosphor-icons/react';
+import { CaretRight, Bed, Buildings, CalendarBlank, Clock, ListBullets, Phone, Tag, TextAa, Users, X, Check, Trash } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import HoldButton from '../HoldButton';
 import RoomChips from '../RoomChips';
@@ -61,27 +61,31 @@ export default function SelectionPanel({
             note={
               <p className="mt-2 flex flex-wrap items-center gap-x-2 text-base">
                 <strong className="font-semibold">{bookings.length} bookings</strong>
-                <span className="flex items-center gap-1 text-ink/80"><Users size={16} aria-hidden="true" /> {partyText(party)}</span>
+                <span className="flex items-center gap-1 text-muted"><Users size={16} aria-hidden="true" /> {partyText(party)}</span>
               </p>
             }
           />
 
-          <section aria-labelledby="sel-do" className="space-y-2">
-            <h3 id="sel-do" className="text-lg font-semibold">What would you like to do?</h3>
-            <div className="grid grid-cols-2 gap-2">
+          <section aria-labelledby="sel-do" className="space-y-3">
+            <h3 id="sel-do" className="t-headline">What would you like to do?</h3>
+            <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
               {JOBS.map(({ key, icon: Icon, title, hint }) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => onEdit(key)}
-                  className="flex min-h-24 flex-col items-start gap-1 rounded-lg border border-line bg-surface p-3 text-left transition-[background-color,transform] duration-150 hover:bg-surface-2 active:scale-[0.98]"
-                >
-                  <span className="grid size-9 place-items-center rounded-lg bg-surface-2"><Icon size={20} weight="bold" aria-hidden="true" /></span>
-                  <span className="text-base font-semibold leading-tight">{title}</span>
-                  <span className="text-sm leading-snug text-muted">{hint}</span>
-                </button>
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={() => onEdit(key)}
+                    className="flex min-h-16 w-full items-center gap-4 px-4 py-3 text-left transition-colors duration-150 hover:bg-surface-2"
+                  >
+                    <Icon size={22} aria-hidden="true" className="shrink-0 text-muted" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[1.0625rem] font-semibold leading-6">{title}</span>
+                      <span className="t-footnote block">{hint}</span>
+                    </span>
+                    <CaretRight size={18} aria-hidden="true" className="shrink-0 text-muted" />
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
 
           </section>
 
@@ -96,15 +100,15 @@ export default function SelectionPanel({
                     <button
                       type="button"
                       onClick={() => onOpen(b)}
-                      className={`block w-full rounded-lg border p-3 pr-11 text-left transition-transform active:scale-[0.99] ${b.status === 'on_hold' ? 'border-dashed' : ''}`}
+                      className={`block w-full rounded-lg border p-4 pr-12 text-left ${b.status === 'on_hold' ? 'border-2 border-dashed' : ''}`}
                       style={{ backgroundColor: c.bg, borderColor: c.border }}
                     >
                       <span className="flex items-start justify-between gap-2">
-                        <span className="min-w-0 break-words font-medium">{b.name}</span>
+                        <span className="min-w-0 break-words text-[1.0625rem] font-semibold">{b.name}</span>
                         <StatusBadge status={b.status} />
                       </span>
-                      <span className="mt-1.5 grid gap-1 text-sm">
-                        <span className="flex items-center gap-2"><Bed size={15} aria-hidden="true" className="shrink-0 text-muted" />Room {b.room_number}</span>
+                      <span className="mt-2 grid gap-1 text-[0.9375rem]">
+                        <span className="flex items-center gap-2"><Bed size={16} aria-hidden="true" className="shrink-0 text-muted" />Room <span className="font-mono font-semibold">{b.room_number}</span></span>
                         <span className="flex items-start gap-2">
                           <CalendarBlank size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" />
                           <span>
@@ -122,7 +126,7 @@ export default function SelectionPanel({
                       onClick={() => onUnpick(b)}
                       aria-label={`Take ${b.name}, room ${b.room_number}, out of the selection`}
                       title="Take this one out of the selection"
-                      className="absolute right-2 top-2 grid size-8 place-items-center rounded-lg bg-white/70 transition-colors duration-150 hover:bg-white hover:shadow-sm"
+                      className="absolute right-2 top-2 grid size-10 place-items-center rounded-md bg-white/70 transition-colors duration-150 hover:bg-white"
                     >
                       <X size={14} weight="bold" aria-hidden="true" />
                     </button>
@@ -134,25 +138,25 @@ export default function SelectionPanel({
 
           {/* Docked at the bottom of the panel however far it is scrolled: the buttons that change the state of everything picked, then
               Delete last and apart, because it is the one you cannot take back lightly (real bookings need a hold; holds delete with a click). */}
-          <div className="sticky bottom-0 -mx-4 grid grid-cols-2 gap-2 border-t border-line bg-surface px-4 py-3">
+          <div className="sticky bottom-0 -mx-5 grid grid-cols-2 gap-3 border-t border-line bg-surface px-5 py-3">
 
                 {holds.length > 0 && (
-                  <button type="button" className="btn btn-block btn-block-primary col-span-2" onClick={() => onConfirmAll(holds)}>
-                    <Check size={18} weight="bold" aria-hidden="true" /> Confirm {holds.length === bookings.length ? 'All' : `${holds.length} Hold${holds.length === 1 ? '' : 's'}`}
+                  <button type="button" className="btn btn-block btn-primary col-span-2" onClick={() => onConfirmAll(holds)}>
+                    Confirm {holds.length === bookings.length ? 'All' : `${holds.length} Hold${holds.length === 1 ? '' : 's'}`}
                   </button>
                 )}
                 {onHoldAll && holdable.length > 0 && (
-                  <button type="button" className="btn btn-block btn-block-hold" onClick={() => onHoldAll(holdable)}>
+                  <button type="button" className="btn btn-block btn-hold" onClick={() => onHoldAll(holdable)}>
                     <Clock size={18} aria-hidden="true" /> Put {holdable.length === bookings.length ? 'All' : holdable.length} on Hold
                   </button>
                 )}
               
             {bookings.some((b) => b.status !== 'on_hold') ? (
-              <HoldButton className={`btn btn-block btn-block-danger ${onHoldAll && holdable.length > 0 ? '' : 'col-span-2'}`} onConfirm={onDeleteAll}>
+              <HoldButton className={`btn btn-block btn-danger ${onHoldAll && holdable.length > 0 ? '' : 'col-span-2'}`} onConfirm={onDeleteAll}>
                 <Trash size={18} aria-hidden="true" /> Hold to Delete {bookings.length}
               </HoldButton>
             ) : (
-              <button type="button" className="btn btn-block btn-block-danger col-span-2" onClick={onDeleteAll}>
+              <button type="button" className="btn btn-block btn-danger col-span-2" onClick={onDeleteAll}>
                 <Trash size={18} aria-hidden="true" /> Delete {bookings.length}
               </button>
             )}

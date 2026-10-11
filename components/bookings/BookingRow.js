@@ -1,4 +1,4 @@
-import { ArrowUUpLeft, Bed, Buildings, CalendarBlank, Check, Clock, Phone, X } from '@phosphor-icons/react';
+import { Buildings, Check, Clock, Phone, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
@@ -13,7 +13,7 @@ export const BOOKING_COLUMNS = [
   ['status', 'Status'],
 ];
 
-// One booking in the list: colour stripe, guest and contact, room, dates and status (each can be switched off in a view).
+// One booking in the list: its colour as a small square before the name, guest and contact, room, dates and status (each can be switched off in a view).
 // A deleted booking offers Restore; a hold offers Confirm and Cancel in one click. Checked-out and cancelled stays are faded.
 export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy' }) {
   const { settings } = useSettings();
@@ -30,20 +30,22 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
   return (
     // content-visibility keeps long lists cheap: rows far off screen are not painted
     <li className={`flex items-stretch [content-visibility:auto] ${roomy ? '[contain-intrinsic-size:auto_4rem]' : '[contain-intrinsic-size:auto_2.5rem]'}`}>
-      <span className="w-1.5 shrink-0" style={{ backgroundColor: colorFor(b, settings).border }} aria-hidden="true" />
       <button
         type="button"
         disabled={isDeleted}
         onClick={() => onOpen(b)}
         style={{ '--cols': cols }}
-        className={`grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 px-3 text-left transition-colors duration-150 enabled:hover:bg-surface-2 md:[grid-template-columns:var(--cols)] ${
-          roomy ? 'min-h-16 py-3' : 'min-h-10 py-1'
+        className={`grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 px-4 text-left transition-colors duration-150 enabled:hover:bg-surface-2 md:[grid-template-columns:var(--cols)] md:px-5 ${
+          roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1.5'
         } ${finished ? 'text-ink/75' : ''}`}
       >
         <span className="min-w-0">
-          <span className={`block truncate font-medium ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
+          <span className="flex min-w-0 items-center gap-2">
+            <span aria-hidden="true" className="size-3 shrink-0 rounded-sm" style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
+            <span className={`truncate text-[1.0625rem] font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
+          </span>
           {showLine2 && (
-            <span className="flex min-w-0 items-center gap-2 text-sm text-muted">
+            <span className="mt-0.5 flex min-w-0 items-center gap-3 pl-5 text-[0.9375rem] text-muted">
               {show('organization') && b.organization && (
                 <span className="flex min-w-0 items-center gap-1">
                   <Buildings size={14} aria-hidden="true" className="shrink-0" />
@@ -56,7 +58,7 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
                   <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
                 </span>
               )}
-              {b.created_at && (
+              {b.created_at && !(b.status === 'on_hold' && onConfirm) && (
                 <span className="hidden min-w-0 items-center gap-1 lg:flex" title="When this booking was made">
                   <Clock size={14} aria-hidden="true" className="shrink-0" />
                   <span className="truncate">Booked {fmtBooked(b.created_at)}</span>
@@ -66,23 +68,22 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
           )}
         </span>
         {show('room') && (
-          <span className="flex items-center gap-1.5 font-mono text-sm font-semibold">
-            <Bed size={16} aria-hidden="true" className="shrink-0 text-muted" />
-            <span className="rounded px-1.5 py-0.5" style={{ backgroundColor: roomShade({ number: b.room_number }, settings).fill }}>{b.room_number}</span>
+          <span className="flex items-center" title={`Room ${b.room_number}`}>
+            <span className="sr-only">Room </span>
+            <span className="rounded-md px-2 py-0.5 font-mono text-base font-semibold" style={{ backgroundColor: roomShade({ number: b.room_number }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: b.room_number }, settings).edge}` }}>{b.room_number}</span>
           </span>
         )}
         {show('dates') && (
-          <span className="col-span-2 flex min-w-0 items-start gap-1.5 text-sm md:col-span-1">
-            <CalendarBlank size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" />
+          <span className="col-span-2 flex min-w-0 items-start pl-5 text-[0.9375rem] md:col-span-1 md:pl-0">
             <span className="min-w-0">
-              <span className="text-accent-text">{fmtShort(b.check_in)}{b.check_in_time ? ` ${b.check_in_time}` : ''}</span> to{' '}
-              <span className="text-danger">{fmtShort(b.check_out)}{b.check_out_time ? ` ${b.check_out_time}` : ''}</span>
+              <span className="font-semibold text-accent-text">{fmtShort(b.check_in)}{b.check_in_time ? ` ${b.check_in_time}` : ''}</span> to{' '}
+              <span className="font-semibold text-danger">{fmtShort(b.check_out)}{b.check_out_time ? ` ${b.check_out_time}` : ''}</span>
               <span className="text-muted">, {nightsLabel(b.nights)}</span>
             </span>
           </span>
         )}
         {show('status') && (
-          <span className="col-span-2 min-w-0 md:col-span-1 md:justify-self-start">
+          <span className="col-span-2 min-w-0 pl-5 md:col-span-1 md:justify-self-start md:pl-0">
             {isDeleted ? (
               <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
             ) : (
@@ -92,18 +93,18 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
         )}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
-        <div className="flex shrink-0 items-center gap-1.5 pr-2">
-          <button type="button" className="btn btn-primary px-3" onClick={() => onConfirm(b)} aria-label={`Confirm hold, ${b.name}`}>
+        <div className="flex shrink-0 items-center gap-2 pr-3">
+          <button type="button" className="btn btn-sm" onClick={() => onConfirm(b)} aria-label={`Confirm hold, ${b.name}`}>
             <Check size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Confirm</span>
           </button>
-          <button type="button" className="btn px-3" onClick={() => onCancelHold(b)} aria-label={`Cancel hold, ${b.name}`}>
+          <button type="button" className="btn btn-sm btn-quiet" onClick={() => onCancelHold(b)} aria-label={`Cancel hold, ${b.name}`}>
             <X size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Cancel</span>
           </button>
         </div>
       )}
       {isDeleted && (
-        <button type="button" className="btn m-2 self-center" onClick={() => onRestore(b)}>
-          <ArrowUUpLeft size={18} aria-hidden="true" /> Restore
+        <button type="button" className="btn btn-sm m-3 self-center" onClick={() => onRestore(b)}>
+          Restore
         </button>
       )}
     </li>

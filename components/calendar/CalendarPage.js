@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Eye, Trash, X, ArrowClockwise, FloppyDisk } from '@phosphor-icons/react';
+import { Clock, Trash, X } from '@phosphor-icons/react';
 import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
@@ -17,7 +17,7 @@ import HelpGuide from './HelpGuide';
 // The calendar always leaves a slim column on the right (the width of the folded tab). Open, the booking panel lies over that
 // column and the calendar's right side (see Dock overlay); folded, its tab sits in the column. Either way the calendar never
 // changes size when the panel opens or closes.
-const WITH_TOOLS = { open: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4rem_minmax(0,1fr)_2.75rem]' };
+const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]' };
 import { useToast } from '../Toast';
 import Head from 'next/head';
 import Presence from '../Presence';
@@ -439,48 +439,50 @@ export default function CalendarPage() {
   // the calendar down when it appears.
   // Nothing picked yet: the Select banner below already says what to do (and has Done), so the strip waits for the first pick.
   const selectionStrip = selecting && pickedBookings.length > 0 ? (
-    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg border-2 border-accent bg-accent-soft px-2 text-sm">
-      <span className="min-w-0 flex-1 shrink-0 whitespace-nowrap px-1 font-medium">
+    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg bg-ink px-2 text-[0.9375rem] text-white">
+      <span className="min-w-0 flex-1 shrink-0 whitespace-nowrap px-2 font-semibold">
         {pending ? 'Change not saved yet' : pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>
       {/* A stretched or moved booking waits here, always in view, for a plain choice: keep it or drop it. */}
       {pending ? (
         <>
-          <button type="button" className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={() => setPending(null)} title="Put the booking back as it was (or press Esc)">
-            <X size={18} aria-hidden="true" /> Cancel Change
+          <button type="button" className="btn btn-inverse shrink-0 max-sm:px-2.5" onClick={() => setPending(null)} title="Put the booking back as it was (or press Esc)">
+            Cancel Change
           </button>
-          <button type="button" className="btn btn-primary min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={savePending}>
-            <FloppyDisk size={18} aria-hidden="true" /> Save Change
+          <button type="button" className="btn btn-primary shrink-0 max-sm:px-2.5" onClick={savePending}>
+            Save Change
           </button>
         </>
       ) : (
         <>
         {!wide && pickedBookings.length > 0 && (
-          <button type="button" className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
-            <Eye size={16} className="text-sky-600" /> View{pickedBookings.length > 1 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
+          <button type="button" className="btn btn-inverse shrink-0 max-sm:px-2.5" onClick={() => (pickedBookings.length === 1 ? openEdit(pickedBookings[0]) : setViewPicked(true))}>
+            View{pickedBookings.length > 1 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
           </button>
         )}
-        {holdable.length > 0 && (
-          <button type="button" className="btn min-h-11 shrink-0 border-amber-400 bg-amber-100 text-amber-800 hover:bg-amber-100 max-sm:px-2.5 lg:min-h-8" onClick={() => holdPicked()} title="Put the confirmed bookings picked back on hold">
-            <Clock size={16} /> On Hold<span className="max-sm:hidden"> {holdable.length}</span>
+        {/* With the panel open beside the calendar, Put on Hold and Delete live at the foot of the panel; repeating them
+            here gave two of each. The bar then just counts and lets go. */}
+        {!(wide && formOpen) && holdable.length > 0 && (
+          <button type="button" className="btn btn-hold shrink-0 max-sm:px-2.5" onClick={() => holdPicked()} title="Put the confirmed bookings picked back on hold">
+            <Clock size={16} /> <span>Put on Hold<span className="max-sm:hidden"> {holdable.length}</span></span>
           </button>
         )}
-        {pickedHasBookings ? (
-          <HoldButton className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" onConfirm={deletePicked}>
-            <Trash size={16} /> Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span>
+        {wide && formOpen ? null : pickedHasBookings ? (
+          <HoldButton className="btn btn-danger shrink-0 max-sm:px-2.5" onConfirm={deletePicked}>
+            <Trash size={16} /> <span>Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span></span>
           </HoldButton>
         ) : (
-          <button type="button" className="btn btn-danger min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8" disabled={pickedBookings.length === 0} onClick={deletePicked}>
-            <Trash size={16} /> Delete{pickedBookings.length > 0 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}
+          <button type="button" className="btn btn-danger shrink-0 max-sm:px-2.5" disabled={pickedBookings.length === 0} onClick={deletePicked}>
+            <Trash size={16} /> <span>Delete{pickedBookings.length > 0 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}</span>
           </button>
         )}
         <button
           type="button"
-          className="btn min-h-11 shrink-0 max-sm:px-2.5 lg:min-h-8"
+          className="btn btn-inverse shrink-0 max-sm:px-2.5"
           onClick={() => (pickedBookings.length === 0 ? toggleMouseTool() : stopSelecting())}
           title={pickedBookings.length === 0 ? 'Leave Select' : 'Let go of everything picked (or press Esc)'}
         >
-          <X size={16} /> {pickedBookings.length === 0 ? 'Done' : <>Unselect<span className="max-sm:hidden"> All</span></>}
+          {pickedBookings.length === 0 ? 'Done' : <span>Unselect<span className="max-sm:hidden"> All</span></span>}
         </button>
         </>
       )}
@@ -495,7 +497,7 @@ export default function CalendarPage() {
 
   // The toolbar spans the whole width; below it the tool pane, the calendar and the booking panel all start on the same line.
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <Head><title>{tabTitle}</title></Head>
       <div className="@container">
         <CalendarToolbar
@@ -538,9 +540,9 @@ export default function CalendarPage() {
       )}
 
       {failed && (
-        <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
+        <p role="alert" className="flex flex-wrap items-center gap-3 rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">
           Could not load the calendar: {failed.message}. Check the connection and try again.
-          <button type="button" className="btn ml-3" onClick={() => { rooms.reload(); bookings.reload(); }}><ArrowClockwise size={16} aria-hidden="true" /> Retry</button>
+          <button type="button" className="btn btn-sm" onClick={() => { rooms.reload(); bookings.reload(); }}>Retry</button>
         </p>
       )}
 
@@ -572,7 +574,7 @@ export default function CalendarPage() {
           {rooms.loading || !rooms.data ? (
             <GridSkeleton />
           ) : roomList.length === 0 ? (
-            <p className="rounded-lg border border-line bg-surface p-6 text-center text-muted">No rooms yet. Add rooms in the database to start booking.</p>
+            <p className="rounded-lg border border-line bg-surface p-8 text-center text-base text-muted">No rooms yet. Add rooms in the database to start booking.</p>
           ) : (
             <div key={view} className={`animate-settle ${bookings.loading ? 'opacity-70 transition-opacity' : 'transition-opacity'}`}>
               {showGrid && (
@@ -618,10 +620,15 @@ export default function CalendarPage() {
                   onOpenGroup={openGroup}
                 />
               )}
-              {view === 'calendar' && (
-                <OccupancyMonth date={date} rooms={visibleRooms} bookings={visibleBookings} onPickDay={(d) => set({ view: 'day', date: d })} onDate={(d) => set({ date: d })} />
+              {/* Occupancy and Day do not scroll sideways, so they make room for the open panel instead of sliding under it. */}
+              {!showGrid && (
+                <div className={wide && formOpen ? 'mr-[19.5rem]' : undefined}>
+                  {view === 'calendar' && (
+                    <OccupancyMonth date={date} rooms={visibleRooms} bookings={visibleBookings} onPickDay={(d) => set({ view: 'day', date: d })} onDate={(d) => set({ date: d })} />
+                  )}
+                  {view === 'day' && <DayView date={date} rooms={visibleRooms} bookings={visibleBookings} onOpen={openEdit} onCreate={placeHold} onDate={(d) => set({ date: d })} />}
+                </div>
               )}
-              {view === 'day' && <DayView date={date} rooms={visibleRooms} bookings={visibleBookings} onOpen={openEdit} onCreate={placeHold} onDate={(d) => set({ date: d })} />}
             </div>
           )}
 

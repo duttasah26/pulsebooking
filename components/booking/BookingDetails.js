@@ -1,25 +1,21 @@
-import { Baby, Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash } from '@phosphor-icons/react';
-import { STATUS_ICON } from '../StatusBadge';
+import { Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash } from '@phosphor-icons/react';
+import StatusBadge from '../StatusBadge';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
-import RoomChips from '../RoomChips';
 import { partyOf, partyText } from '../../lib/party';
 import { useSettings } from '../SettingsProvider';
 import { useRemoveBooking } from './useRemoveBooking';
 import { formatTime } from '../TimeSelect';
-import { colorFor, statusColor } from '../../lib/colors';
-import { STATUS_LABEL } from '../../lib/status';
+import { colorFor, roomShade } from '../../lib/colors';
 import { fmtBooked, fmtShort, nightsLabel } from '../../lib/dates';
 
 // One end of the stay: the date and the time, in large type. With no time of its own it shows the default time, marked.
-function Moment({ icon: Icon, label, date, time, fallback }) {
+function Moment({ label, date, time, fallback }) {
   const shown = time || fallback;
   return (
-    <div className="bg-surface p-3.5">
-      <p className="flex items-center gap-1.5 text-base font-semibold text-ink/70">
-        <Icon size={16} aria-hidden="true" /> {label}
-      </p>
-      <p className="mt-1 text-lg font-semibold leading-tight">{fmtShort(date)}</p>
+    <div className="bg-surface p-4">
+      <p className="t-group">{label}</p>
+      <p className="mt-1 text-xl font-bold leading-tight tabular-nums">{fmtShort(date)}</p>
       <p className="flex flex-wrap items-baseline gap-x-2 text-base tabular-nums">
         <span>{shown ? formatTime(shown) : 'No time set'}</span>
         {!time && shown && <span className="text-sm text-muted">default</span>}
@@ -46,65 +42,54 @@ export default function BookingDetails({
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
   const { settings } = useSettings();
   const c = colorFor(b, settings);
-  const sc = statusColor(b.status, settings);
-  const StatusIcon = STATUS_ICON[b.status] ?? Check;
 
   return (
-    <div className="flex flex-1 flex-col gap-3">
+    <div className="flex flex-1 flex-col gap-4">
       {/* A change made by dragging waits here for Save. */}
       {pending?.items.some((i) => i.original.id === b.id) && (
         <PendingBanner items={pending.items} rooms={rooms} onSave={onSavePending} onCancel={onCancelPending} />
       )}
 
-      {/* The status first, in its own colour: ON HOLD (dashed, like its bar on the calendar), Confirmed, Checked in... */}
-      <div
-        className={`flex items-center justify-between gap-2 rounded-lg border-2 px-3 py-2 ${b.status === 'on_hold' ? 'border-dashed' : ''}`}
-        style={{ backgroundColor: sc.bg, borderColor: sc.border }}
-      >
-        <span className="flex items-center gap-2 text-lg font-semibold">
-          <StatusIcon size={18} weight="bold" aria-hidden="true" /> {STATUS_LABEL[b.status]}
-        </span>
-        {b.status === 'on_hold' && <span className="text-sm font-medium">Not confirmed yet</span>}
-      </div>
-
-      {b.status === 'on_hold' && onConfirm && (
-        <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-base leading-snug">
-          Held only. Press <strong>Confirm Booking</strong> when the guest is sure.
-        </p>
-      )}
-
-      <div className="rounded-lg border p-4" style={{ backgroundColor: c.bg, borderColor: c.border }}>
-        <p className="min-w-0 break-words text-lg font-semibold leading-tight">{b.name}</p>
-        <ul className="mt-1.5 space-y-1 text-base">
-          {b.phone && <Line icon={Phone}><a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-line underline-offset-2 hover:decoration-ink">{b.phone}</a></Line>}
-          {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-line underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
+      {/* Who and where, in the booking's own colour (it matches its bar on the calendar): the status as a tag (dashed
+          when on hold, so it reads without colour), the name, how to reach them, and the room or rooms as key tags. */}
+      <section aria-label="Guest and room" className="rounded-lg border p-5" style={{ backgroundColor: c.bg, borderColor: c.border }}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <StatusBadge status={b.status} />
+          {b.status === 'on_hold' && <span className="text-[0.9375rem]">Not confirmed yet</span>}
+        </div>
+        <p className="t-title mt-3 min-w-0 break-words">{b.name}</p>
+        <ul className="mt-2 space-y-1.5 text-base">
+          {b.phone && <Line icon={Phone}><a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a></Line>}
+          {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
           {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
           {!b.guest_id && <li>No guest name yet</li>}
         </ul>
-      </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-4">
+          <span className="sr-only">{targets.length > 1 ? 'Rooms' : 'Room'}</span>
+          {[...new Set(targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number])].sort().map((n) => {
+            const shade = roomShade({ number: n }, settings);
+            return (
+              <span key={n} className="rounded-md px-2.5 py-0.5 font-mono text-lg font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>
+            );
+          })}
+          {groupCount > 1 && onShowGroup && (
+            <button type="button" className="btn btn-sm ml-auto bg-white/60 hover:bg-white" onClick={onShowGroup}>
+              <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
+            </button>
+          )}
+        </div>
+      </section>
 
-      {/* The two moments that matter most, large: the day and time of arrival and of departure. */}
-      <div>
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
+      {/* When: the two moments that matter most, large, with the length of the stay inside the same card. */}
+      <section aria-label="Dates" className="overflow-hidden rounded-lg border border-line bg-surface">
+        <div className="grid grid-cols-2 divide-x divide-line">
           <Moment icon={SignIn} label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
           <Moment icon={SignOut} label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
         </div>
-        <p className="mt-1 text-center text-base text-muted">{nightsLabel(b.nights)}</p>
-      </div>
+        <p className="border-t border-line px-4 py-2.5 text-center text-[0.9375rem] font-semibold text-muted">{nightsLabel(b.nights)}</p>
+      </section>
 
-      {/* The room, or every room of the group after a double-click on its bar, as coloured chips in large type. */}
-      <RoomChips
-        numbers={targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number]}
-        note={
-          groupCount > 1 && onShowGroup ? (
-            <button type="button" className="btn mt-2 min-h-11 px-3 text-sm lg:min-h-8 lg:px-2.5 lg:text-xs" onClick={onShowGroup}>
-              <Stack size={16} aria-hidden="true" /> Booked with {groupCount - 1} other room{groupCount === 2 ? '' : 's'}: show all
-            </button>
-          ) : null
-        }
-      />
-
-      <ul className="space-y-2 text-base">
+      <ul className="space-y-2 px-1 text-base">
         <Line icon={Users}>{partyText(partyOf(targets))}</Line>
         <Line icon={Megaphone}>Booked via {b.channel}</Line>
         <Line icon={Receipt}>{b.rate_plan}</Line>
@@ -113,20 +98,20 @@ export default function BookingDetails({
       </ul>
 
       {/* One button to a line, full width, so the words always fit (the side panel is narrow). */}
-      <div className="sticky bottom-0 -mx-4 mt-auto grid grid-cols-2 gap-2 border-t border-line bg-surface px-4 pb-3 pt-3">
+      <div className="sticky bottom-0 -mx-5 mt-auto grid grid-cols-2 gap-3 border-t border-line bg-surface px-5 pb-3 pt-3">
         {b.status === 'on_hold' && onConfirm && (
-          <button type="button" className="btn btn-block btn-block-primary col-span-2" onClick={() => onConfirm(b)} disabled={b.id < 0}>
-            <Check size={18} weight="bold" aria-hidden="true" /> Confirm Booking
+          <button type="button" className="btn btn-block btn-primary col-span-2" onClick={() => onConfirm(b)} disabled={b.id < 0}>
+            Confirm Booking
           </button>
         )}
         {/* A confirmed booking can go back on hold (the guest stays on it): right beside Delete. */}
         {(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold && (
-          <button type="button" className="btn btn-block btn-block-hold" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
+          <button type="button" className="btn btn-block btn-hold" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
             <Clock size={18} aria-hidden="true" /> Put on Hold
           </button>
         )}
         <HoldButton
-          className={`btn btn-block btn-block-danger ${(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold ? '' : 'col-span-2'}`}
+          className={`btn btn-block btn-danger ${(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold ? '' : 'col-span-2'}`}
           title={b.status === 'on_hold' ? 'Hold to cancel this hold' : 'Hold to delete'}
           onConfirm={remove}
           disabled={removing || b.id < 0}

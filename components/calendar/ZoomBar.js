@@ -28,7 +28,7 @@ const TOUCH_HINT = {
 // Holding a room is two taps, drawn as two numbered steps. The second tap places the hold: there is nothing to confirm.
 function HoldSteps() {
   const step = 'inline-flex items-center gap-1.5 whitespace-nowrap';
-  const num = 'grid size-6 shrink-0 place-items-center rounded-full bg-accent font-mono text-sm font-semibold text-accent-ink';
+  const num = 'grid size-6 shrink-0 place-items-center rounded-md bg-ink font-mono text-sm font-semibold text-white';
   return (
     <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-medium" aria-label="How to reserve a room">
       <li className={step}><span className={num}>1</span> Tap the first night</li>
@@ -44,8 +44,8 @@ export function ZoomControl({ zoom, onChange }) {
   const pct = Math.round(zoom * 100);
   const fill = ((zoom - MIN) / (MAX - MIN)) * 100;
   return (
-    <div role="group" aria-label="Zoom" className="flex shrink-0 items-center gap-0.5 rounded-lg border border-chrome-line bg-chrome p-0.5">
-      <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
+    <div role="group" aria-label="Zoom" className="flex shrink-0 items-center gap-1">
+      <button type="button" className="btn btn-icon" aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
         <MagnifyingGlassMinus size={20} aria-hidden="true" />
       </button>
       <input
@@ -58,15 +58,15 @@ export function ZoomControl({ zoom, onChange }) {
         onChange={(e) => onChange(clampZoom(Number(e.target.value)))}
         aria-label="Calendar zoom"
         aria-valuetext={`${pct} percent`}
-        className="zoom-range hidden w-28 lg:block"
+        className="zoom-range mx-1 hidden w-28 lg:block"
         style={{ '--fill': `${fill}%` }}
       />
-      <button type="button" className="btn btn-icon border-transparent" aria-label="Zoom in, make bigger" title="Zoom in: make bigger" disabled={zoom >= MAX} onClick={() => onChange(clampZoom(zoom + 0.1))}>
+      <button type="button" className="btn btn-icon" aria-label="Zoom in, make bigger" title="Zoom in: make bigger" disabled={zoom >= MAX} onClick={() => onChange(clampZoom(zoom + 0.1))}>
         <MagnifyingGlassPlus size={20} aria-hidden="true" />
       </button>
       <button
         type="button"
-        className={`btn min-w-16 px-2 font-mono text-sm font-semibold tabular-nums ${pct === 100 ? 'border-transparent text-muted' : 'border-accent bg-accent-soft text-accent-text'}`}
+        className={`btn btn-quiet min-w-16 px-2 font-mono text-[0.9375rem] font-semibold ${pct === 100 ? 'text-muted' : 'text-accent-text'}`}
         onClick={() => onChange(1)}
         aria-label={`Zoom is ${pct} percent. Press to go back to 100 percent`}
         title="Back to 100%"
@@ -87,13 +87,13 @@ export default function ZoomBar({ tool = 'mouse', strip, onHelp, touch = false }
           {tool === 'mouse' ? TOUCH_HINT.mouse : null}
         </div>
       ) : (
-        <div className="min-w-0 flex-1 basis-72 text-base leading-snug text-ink/80">
+        <div className="min-w-0 flex-1 basis-72 text-base leading-snug text-muted">
           <ToolHint tool={tool} />
         </div>
       )}
       {onHelp && (
-        <button type="button" className="btn min-h-9 shrink-0 gap-1.5 px-3 font-semibold lg:min-h-9" onClick={onHelp}>
-          <Question size={18} weight="bold" aria-hidden="true" /> How to use
+        <button type="button" className="btn btn-sm btn-quiet shrink-0" onClick={onHelp}>
+          <Question size={18} aria-hidden="true" /> How to Use
         </button>
       )}
     </div>

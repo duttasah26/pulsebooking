@@ -4,11 +4,11 @@ import { MagnifyingGlass } from '@phosphor-icons/react';
 export default function SearchBox({ value, onChange, label, placeholder }) {
   return (
     <div className="relative">
-      <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+      <MagnifyingGlass size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
       <input
         type="search"
         name="q"
-        className="field pl-10"
+        className="field min-h-12 pl-11 lg:min-h-11"
         placeholder={placeholder}
         aria-label={label}
         autoComplete="off"

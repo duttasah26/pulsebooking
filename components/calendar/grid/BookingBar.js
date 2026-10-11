@@ -34,8 +34,8 @@ function MarchingDashes({ color }) {
 // buttons (the second, an X, cancels it); any other booking is a single button. In select mode every bar is one button that ticks it for bulk delete.
 // The timeline bar says more the room it really has (measured, see barInfo.js): dates, status, nights, room and times are
 // packed into lines like words, and whatever does not fit is left out rather than cut in half.
-// Bars adapt to the width they get (container queries): icons appear from 70px, and in the month sheet a narrow
-// bar runs the name down its tall side instead of cutting it to three letters.
+// Bars adapt to the width they get (container queries): icons appear from 70px. In the month sheet a narrow bar sets
+// the name level at its top and lets it wrap word by word down its height; text is never turned on its side.
 export default function BookingBar({ b, g, rows, style: placement, active, selectMode, picked, onOpen, onPick, onView, onOpenGroup, onDelete, resizing, movable, onMoveStart, faded = false }) {
   const { settings } = useSettings();
   const c = colorFor(b, settings);
@@ -82,7 +82,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
 
-  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 items-center gap-1 overflow-hidden rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? 'text-sm' : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
+  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-hidden rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? 'text-sm' : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
     hold ? 'border-dashed' : ''
   } ${
     g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
@@ -122,7 +122,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         </span>
       )}
       {lines.length === 0 ? (
-        <span className={`truncate ${rows ? '' : 'max-h-full min-h-0 [writing-mode:vertical-rl] @min-[84px]:[writing-mode:horizontal-tb]'}`}>
+        <span className={rows ? 'truncate' : 'line-clamp-6 min-w-0 whitespace-normal leading-tight hyphens-auto [overflow-wrap:anywhere]'}>
           {b.name}
         </span>
       ) : (
@@ -151,7 +151,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         aria-label={`${label}, ${b.status.replace('_', ' ')}`}
         {...pressProps}
         ref={rootRef}
-        className={`${shape} px-1.5 transition-[transform,filter] duration-150 hover:brightness-[0.97] @min-[70px]:px-2 ${movable ? 'cursor-grab touch-none active:cursor-grabbing' : 'active:scale-[0.98]'}`}
+        className={`${shape} px-1.5 transition-[transform,filter] duration-150 hover:brightness-[0.97] @min-[70px]:px-2 ${movable ? 'cursor-grab touch-none active:cursor-grabbing' : ''}`}
         style={style}
       >
         {content}
@@ -167,7 +167,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         onDoubleClick={() => onOpenGroup?.(b)}
         {...pressProps}
         title={label}
-        className={`flex min-w-0 flex-1 items-center gap-1 self-stretch text-left ${movable ? 'cursor-grab touch-none active:cursor-grabbing' : ''}`}
+        className={`flex min-w-0 flex-1 ${rows ? 'items-center' : 'items-start'} gap-1 self-stretch text-left ${movable ? 'cursor-grab touch-none active:cursor-grabbing' : ''}`}
       >
         {content}
       </button>
@@ -176,7 +176,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         aria-label={`Cancel hold, ${label}`}
         title="Cancel this hold (Undo brings it back)"
         onClick={() => onDelete?.(b)}
-        className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-white/70 active:scale-90 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
+        className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-white/70 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
       >
         <X size={14} weight="bold" />
       </button>

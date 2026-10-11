@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, X } from '@phosphor-icons/react';
 import DateRangePicker from '../DateRangePicker';
 import { MAX_SPAN } from './useCalendarParams';
 import { addDays, diffDays } from '../../lib/dates';
@@ -40,10 +39,10 @@ export default function RangePopover({ date, span, onShow, onClose }) {
       {tooLong && <p role="alert" className="text-sm text-danger">Pick at most {MAX_SPAN} days.</p>}
       <div className="flex gap-2">
         <button type="button" className="btn" onClick={onClose}>
-          <X size={16} aria-hidden="true" /> Cancel
+          Cancel
         </button>
         <button type="button" className="btn btn-primary flex-1" disabled={tooLong} onClick={() => onShow({ date: from, span: days })}>
-          <Check size={16} aria-hidden="true" /> {days === 1 ? 'Go to Day' : `Show ${days} Days`}
+          {days === 1 ? 'Go to Day' : `Show ${days} Days`}
         </button>
       </div>
     </div>

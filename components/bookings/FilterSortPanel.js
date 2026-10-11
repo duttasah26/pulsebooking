@@ -1,8 +1,6 @@
-import { ArrowDown, ArrowUp, ArrowsDownUp, Clock, Funnel, Sliders, X } from '@phosphor-icons/react';
+import { ArrowDown, ArrowUp, ArrowsDownUp, Clock, Funnel, Sliders } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import { FoldSection } from '../FilterParts';
-import { useSettings } from '../SettingsProvider';
-import { colorFor } from '../../lib/colors';
 
 /*
   The contents of a filter and sort dock: a list of filters (each with an icon), more filters, a "sort by" with an optional
@@ -15,14 +13,14 @@ import { colorFor } from '../../lib/colors';
 */
 function Direction({ value, onChange, label }) {
   return (
-    <div className="mt-2 grid grid-cols-2 gap-1" role="group" aria-label={label}>
+    <div className="seg mt-2 grid w-full grid-cols-2" role="group" aria-label={label}>
       {[['asc', 'Up', ArrowUp], ['desc', 'Down', ArrowDown]].map(([v, text, Icon]) => (
         <button
           key={v}
           type="button"
           aria-pressed={value === v}
           onClick={() => onChange(v)}
-          className={`btn gap-1.5 px-2 ${value === v ? 'border-accent bg-accent-soft' : ''}`}
+          className="seg-item"
         >
           <Icon size={16} aria-hidden="true" /> {text}
         </button>
@@ -35,30 +33,28 @@ export default function FilterSortPanel({
   filters, filter, onFilter, extra, showHolds, onShowHolds, sorts, sort, onSort, direction, onDirection,
   sort2, onSort2, direction2, onDirection2, look, activeCount = 0, onClearAll, foldId = 'list',
 }) {
-  const { settings } = useSettings();
-  const hold = colorFor({ status: 'on_hold' }, settings);
   return (
-    <div className="space-y-5 pb-4">
+    <div className="space-y-6 pb-5">
       {activeCount > 0 && onClearAll && (
-        <button type="button" className="btn w-full justify-between gap-2 border-accent bg-accent-soft px-3 font-semibold text-accent-text" onClick={onClearAll}>
-          <span>{activeCount} {activeCount === 1 ? 'filter' : 'filters'} on</span>
-          <span className="flex items-center gap-1 text-ink"><X size={16} weight="bold" aria-hidden="true" /> Clear all</span>
+        <button type="button" className="btn w-full justify-between gap-2 px-4" onClick={onClearAll}>
+          <span><span className="font-mono font-semibold">{activeCount}</span> {activeCount === 1 ? 'filter' : 'filters'} on</span>
+          <span className="font-semibold text-accent-text">Clear All</span>
         </button>
       )}
 
       {filters && (
         <fieldset>
           <FieldLabel icon={Funnel} as="legend">Show</FieldLabel>
-          <div className="grid gap-1">
+          <div className="grid gap-0.5">
             {filters.map(({ key, label, Icon }) => (
               <button
                 key={key}
                 type="button"
                 aria-pressed={filter === key}
                 onClick={() => onFilter(key)}
-                className={`btn justify-start gap-2 border-transparent px-2.5 ${filter === key ? 'bg-accent text-accent-ink hover:bg-accent' : ''}`}
+                className={`btn justify-start gap-3 px-3 ${filter === key ? 'btn-on' : 'btn-quiet'}`}
               >
-                <Icon size={16} aria-hidden="true" className="shrink-0" />
+                <Icon size={18} weight={filter === key ? 'fill' : 'bold'} aria-hidden="true" className="shrink-0" />
                 {label}
               </button>
             ))}
@@ -70,11 +66,10 @@ export default function FilterSortPanel({
 
       {onShowHolds && (
         <label
-          className="btn cursor-pointer justify-start gap-2 px-2.5 focus-within:outline-2 focus-within:outline-accent"
-          style={showHolds ? { backgroundColor: hold.bg, borderColor: 'var(--ink)', borderWidth: 2 } : { borderColor: hold.border }}
+          className={`btn w-full cursor-pointer justify-start gap-3 px-3 focus-within:outline-2 focus-within:outline-accent ${showHolds ? 'btn-hold font-semibold' : ''}`}
         >
-          <input type="checkbox" name="show-holds" className="size-4 accent-[var(--accent)]" checked={showHolds} onChange={(e) => onShowHolds(e.target.checked)} />
-          <Clock size={16} aria-hidden="true" className="shrink-0" />
+          <input type="checkbox" name="show-holds" className="size-5 accent-[var(--accent)]" checked={showHolds} onChange={(e) => onShowHolds(e.target.checked)} />
+          <Clock size={18} aria-hidden="true" className="shrink-0" />
           Show On Hold
         </label>
       )}
