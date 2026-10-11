@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import {
-  ArrowCounterClockwise, Bed, CalendarBlank, Clock, Palette, SignIn, SignOut, SlidersHorizontal, TextAa, UserCircle,
-} from '@phosphor-icons/react';
+import { useEffect, useRef, useState } from 'react';
+import { Bed, CalendarBlank, Clock, Palette, SignIn, SignOut, SlidersHorizontal, TextAa, UserCircle } from '@phosphor-icons/react';
 import Layout from '../components/Layout';
 import TimeSelect from '../components/TimeSelect';
 import ColorPicker from '../components/booking/ColorPicker';
@@ -44,13 +42,13 @@ const TABS = [
 // One group of settings: a clear heading, who it applies to, and the settings under it.
 function Group({ id, icon: Icon, title, scope, hint, children }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-5 rounded-lg border border-line bg-surface p-4 sm:p-5">
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-5 sm:p-6">
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h2 id={`${id}-title`} className="flex items-center gap-2 text-xl font-semibold"><Icon size={22} aria-hidden="true" /> {title}</h2>
-          {scope && <span className="rounded-lg bg-surface-2 px-2 py-0.5 text-sm font-medium text-muted">{scope}</span>}
+          <h2 id={`${id}-title`} className="t-title">{title}</h2>
+          {scope && <span className="badge">{scope}</span>}
         </div>
-        {hint && <p className="text-base text-ink/80">{hint}</p>}
+        {hint && <p className="t-footnote">{hint}</p>}
       </div>
       {children}
     </section>
@@ -60,10 +58,10 @@ function Group({ id, icon: Icon, title, scope, hint, children }) {
 // One setting: its name and what it does, with the control below.
 function Setting({ label, hint, children }) {
   return (
-    <div className="space-y-2 border-t border-line pt-4 first:border-t-0 first:pt-0">
+    <div className="space-y-3 border-t border-line pt-5 first:border-t-0 first:pt-0">
       <div>
-        <p className="text-base font-semibold">{label}</p>
-        {hint && <p className="text-base text-ink/80">{hint}</p>}
+        <p className="t-headline">{label}</p>
+        {hint && <p className="t-footnote">{hint}</p>}
       </div>
       {children}
     </div>
@@ -73,17 +71,17 @@ function Setting({ label, hint, children }) {
 // An on or off switch, large enough to hit with a thumb.
 function Switch({ label, hint, checked, onChange }) {
   return (
-    <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-line pt-4 first:border-t-0 first:pt-0">
+    <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-line pt-5 first:border-t-0 first:pt-0">
       <span className="min-w-0 flex-1">
-        <span className="block text-base font-semibold">{label}</span>
-        {hint && <span className="block text-base text-ink/80">{hint}</span>}
+        <span className="t-headline block">{label}</span>
+        {hint && <span className="t-footnote block">{hint}</span>}
       </span>
       <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span
         aria-hidden="true"
-        className="relative h-9 w-16 shrink-0 rounded-lg border border-line bg-surface-2 transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-checked:[&>span]:translate-x-7"
+        className="relative h-9 w-16 shrink-0 rounded-lg border border-field-line bg-surface-2 transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-checked:[&>span]:translate-x-7"
       >
-        <span className="absolute left-1 top-1 size-7 rounded-md bg-surface shadow transition-transform duration-200" />
+        <span className="absolute left-[3px] top-[3px] size-7 rounded-md bg-surface shadow-md transition-transform duration-200" />
       </span>
       <span className="w-9 shrink-0 text-base font-semibold" aria-hidden="true">{checked ? 'On' : 'Off'}</span>
     </label>
@@ -107,6 +105,13 @@ export default function Settings() {
   const [saved, setSaved] = useState('');
   const [tabParam, setTab] = useQueryState('tab', 'look');
   const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'look';
+  // On a phone the tabs are one row that scrolls sideways: keep the chosen one in view (Account sits off the edge otherwise).
+  const tabStrip = useRef(null);
+  useEffect(() => {
+    const strip = tabStrip.current;
+    const chosen = strip?.querySelector(`#tab-${tab}`);
+    if (strip && chosen && strip.scrollWidth > strip.clientWidth) strip.scrollTo({ left: chosen.offsetLeft - 16 });
+  }, [tab]);
 
   // Every change saves by itself and says so.
   const apply = async (change, said = 'Saved') => {
@@ -140,17 +145,18 @@ export default function Settings() {
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold">Settings</h1>
-            <p className="text-base text-ink/80">Every change saves by itself. Each group says whether it is for everyone or just this device.</p>
+            <h1 className="t-display">Settings</h1>
+            <p className="t-footnote mt-1">Every change saves by itself. Each group says whether it is for everyone or just this device.</p>
           </div>
           <p role="status" aria-live="polite" className="min-h-6 text-base font-semibold text-accent-text">{saved}</p>
         </div>
 
-        <div className="mt-4 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+        <div className="mt-2 lg:mt-6 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start lg:gap-8">
           <div
+            ref={tabStrip}
             role="tablist"
             aria-label="Settings"
-            className="no-scrollbar sticky top-14 z-20 -mx-4 mb-4 flex gap-1.5 overflow-x-auto bg-canvas px-4 py-2 lg:top-20 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:px-0 lg:py-0"
+            className="no-scrollbar sticky top-14 z-20 -mx-4 mb-4 flex gap-1 overflow-x-auto bg-canvas px-4 py-2 lg:top-20 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:px-0 lg:py-0"
           >
             {TABS.map(({ id, label, Icon }) => {
               const on = tab === id;
@@ -163,16 +169,16 @@ export default function Settings() {
                   aria-selected={on}
                   aria-controls="settings-panel"
                   onClick={() => { setTab(id); setSaved(''); }}
-                  className={`btn shrink-0 justify-start gap-2 px-3 text-base lg:min-h-11 ${on ? 'border-accent bg-accent-soft font-semibold text-accent-text' : ''}`}
+                  className={`btn shrink-0 justify-start gap-3 px-3 lg:min-h-11 lg:text-base ${on ? 'btn-on' : 'btn-quiet'}`}
                 >
-                  <Icon size={18} weight={on ? 'fill' : 'regular'} aria-hidden="true" className={`shrink-0 ${on ? '' : 'text-muted'}`} />
+                  <Icon size={18} weight={on ? 'fill' : 'bold'} aria-hidden="true" className="shrink-0" />
                   {label}
                 </button>
               );
             })}
           </div>
 
-          <div id="settings-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="space-y-6">
+          <div id="settings-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="space-y-8">
             {tab === 'look' && (
               <>
             <Group id="looks" icon={TextAa} title="Text size" scope="This device only" hint="Makes every word in the app bigger on this phone or computer. Other devices keep their own size.">
@@ -250,7 +256,7 @@ export default function Settings() {
               </Setting>
 
               <button type="button" className="btn gap-2 px-3" onClick={resetColours}>
-                <ArrowCounterClockwise size={18} aria-hidden="true" /> Put all colours back to standard
+                Reset All Colours
               </button>
             </Group>
 
@@ -308,7 +314,7 @@ export default function Settings() {
                     <li key={r.id}>
                       <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
                         <input type="checkbox" name={`room-${r.number}`} className="size-5 accent-[var(--accent)]" checked={r.active} onChange={(e) => setActive(r, e.target.checked)} />
-                        <span aria-hidden="true" className="size-3 shrink-0 rounded-full border border-black/20" style={{ backgroundColor: tone.fill }} />
+                        <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-black/20" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
                         {!r.active && <span className="text-sm text-muted">off</span>}
                       </label>

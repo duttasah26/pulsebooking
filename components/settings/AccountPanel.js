@@ -47,13 +47,13 @@ export default function AccountPanel() {
   return (
     <div className="space-y-4">
       {/* Who you are, and the way out: Sign Out is the big button, not a small icon in a corner. */}
-      <section className="space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5" aria-label="Who is signed in">
+      <section className="space-y-5 rounded-lg border border-line bg-surface p-5 sm:p-6" aria-label="Who is signed in">
         <div className="flex items-center gap-4">
-          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-lg bg-accent-soft text-3xl font-semibold text-accent-text">{me.loading ? '' : initial}</span>
+          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-lg bg-surface-2 text-3xl font-semibold text-ink/80">{me.loading ? '' : initial}</span>
           <div className="min-w-0 flex-1">
-            <p className="text-base text-ink/80">Signed in as</p>
-            <p className="break-words text-2xl font-semibold leading-tight">{me.loading ? '…' : name ?? 'Nobody'}</p>
-            {!me.loading && !name && <p className="text-base text-ink/80">Sign in is off on this computer.</p>}
+            <p className="text-base text-muted">Signed in as</p>
+            <p className="break-words text-2xl font-bold leading-tight">{me.loading ? '…' : name ?? 'Nobody'}</p>
+            {!me.loading && !name && <p className="text-base text-muted">Sign in is off on this computer.</p>}
           </div>
         </div>
         <p className="rounded-lg bg-surface-2 p-3 text-base leading-relaxed">
@@ -61,13 +61,14 @@ export default function AccountPanel() {
           Your name is saved on every booking you make or change, so the history shows who did what.
         </p>
         {name && (
-          <HoldButton className="btn btn-block btn-block-danger" title="Press and hold to sign out" reminder="Hold the button to sign out" onConfirm={signOut}>
+          <HoldButton className="btn btn-block btn-danger" title="Press and hold to sign out" reminder="Hold the button to sign out" onConfirm={signOut}>
             <SignOut size={22} weight="bold" aria-hidden="true" /> Hold to Sign Out
           </HoldButton>
         )}
       </section>
 
       {name ? (
+        <div className="rounded-lg border border-line bg-surface px-4 sm:px-5">
         <FoldSection id="account-password" title="Change your password" icon={LockKey}>
           <form onSubmit={submit} className="space-y-3">
             <div>
@@ -77,7 +78,7 @@ export default function AccountPanel() {
             <div>
               <FieldLabel icon={LockKey} htmlFor="acc-next">New password</FieldLabel>
               <input id="acc-next" name="new-password" type="password" className="field" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" />
-              <p className="mt-1 text-sm text-ink/70">At least 8 characters. A few words in a row is easy to remember.</p>
+              <p className="t-footnote mt-1">At least 8 characters. A few words in a row is easy to remember.</p>
             </div>
             <div>
               <FieldLabel icon={LockKey} htmlFor="acc-again">New password again</FieldLabel>
@@ -85,22 +86,23 @@ export default function AccountPanel() {
               {mismatch && <p className="mt-1 text-sm text-danger">These two are not the same yet.</p>}
             </div>
             {error && (
-              <p role="alert" className="flex items-start gap-2 rounded-lg border border-danger px-3 py-2 text-base text-danger">
+              <p role="alert" className="flex items-start gap-2 rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">
                 <WarningCircle size={20} weight="fill" aria-hidden="true" className="mt-0.5 shrink-0" /> {error}
               </p>
             )}
             {done && (
-              <p role="status" className="flex items-center gap-2 rounded-lg border-2 border-accent bg-accent-soft px-3 py-2 text-base">
+              <p role="status" className="flex items-center gap-2 rounded-lg bg-accent-soft px-4 py-3 text-base text-accent-strong">
                 <Check size={20} weight="bold" aria-hidden="true" className="shrink-0 text-accent-text" /> Your password is changed. Use the new one next time you sign in.
               </p>
             )}
-            <button type="submit" className="btn btn-primary w-full" disabled={busy || !current || !next || !again || Boolean(mismatch)}>
-              {busy ? 'Saving…' : <><LockKey size={18} aria-hidden="true" /> Change Password</>}
+            <button type="submit" className="btn btn-primary btn-block" disabled={busy || !current || !next || !again || Boolean(mismatch)}>
+              {busy ? 'Saving…' : <>Change Password</>}
             </button>
           </form>
         </FoldSection>
+        </div>
       ) : (
-        !me.loading && <p className="rounded-lg border border-line bg-surface p-4 text-base">Passwords are only used when sign in is on. It is off on this computer.</p>
+        !me.loading && <p className="rounded-lg border border-line bg-surface p-5 text-base">Passwords are only used when sign in is on. It is off on this computer.</p>
       )}
     </div>
   );

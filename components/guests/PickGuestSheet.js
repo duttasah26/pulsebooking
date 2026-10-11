@@ -9,10 +9,10 @@ import { useApi, useDebounced } from '../../lib/useApi';
 function Option({ g, onPick }) {
   return (
     <li>
-      <button type="button" onClick={() => onPick(g.id)} className="flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-2">
+      <button type="button" onClick={() => onPick(g.id)} className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-surface-2">
         <UserCircle size={28} aria-hidden="true" className="shrink-0 text-muted" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{g.name}</span>
+          <span className="block truncate font-semibold">{g.name}</span>
           <span className="flex items-center gap-1 text-sm text-muted">
             {g.phone && <><Phone size={14} aria-hidden="true" />{g.phone}</>}
             {!g.phone && (g.email || g.organization || 'No phone or email')}
@@ -37,9 +37,9 @@ export default function PickGuestSheet({ id, onPick, onClose }) {
       <div className="space-y-4 pb-4">
         <p className="text-base leading-relaxed">Choose the other guest. The next screen shows both side by side and asks before anything changes.</p>
         {same.length > 0 && (
-          <section aria-label="Looks like the same person" className="overflow-hidden rounded-lg border-2 border-amber-400 bg-amber-50">
-            <h3 className="px-3 pt-2 text-base font-semibold">Looks like the same person</h3>
-            <ul className="divide-y divide-amber-200">{same.map((g) => <Option key={g.id} g={g} onPick={onPick} />)}</ul>
+          <section aria-label="Looks like the same person" className="overflow-hidden rounded-lg border border-ink/30 bg-surface">
+            <h3 className="t-headline px-4 pt-3">Looks like the same person</h3>
+            <ul className="divide-y divide-line">{same.map((g) => <Option key={g.id} g={g} onPick={onPick} />)}</ul>
           </section>
         )}
         <SearchBox value={q} onChange={setQ} label="Search for the other guest" placeholder="Search by name or initials (ZB), phone, email…" />

@@ -1,4 +1,4 @@
-import { ArrowRight, Check, WarningCircle, X } from '@phosphor-icons/react';
+import { ArrowRight, Check, WarningCircle } from '@phosphor-icons/react';
 import { fmtDayMonth, nightsLabel, diffDays } from '../../lib/dates';
 
 // A change made with the pencil that is not saved yet, shown at the top of the booking details (or the selection), where
@@ -7,13 +7,13 @@ import { fmtDayMonth, nightsLabel, diffDays } from '../../lib/dates';
 // coloured edge; an unchanged end is plain and says so.
 function End({ label, tone, was, now }) {
   const changed = was !== now;
-  const t = tone === 'in' ? { box: 'border-accent bg-accent-soft', ink: 'text-accent-text' } : { box: 'border-danger bg-danger/10', ink: 'text-danger' };
+  const t = tone === 'in' ? { box: 'border-accent bg-accent-soft', ink: 'text-accent-text' } : { box: 'border-danger bg-danger-soft', ink: 'text-danger' };
   return (
     <div className={`min-w-0 rounded-lg px-2.5 py-2 ${changed ? `border-2 ${t.box}` : 'border border-line bg-surface'}`}>
       <p className={`text-sm font-semibold ${changed ? t.ink : 'text-muted'}`}>{label}</p>
       {changed ? (
         <>
-          <p className="flex items-center gap-1.5 text-sm text-muted line-through decoration-1">{fmtDayMonth(was)}</p>
+          <p className="flex items-center gap-1.5 t-footnote line-through decoration-1">{fmtDayMonth(was)}</p>
           <p className="flex items-center gap-1.5">
             <ArrowRight size={16} weight="bold" aria-hidden="true" className={`shrink-0 ${t.ink}`} />
             <span className={`font-mono text-base font-semibold ${t.ink}`}>{fmtDayMonth(now)}</span>
@@ -22,7 +22,7 @@ function End({ label, tone, was, now }) {
       ) : (
         <>
           <p className="font-mono text-base font-semibold">{fmtDayMonth(now)}</p>
-          <p className="text-sm text-muted">No change</p>
+          <p className="t-footnote">No change</p>
         </>
       )}
     </div>
@@ -45,7 +45,7 @@ function Change({ item: i, rooms, showName }) {
           <span className="flex items-center gap-1">
             <span className="rounded bg-surface-2 px-1.5 text-muted line-through">Room <span className="font-mono">{was.room_number}</span></span>
             <ArrowRight size={14} weight="bold" aria-hidden="true" />
-            <span className="rounded bg-amber-200 px-1.5 font-semibold">Room <span className="font-mono">{nowRoom}</span></span>
+            <span className="rounded bg-ink px-1.5 font-semibold text-white">Room <span className="font-mono">{nowRoom}</span></span>
           </span>
         ) : (
           <span className="rounded bg-surface-2 px-1.5 font-semibold">Room <span className="font-mono">{nowRoom}</span></span>
@@ -61,7 +61,7 @@ function Change({ item: i, rooms, showName }) {
         {delta !== 0 && <ArrowRight size={14} weight="bold" aria-hidden="true" />}
         <span className="font-semibold">{nightsLabel(nowNights)}</span>
         {delta !== 0 && (
-          <span className={`rounded px-1.5 font-mono font-semibold ${delta > 0 ? 'bg-accent-soft text-accent-text' : 'bg-danger/15 text-danger'}`}>{delta > 0 ? '+' : ''}{delta}</span>
+          <span className={`rounded px-1.5 font-mono font-semibold ${delta > 0 ? 'bg-accent-soft text-accent-text' : 'bg-danger-soft text-danger'}`}>{delta > 0 ? '+' : ''}{delta}</span>
         )}
       </p>
     </li>
@@ -71,19 +71,19 @@ function Change({ item: i, rooms, showName }) {
 export default function PendingBanner({ items, rooms, onSave, onCancel }) {
   const several = items.length > 1;
   return (
-    <div role="group" aria-label="Unsaved change" className="space-y-2 rounded-lg border-2 border-amber-400 bg-amber-50 p-3">
-      <p className="flex items-center gap-2 text-sm font-semibold">
-        <WarningCircle size={18} weight="fill" aria-hidden="true" className="shrink-0 text-amber-500" /> Unsaved change
+    <div role="group" aria-label="Unsaved change" className="space-y-3 rounded-lg border border-line bg-surface p-4 shadow-md">
+      <p className="t-headline flex items-center gap-2">
+        <WarningCircle size={20} weight="fill" aria-hidden="true" className="shrink-0" /> Unsaved change
       </p>
       <ul className="space-y-3">
         {items.map((i) => <Change key={i.original.id} item={i} rooms={rooms} showName={several} />)}
       </ul>
       <div className="flex gap-2">
         <button type="button" className="btn flex-1" onClick={onCancel}>
-          <X size={16} aria-hidden="true" /> Cancel
+          Cancel
         </button>
         <button type="button" className="btn btn-primary flex-1" onClick={onSave}>
-          <Check size={16} weight="bold" aria-hidden="true" /> Save
+          Save
         </button>
       </div>
     </div>

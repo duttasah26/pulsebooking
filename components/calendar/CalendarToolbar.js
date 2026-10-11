@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Cursor, Hand, PencilSimpleLine, Plus, CalendarDot } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import FloorToggle from './FloorToggle';
@@ -8,10 +8,10 @@ import RangePopover from './RangePopover';
 import { SPANS } from './useCalendarParams';
 import { daysInMonth, monthStart, today } from '../../lib/dates';
 
-// A small group of tool buttons in one outlined strip.
+// A small group of tool buttons, set apart from the next group by space alone.
 function Strip({ label, children }) {
   return (
-    <div role="group" aria-label={label} className="flex shrink-0 items-center gap-0.5 rounded-lg border border-chrome-line bg-chrome p-0.5">
+    <div role="group" aria-label={label} className="flex shrink-0 items-center gap-1">
       {children}
     </div>
   );
@@ -69,43 +69,45 @@ export default function CalendarToolbar({
     set(n === 1 ? { date: d } : { date: d, span: n, view: 'timeline' }); // one day just jumps; more opens the timeline for those days
   };
   return (
-    <div className="space-y-2 short:flex short:items-center short:gap-1.5 short:space-y-0">
+    <div className="space-y-3 short:flex short:items-center short:gap-1.5 short:space-y-0">
       {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
       <div
-        className="flex flex-wrap items-center gap-1.5 short:shrink-0 short:flex-nowrap"
+        className="flex flex-wrap items-center gap-2 short:shrink-0 short:flex-nowrap"
         onTouchStart={phone ? onTouchStart : undefined}
         onTouchEnd={phone ? onTouchEnd : undefined}
         onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
       >
-        <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(-1)} aria-label="Previous">
-          <CaretLeft size={18} />
-        </button>
-        <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(1)} aria-label="Next">
-          <CaretRight size={18} />
-        </button>
-        <button type="button" className="btn shrink-0 px-3" onClick={() => { set({ date: today() }); onHome(); }}><CalendarDot size={16} aria-hidden="true" /> Today</button>
+        <div role="group" aria-label="Move through the days" className="flex shrink-0 items-center gap-1">
+          <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(-1)} aria-label="Previous">
+            <CaretLeft size={18} />
+          </button>
+          <button type="button" className="btn shrink-0 px-4 font-semibold" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
+          <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(1)} aria-label="Next">
+            <CaretRight size={18} />
+          </button>
+        </div>
         <div className="relative shrink-0">
           <button
             type="button"
-            className={`btn gap-1.5 px-3 ${rangeOpen ? 'bg-surface-2' : ''}`}
+            className={`btn gap-2 px-3 ${rangeOpen ? 'btn-on' : ''}`}
             title="Go to a date, or choose a range of days"
             aria-expanded={rangeOpen}
             onPointerDown={(e) => e.stopPropagation()} // so the panel's click-outside close does not fight this button
             onClick={() => setRangeOpen((o) => !o)}
           >
-            <CalendarBlank size={16} aria-hidden="true" />
-            <span className="sr-only @[44rem]:not-sr-only">Go to</span>
+            <CalendarBlank size={18} aria-hidden="true" />
+            <span className="sr-only @[44rem]:not-sr-only">Go to…</span>
           </button>
           {rangeOpen && <RangePopover date={date} span={span} onShow={show} onClose={() => setRangeOpen(false)} />}
         </div>
         {phone && onNew && (
-          <button type="button" className="btn btn-icon ml-auto shrink-0" onClick={onNew} aria-label="New booking" title="New booking">
-            <Plus size={20} weight="bold" aria-hidden="true" />
+          <button type="button" className="btn btn-primary btn-icon ml-auto shrink-0" onClick={onNew} aria-label="New booking" title="New booking">
+            <Plus size={20} aria-hidden="true" />
           </button>
         )}
         <div className="flex min-w-0 flex-1 basis-48 items-center gap-2 max-md:basis-full md:mx-2 short:flex-none short:basis-auto">
           <div className="min-w-0 flex-1">
-            <h1 className="min-w-0 text-xl font-semibold leading-tight tracking-tight @[44rem]:text-2xl short:max-w-36 short:truncate short:text-base">{title}</h1>
+            <h1 className="min-w-0 text-[1.375rem] font-bold leading-tight tracking-[-0.015em] @[44rem]:text-[1.75rem] short:max-w-36 short:truncate short:text-base">{title}</h1>
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
           </div>
         </div>
@@ -113,7 +115,7 @@ export default function CalendarToolbar({
       </div>
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
-      <div className="no-scrollbar flex flex-wrap items-center gap-1.5 max-md:flex-nowrap max-md:overflow-x-auto short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
+      <div className="no-scrollbar flex flex-wrap items-center gap-2 max-md:flex-nowrap max-md:overflow-x-auto short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
@@ -123,7 +125,7 @@ export default function CalendarToolbar({
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that
           scrolls sideways when it is wider than the screen. */}
       {!wide && !phone && (
-        <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto">
+        <div className="no-scrollbar flex items-center gap-3 overflow-x-auto">
           {onNew && (
             <Strip label="New">
               <ToolButton icon={Plus} tone="green" label="New Booking" title="New Booking: draw the stay on the calendar, or type the dates" on={drawing} onClick={onNew} />
@@ -132,9 +134,9 @@ export default function CalendarToolbar({
           {canTool && (
             <Strip label="Tools">
               <ToolButton icon={Cursor} tone="ink" label="Open" title="Open: tap a booking to see it" on={!quickHold && !touchSelect && !hand && !drawing} onClick={onToggleMouse} />
-              <ToolButton icon={CheckSquare} tone="violet" label="Select" title="Select: tap bookings to pick several, then delete them together" on={touchSelect} onClick={onToggleSelect} />
-              <ToolButton icon={PencilSimpleLine} tone="amber" label="On Hold" title="On Hold: tap the first and last free night to put a room on hold, or drag a booking to move it" on={quickHold} onClick={onToggleHold} />
-              <ToolButton icon={Hand} tone="sky" label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
+              <ToolButton icon={CheckSquare} label="Select" title="Select: tap bookings to pick several, then delete them together" on={touchSelect} onClick={onToggleSelect} />
+              <ToolButton icon={Clock} tone="amber" label="On Hold" title="On Hold: tap the first and last free night to put a room on hold, or drag a booking to move it" on={quickHold} onClick={onToggleHold} />
+              <ToolButton icon={Hand} label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
             </Strip>
           )}
           <Strip label="History">

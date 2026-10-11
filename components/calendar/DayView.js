@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useHoldStep, useSlide } from './useDaySlide';
-import { ArrowDownLeft, ArrowUpRight, Bed, CaretLeft, CaretRight, Clock, Plus } from '@phosphor-icons/react';
+import { Bed, CaretLeft, CaretRight, Clock, Door, SignIn, SignOut } from '@phosphor-icons/react';
 import { useSettings } from '../SettingsProvider';
 import { formatTime } from '../TimeSelect';
 import { roomShade } from '../../lib/colors';
@@ -33,35 +33,35 @@ function RoomChip({ number }) {
 // A booking line. `tone` tints the whole line (arriving green, leaving red, hold yellow); `what` is the plain-words state.
 function Row({ b, tone, what, detail, onOpen }) {
   const hold = b.status === 'on_hold';
-  const bg = { arriving: 'bg-accent-soft', leaving: 'bg-red-50', staying: 'bg-surface', hold: 'bg-amber-50' }[hold ? 'hold' : tone];
+  const bg = { arriving: 'bg-accent-soft', leaving: 'bg-danger-soft', staying: 'bg-surface', hold: 'bg-hold' }[hold ? 'hold' : tone];
   return (
     <li>
       <button
         type="button"
         onClick={() => onOpen(b)}
-        className={`flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left transition-[filter] duration-150 hover:brightness-95 ${bg} ${hold ? 'border-y border-dashed border-amber-400' : ''}`}
+        className={`flex min-h-16 w-full items-center gap-4 px-4 py-3 text-left transition-[filter] duration-150 hover:brightness-95 ${bg} ${hold ? 'border-y border-dashed border-hold-edge' : ''}`}
       >
         <RoomChip number={b.room_number} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-base font-semibold">{b.name}</span>
-          <span className="block text-base text-ink/80">{detail}</span>
+          <span className="block text-[0.9375rem] text-muted">{detail}</span>
         </span>
         <span className={`shrink-0 text-right text-base font-semibold ${tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-accent-text' : ''}`}>
           {what}
-          {hold && <span className="block text-sm font-medium text-amber-700">On hold</span>}
+          {hold && <span className="block text-sm font-semibold text-hold-ink">On hold</span>}
         </span>
       </button>
     </li>
   );
 }
 
-function Section({ title, count, icon: Icon, empty, children }) {
+function Section({ title, count, icon: Icon, tone = '', empty, children }) {
   return (
     <section className="overflow-hidden rounded-lg border border-line bg-surface">
-      <h3 className="flex items-center gap-2 border-b border-line px-3 py-2.5 text-lg font-semibold">
-        <Icon size={20} aria-hidden="true" /> {title} <span className="font-mono text-base text-muted">{count}</span>
+      <h3 className="t-headline flex items-center gap-2 border-b border-line px-4 py-3">
+        <Icon size={20} aria-hidden="true" className={tone} /> {title} <span className="ml-auto font-mono text-base text-muted">{count}</span>
       </h3>
-      {count === 0 ? <p className="px-3 py-3 text-base text-muted">{empty}</p> : <ul className="divide-y divide-line">{children}</ul>}
+      {count === 0 ? <p className="px-4 py-4 text-base text-muted">{empty}</p> : <ul className="divide-y divide-line">{children}</ul>}
     </section>
   );
 }
@@ -105,8 +105,8 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
   return (
     <div className="space-y-3">
       {onDate && (
-        <nav aria-label="Days" className="flex items-stretch gap-1.5">
-          <button type="button" className="btn btn-icon min-h-14 min-w-11 shrink-0 border-transparent" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
+        <nav aria-label="Days" className="flex items-stretch gap-2">
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
             <CaretLeft size={22} aria-hidden="true" />
           </button>
           <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
@@ -121,13 +121,13 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                     {...hold(`day-${i}`, () => onDate(addDays(date, Math.sign(i - 3))), () => onDate(d))}
                     aria-current={sel ? 'date' : undefined}
                     aria-label={`${fmtLong(d)}: ${c.arriving.length} arriving, ${c.leaving.length} leaving`}
-                    className={`flex min-h-16 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight select-none transition-[background-color,border-color,transform] duration-200 ease-out active:scale-95 ${
-                      sel ? 'border-ink bg-surface' : `border-transparent ${isWeekend(d) ? 'bg-surface-2' : 'bg-surface'} hover:bg-surface-2`
-                    } ${d === todayStr ? 'ring-2 ring-accent ring-offset-1' : ''}`}
+                    className={`flex min-h-16 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight select-none transition-[background-color,border-color] duration-150 ease-out ${
+                      sel ? 'border-ink bg-surface shadow-sm' : `border-transparent ${isWeekend(d) ? 'bg-surface-2' : 'bg-surface'} hover:bg-surface-2`
+                    } ${d === todayStr ? 'ring-2 ring-accent ring-offset-2' : ''}`}
                   >
                     <span className="text-sm text-muted">{fmtWeekday(d)}</span>
                     <span className="font-mono text-lg font-semibold">{dayOfMonth(d)}</span>
-                    <span className="flex gap-1.5 text-sm font-semibold">
+                    <span aria-hidden="true" className="flex gap-1.5 text-sm font-semibold max-sm:hidden">
                       <span className="text-accent-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
                       <span className="text-danger">{c.leaving.length ? `-${c.leaving.length}` : ''}</span>
                     </span>
@@ -137,7 +137,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
             })}
           </ol>
           </div>
-          <button type="button" className="btn btn-icon min-h-14 min-w-11 shrink-0 border-transparent" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
             <CaretRight size={22} aria-hidden="true" />
           </button>
         </nav>
@@ -145,31 +145,28 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
 
       <div ref={bodyRef} className="space-y-3">
         <p className="sr-only" role="status" aria-live="polite">{fmtLong(date)}</p>
-      <p className="px-1 text-base">
-        <strong className="font-semibold">{fmtLong(date)}</strong>
-        <span className="text-ink/80">
-          : <span className="font-semibold text-accent-text">{day.arriving.length} arriving</span>,{' '}
-          <span className="font-semibold text-danger">{day.leaving.length} leaving</span>, {busy.size} rooms in use, {freeRooms.length} free
-        </span>
+      <p className="px-1 text-base text-muted">
+        <span className="font-semibold text-accent-text">{day.arriving.length} arriving</span>,{' '}
+        <span className="font-semibold text-danger">{day.leaving.length} leaving</span>, {busy.size} rooms in use, {freeRooms.length} free
       </p>
 
-      <div className="grid gap-3 lg:grid-cols-2" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: 'pan-y' }}>
-        <Section title="Arriving" count={day.arriving.length} icon={ArrowDownLeft} empty="Nobody arrives this day.">
+      <div className="grid gap-4 lg:grid-cols-2" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: 'pan-y' }}>
+        <Section title="Arriving" count={day.arriving.length} icon={SignIn} tone="text-accent-text" empty="Nobody arrives this day.">
           {day.arriving.map((b) => (
             <Row key={b.id} b={b} tone="arriving" onOpen={onOpen} what={TIME(b.check_in_time, settings.checkInTime) ? `at ${TIME(b.check_in_time, settings.checkInTime)}` : 'Arriving'} detail={`${nightsLabel(b.nights)}, leaves ${fmtDayMonth(b.check_out)}`} />
           ))}
         </Section>
-        <Section title="Leaving" count={day.leaving.length} icon={ArrowUpRight} empty="Nobody leaves this day.">
+        <Section title="Leaving" count={day.leaving.length} icon={SignOut} tone="text-danger" empty="Nobody leaves this day.">
           {day.leaving.map((b) => (
             <Row key={b.id} b={b} tone="leaving" onOpen={onOpen} what={TIME(b.check_out_time, settings.checkOutTime) ? `by ${TIME(b.check_out_time, settings.checkOutTime)}` : 'Leaving'} detail={`Arrived ${fmtDayMonth(b.check_in)}, ${nightsLabel(b.nights)}`} />
           ))}
         </Section>
-        <Section title="Staying tonight" count={day.staying.length} icon={Bed} empty="Nobody is staying tonight.">
+        <Section title="Staying tonight" count={day.staying.length} icon={Bed} tone="text-muted" empty="Nobody is staying tonight.">
           {day.staying.map((b) => (
             <Row key={b.id} b={b} tone="staying" onOpen={onOpen} what={b.check_out === addDays(date, 1) ? 'Leaves tomorrow' : `Until ${fmtDayMonth(b.check_out)}`} detail={`${fmtDayMonth(b.check_in)} to ${fmtDayMonth(b.check_out)}`} />
           ))}
         </Section>
-        <Section title="Free rooms" count={freeRooms.length} icon={Plus} empty="Every room is taken.">
+        <Section title="Free rooms" count={freeRooms.length} icon={Door} tone="text-muted" empty="Every room is taken.">
           <li className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4">
             {freeRooms.map((r) => {
               const shade = roomShade(r, settings);
@@ -178,12 +175,12 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                   key={r.id}
                   type="button"
                   onClick={() => onCreate({ roomIds: [r.id], checkIn: date, checkOut: addDays(date, 1) })}
-                  className="flex min-h-14 flex-col items-center justify-center rounded-lg border-2 px-1 py-1 hover:brightness-95"
-                  style={{ backgroundColor: shade.fill, borderColor: shade.edge }}
+                  className="btn h-auto min-h-16 flex-col gap-1.5 px-1 py-2 lg:min-h-16"
                   aria-label={`Room ${r.number} is free. Hold it for tonight`}
+                  title="Hold this room for tonight"
                 >
-                  <span className="font-mono text-lg font-semibold">{r.number}</span>
-                  <span className="flex items-center gap-1 text-sm font-semibold"><Clock size={14} aria-hidden="true" /> Hold</span>
+                  <span className="rounded-md px-2 font-mono text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{r.number}</span>
+                  <span className="flex items-center gap-1 text-sm font-medium text-hold-ink"><Clock size={16} aria-hidden="true" /> Hold</span>
                 </button>
               );
             })}

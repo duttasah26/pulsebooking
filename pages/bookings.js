@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag, ArrowClockwise } from '@phosphor-icons/react';
+import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import BookingSheet from '../components/booking/BookingSheet';
@@ -187,7 +187,7 @@ export default function Bookings() {
                 value={[...csvList(status), ...(showHolds ? ['holds'] : [])]}
                 onToggle={(v) => (v === 'holds' ? setParams({ holds: showHolds ? '' : '1' }) : setParams({ status: toggleCsv(status, v) }))}
               />
-              {holdsFilterable && <p className="text-sm text-muted">On hold bookings are tentative, so lists leave them out unless you switch On hold on.</p>}
+              {holdsFilterable && <p className="t-footnote">On hold bookings are tentative, so lists leave them out unless you switch On hold on.</p>}
             </FoldSection>
           )}
           <FoldSection id="bookings-guest" title="Guest" icon={Buildings} badge={(org ? 1 : 0) + (contact ? 1 : 0)}>
@@ -247,22 +247,22 @@ export default function Bookings() {
     <Layout title="Bookings">
       <Head><title>{`${active.label} Bookings${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-3">
+        <div className="min-w-0 space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-lg font-semibold">Bookings</h1>
+            <h1 className="t-display">Bookings</h1>
             <button type="button" className="btn btn-primary" disabled={!rooms.data?.length} onClick={newBooking}>
               <Plus size={18} aria-hidden="true" /> New Booking
             </button>
           </div>
 
-          {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           <SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />
+          {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
 
           {list.error && (
-            <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
+            <p role="alert" className="flex flex-wrap items-center gap-3 rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">
               Could not load bookings: {list.error.message}. Check the connection and try again.
-              <button type="button" className="btn ml-3" onClick={list.reload}><ArrowClockwise size={16} aria-hidden="true" /> Retry</button>
+              <button type="button" className="btn btn-sm" onClick={list.reload}>Retry</button>
             </p>
           )}
 
@@ -271,14 +271,14 @@ export default function Bookings() {
               {[0, 1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-16 rounded-lg" style={{ animationDelay: `${i * 90}ms` }} />)}
             </div>
           ) : rows.length === 0 ? (
-            <p className="rounded-lg border border-line bg-surface p-8 text-center text-muted">
+            <p className="rounded-lg border border-line bg-surface px-6 py-12 text-center text-base text-muted">
               {search
                 ? `Nothing matches “${search}” here.`
                 : `${active.empty}${activeCount ? ' Some filters are on: clear them to see more.' : ''}${holdsFilterable && !showHolds ? ' On-hold bookings are hidden: turn on Show On Hold to see them.' : ''}`}
             </p>
           ) : (
             <>
-            <p className="px-1 text-sm text-muted" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
+            <p className="t-group px-1 pt-2" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
               {rows.map((b) => (
                 <BookingRow key={b.id} b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />

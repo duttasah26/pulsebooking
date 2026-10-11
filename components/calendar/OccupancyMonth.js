@@ -103,7 +103,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
     <div className="space-y-3">
       {onDate && (
         <nav aria-label="Months" className="flex items-stretch gap-1.5">
-          <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 border-transparent" aria-label="Month before" {...hold('prev', () => onDate(addMonths(first, -1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Month before" {...hold('prev', () => onDate(addMonths(first, -1)))}>
             <CaretLeft size={22} aria-hidden="true" />
           </button>
           <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
@@ -116,17 +116,17 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                     type="button"
                     {...hold(`month-${i}`, () => onDate(addMonths(first, Math.sign(i - 2))), () => onDate(m))}
                     aria-current={sel ? 'date' : undefined}
-                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border px-0.5 leading-tight transition-colors duration-200 active:scale-95 ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'} ${m === monthStart(todayStr) ? 'ring-2 ring-accent ring-offset-1' : ''}`}
+                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold shadow-sm' : 'border-transparent hover:bg-surface-2'} ${m === monthStart(todayStr) ? 'ring-2 ring-accent ring-offset-2' : ''}`}
                   >
                     <span className="text-base">{fmtMonthShort(m)}</span>
-                    <span className="text-xs text-muted">{m.slice(0, 4)}</span>
+                    <span className="font-mono text-[0.8125rem] text-muted">{m.slice(0, 4)}</span>
                   </button>
                 </li>
               );
             })}
           </ol>
           </div>
-          <button type="button" className="btn btn-icon min-h-11 min-w-11 shrink-0 border-transparent" aria-label="Month after" {...hold('next', () => onDate(addMonths(first, 1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Month after" {...hold('next', () => onDate(addMonths(first, 1)))}>
             <CaretRight size={22} aria-hidden="true" />
           </button>
         </nav>
@@ -135,13 +135,12 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
       <div ref={bodyRef} className="space-y-3">
         <p className="sr-only" role="status" aria-live="polite">{fmtMonth(first)}</p>
       <p className="px-1 text-base">
-        <strong className="font-semibold">{fmtMonth(first)}</strong>
-        <span className="text-ink/80">
-          : <span className="font-semibold text-ink">{nightsBooked} {nightsBooked === 1 ? 'night' : 'nights'} booked</span> of {nightsPossible} possible. Fullest day {fmtDayMonth(days[fullest])} ({counts[fullest]} of {total} rooms), quietest {fmtDayMonth(days[quietest])} ({counts[quietest]}).
+        <span className="text-muted">
+          <span className="font-semibold text-ink">{nightsBooked} {nightsBooked === 1 ? 'night' : 'nights'} booked</span> of {nightsPossible} possible. Fullest day {fmtDayMonth(days[fullest])} ({counts[fullest]} of {total} rooms), quietest {fmtDayMonth(days[quietest])} ({counts[quietest]}).
         </span>
       </p>
 
-      <div className="rounded-lg border border-line bg-surface p-2" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: 'pan-y' }}>
+      <div className="rounded-lg border border-line bg-surface p-3" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: 'pan-y' }}>
         <div className="grid grid-cols-7 gap-1.5 pb-1 text-center text-sm text-muted">
           {WEEKDAYS.map((w) => <span key={w}>{w}</span>)}
         </div>
@@ -157,9 +156,9 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                 aria-label={`${fmtDayMonth(d)}: ${counts[i]} of ${total} rooms taken, ${Math.max(0, total - counts[i])} free`}
                 className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : 'p-1.5 sm:p-2'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
               >
-                <span className="flex w-full items-baseline justify-between gap-1">
+                <span className="flex w-full items-baseline gap-2">
                   <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-semibold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
-                  <span className="font-mono text-xs leading-none text-ink/70 sm:text-sm">{counts[i]}/{total}</span>
+                  <span className="hidden font-mono text-sm leading-none text-muted sm:inline">{counts[i]}/{total}</span>
                 </span>
                 <span className="flex flex-col" style={{ gap: gapY }} aria-hidden="true">
                   {floors.map(({ floor, rooms: list, shade }) => (
@@ -179,7 +178,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
           })}
         </div>
 
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 pt-2 text-sm" aria-label="What the dots mean">
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1 pt-3 text-[0.9375rem] text-muted" aria-label="What the dots mean">
           <li className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-ink" aria-hidden="true" /> Room taken</li>
           <li className="flex items-center gap-1.5"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1px var(--ink)' }} aria-hidden="true" /> Room free</li>
           {floors.map(({ floor, shade }) => (

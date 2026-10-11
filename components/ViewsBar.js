@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookmarkSimple, Check, PencilSimple, Plus, X } from '@phosphor-icons/react';
+import { Check, PencilSimple, Plus, X } from '@phosphor-icons/react';
 import { sameParams } from '../lib/viewState';
 import { Mark, toneStyle } from './FilterParts';
 
@@ -17,8 +17,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   const [editing, setEditing] = useState(false);
   const changed = Object.keys(current).length > 0;
   const active = views.find((v) => sameParams(v.params, current));
-  const chip = (on) => `btn min-h-10 shrink-0 gap-1 px-3 text-sm lg:min-h-8 ${on ? 'border-accent bg-accent-soft font-semibold text-accent-text' : ''}`;
-  const small = 'btn min-h-10 shrink-0 gap-1 px-2.5 text-sm lg:min-h-8';
+  const chip = (on) => `btn shrink-0 ${on ? 'chip-on' : ''}`;
+  const small = 'btn shrink-0';
 
   const submit = async (e) => {
     e.preventDefault();
@@ -32,8 +32,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   return (
     <section aria-label="Saved views and quick filters" className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="flex shrink-0 items-center gap-1.5 text-sm font-semibold"><BookmarkSimple size={16} aria-hidden="true" className="text-muted" /> Views</span>
-        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5">
+        <span className="t-group shrink-0">Views</span>
+        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-0.5">
           <button type="button" aria-pressed={!changed} onClick={onReset} className={chip(!changed)}>
             {!changed && <Check size={14} weight="bold" aria-hidden="true" />}
             Standard
@@ -44,14 +44,14 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
               type="button"
               aria-pressed={f.on}
               onClick={f.onToggle}
-              className={`btn min-h-10 shrink-0 gap-1 px-3 text-sm lg:min-h-8 ${f.on ? 'font-semibold' : ''}`}
+              className={`btn shrink-0 ${f.on ? 'btn-on' : ''}`}
               style={toneStyle(f.on, f.tone)}
             >
               <Mark on={f.on} tone={f.tone} />
               {f.label}
             </button>
           ))}
-          {(views.length > 0 || loading) && <span aria-hidden="true" className="mx-0.5 h-6 w-px shrink-0 bg-line" />}
+          {(views.length > 0 || loading) && <span aria-hidden="true" className="mx-1 h-6 w-px shrink-0 bg-line" />}
           {loading && <span className="skeleton h-10 w-24 shrink-0 rounded-lg lg:h-8" aria-hidden="true" />}
           {views.map((v) => (
             <span key={v.id} className="inline-flex shrink-0 items-stretch">
@@ -70,7 +70,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
                   onClick={() => onDelete(v)}
                   aria-label={`Delete the view ${v.name}`}
                   title={`Delete the view ${v.name}`}
-                  className="btn min-h-10 min-w-10 rounded-l-none px-0 text-danger lg:min-h-8 lg:min-w-8"
+                  className="btn btn-icon btn-danger shrink-0 rounded-l-none"
                 >
                   <X size={16} weight="bold" aria-hidden="true" />
                 </button>
@@ -80,12 +80,12 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {changed && !active && !naming && (
-            <button type="button" className={`${small} border-dashed`} onClick={() => setNaming(true)} aria-label="Save this view" title="Save these filters as a view">
-              <Plus size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Save view</span>
+            <button type="button" className={`${small} btn-quiet text-accent-text`} onClick={() => setNaming(true)} aria-label="Save this view" title="Save these filters as a view">
+              <Plus size={16} aria-hidden="true" /> <span className="hidden sm:inline">Save View</span>
             </button>
           )}
           {views.length > 0 && (
-            <button type="button" aria-pressed={editing} onClick={() => setEditing((e) => !e)} className={`${small} border-transparent text-muted`} aria-label={editing ? 'Done editing views' : 'Edit views'} title={editing ? 'Done' : 'Edit or delete views'}>
+            <button type="button" aria-pressed={editing} onClick={() => setEditing((e) => !e)} className={`${small} btn-quiet text-muted`} aria-label={editing ? 'Done editing views' : 'Edit views'} title={editing ? 'Done' : 'Edit or delete views'}>
               <PencilSimple size={16} aria-hidden="true" /> <span className="hidden sm:inline">{editing ? 'Done' : 'Edit'}</span>
             </button>
           )}
@@ -93,8 +93,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
       </div>
 
       {naming && (
-        <form onSubmit={submit} className="animate-fade flex flex-wrap items-center gap-2 rounded-lg border border-accent bg-accent-soft p-2">
-          <label htmlFor="view-name" className="text-sm font-medium">Name this view</label>
+        <form onSubmit={submit} className="animate-fade flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-3">
+          <label htmlFor="view-name" className="text-[0.9375rem] font-semibold">Name this view</label>
           <input
             id="view-name"
             name="view-name"
@@ -106,8 +106,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
             autoComplete="off"
             onChange={(e) => setName(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary px-4" disabled={!name.trim()}><BookmarkSimple size={16} aria-hidden="true" /> Save view</button>
-          <button type="button" className="btn px-3" onClick={() => { setNaming(false); setName(''); }}><X size={16} aria-hidden="true" /> Cancel</button>
+          <button type="button" className="btn btn-quiet px-3" onClick={() => { setNaming(false); setName(''); }}>Cancel</button>
+          <button type="submit" className="btn btn-primary px-4" disabled={!name.trim()}>Save View</button>
         </form>
       )}
     </section>

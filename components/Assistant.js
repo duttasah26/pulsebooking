@@ -102,9 +102,9 @@ export default function Assistant() {
         onClick={() => setOpen(true)}
         aria-label="Open the assistant"
         title="Ask about rooms and bookings"
-        className={`${place.replace('z-[45]', 'z-[35]')} grid size-12 place-items-center rounded-lg bg-accent text-accent-ink shadow-lg transition-[opacity,box-shadow,transform] duration-150 hover:-translate-y-px hover:opacity-90 hover:shadow-xl active:translate-y-0 transition-transform hover:scale-105 active:scale-95`}
+        className={`${place.replace('z-[45]', 'z-[35]')} grid size-12 place-items-center rounded-lg bg-ink text-white shadow-lg transition-colors duration-150 hover:bg-ink/90`}
       >
-        <ChatCircleDots size={26} weight="fill" aria-hidden="true" />
+        <ChatCircleDots size={24} weight="fill" aria-hidden="true" />
       </button>
     );
   }
@@ -115,29 +115,28 @@ export default function Assistant() {
       aria-label="Assistant"
       className={`${place} flex h-[min(34rem,calc(100dvh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg`}
     >
-      <header className="flex items-center gap-2 border-b border-line px-3 py-2">
-        <ChatCircleDots size={20} weight="fill" aria-hidden="true" className="shrink-0 text-accent-text" />
+      <header className="flex min-h-14 items-center gap-2 border-b border-line py-2 pl-4 pr-2">
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold leading-tight">Assistant</h2>
-          <p className="truncate text-sm text-muted lg:text-xs">Read-only answers from your bookings</p>
+          <h2 className="t-headline">Assistant</h2>
+          <p className="truncate t-footnote">Answers from your bookings. It changes nothing.</p>
         </div>
         {messages.length > 0 && (
-          <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:min-h-8 lg:min-w-8" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">
+          <button type="button" className="btn btn-quiet btn-icon" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">
             <ArrowCounterClockwise size={16} aria-hidden="true" />
           </button>
         )}
-        <button type="button" className="btn btn-icon min-h-11 min-w-11 border-transparent lg:min-h-8 lg:min-w-8" onClick={() => setOpen(false)} aria-label="Close the assistant">
+        <button type="button" className="btn btn-icon" onClick={() => setOpen(false)} aria-label="Close the assistant">
           <X size={16} aria-hidden="true" />
         </button>
       </header>
 
-      <div className="flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3" aria-live="polite">
+      <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4" aria-live="polite">
         {messages.length === 0 && (
           <div className="space-y-2">
-            <p className="text-sm text-muted">Ask a question, or tap one:</p>
-            <div className="flex flex-wrap gap-1.5">
+            <p className="t-footnote">Ask a question, or tap one:</p>
+            <div className="flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" className="btn min-h-11 whitespace-normal px-3 py-1 text-left text-sm lg:min-h-8 lg:px-2.5 lg:text-xs" onClick={() => send(s)}>
+                <button key={s} type="button" className="btn btn-sm h-auto whitespace-normal py-1.5 text-left" onClick={() => send(s)}>
                   {s}
                 </button>
               ))}
@@ -147,19 +146,19 @@ export default function Assistant() {
         {messages.map((m, i) => (
           <p
             key={i}
-            className={`max-w-[88%] whitespace-pre-wrap rounded-lg [overflow-wrap:anywhere] px-3 py-2 text-sm leading-snug ${
-              m.role === 'user' ? 'ml-auto bg-accent text-accent-ink' : m.error ? 'border border-danger text-danger' : 'bg-surface-2'
+            className={`max-w-[88%] whitespace-pre-wrap rounded-lg [overflow-wrap:anywhere] px-3.5 py-2.5 text-[0.9375rem] leading-snug ${
+              m.role === 'user' ? 'ml-auto bg-ink text-white' : m.error ? 'bg-danger-soft text-danger' : 'bg-surface-2'
             }`}
           >
             {m.role === 'assistant' && !m.error ? <Answer text={m.text} rooms={rooms.data} /> : m.text}
           </p>
         ))}
-        {busy && <p className="w-fit rounded-lg bg-surface-2 px-3 py-2 text-sm text-muted motion-safe:animate-pulse">Checking the bookings…</p>}
+        {busy && <p className="w-fit rounded-lg bg-surface-2 px-3.5 py-2.5 text-[0.9375rem] text-muted">Checking the bookings…</p>}
         <div ref={end} />
       </div>
 
       <form
-        className="flex items-center gap-2 border-t border-line p-2"
+        className="flex items-center gap-2 border-t border-line p-3"
         onSubmit={(e) => {
           e.preventDefault();
           send(draft);

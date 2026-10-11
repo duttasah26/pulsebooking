@@ -42,7 +42,7 @@ export function DayHeader({ d, i, isToday, spot = false, onPick, narrow = false 
       style={{ gridRow: 1, gridColumn: i + 2 }}
     >
       <span className={narrow ? 'text-xs' : undefined}>{i === 0 || dayOfMonth(d) === 1 ? fmtMonthShort(d) : narrow ? fmtWeekday(d).slice(0, 2) : fmtWeekday(d)}</span>
-      <span className="font-mono text-base font-medium text-ink">{dayOfMonth(d)}</span>
+      <span className="font-mono text-base font-semibold text-ink">{dayOfMonth(d)}</span>
     </Tag>
   );
 }
@@ -62,7 +62,7 @@ export function DayLabel({ d, i, isToday, spot = false, onPick }) {
       style={{ gridRow: i + 2, gridColumn: 1 }}
     >
       <span className="w-9 shrink-0">{fmtWeekday(d)}</span>
-      <span className="whitespace-nowrap font-mono text-sm font-medium text-ink">{fmtDayMonth(d)}</span>
+      <span className="whitespace-nowrap font-mono text-sm font-semibold text-ink">{fmtDayMonth(d)}</span>
     </Tag>
   );
 }
@@ -74,8 +74,8 @@ export function RoomHead({ room, r, rows, active, onToggle, onPick, spot = false
   const { settings } = useSettings();
   const tone = roomShade(room, settings);
   const cls = rows
-    ? `sticky left-0 z-[2] flex items-center gap-2 border-r border-t px-3 font-mono ${compact ? 'text-sm' : 'text-base'} font-medium`
-    : 'sticky top-0 z-[2] flex items-center justify-center gap-1.5 border-b border-l font-mono text-base font-medium';
+    ? `sticky left-0 z-[2] flex items-center gap-2 border-r border-t px-3 font-mono ${compact ? "text-sm" : "text-base"} font-semibold`
+    : 'sticky top-0 z-[2] flex items-center justify-center gap-1.5 border-b border-l font-mono text-base font-semibold';
   const style = {
     ...(rows ? { gridRow: r + 2, gridColumn: 1 } : { gridRow: 1, gridColumn: r + 2 }),
     backgroundColor: tone.fill,

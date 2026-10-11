@@ -25,12 +25,10 @@ function End({ icon: Icon, label, date, out = false, active, onClick }) {
       onClick={onClick}
       aria-pressed={active}
       aria-label={`Change ${label.toLowerCase()}`}
-      className={`bg-surface p-3 text-left transition-colors hover:bg-surface-2 ${active ? 'relative z-10 outline outline-2 -outline-offset-2 outline-accent' : ''}`}
+      className={`rounded-lg bg-surface-2 p-4 text-left transition-colors hover:bg-[#e8e6df] ${active ? 'outline outline-2 -outline-offset-2 outline-ink' : ''}`}
     >
-      <span className="flex items-center gap-1.5 text-base font-semibold text-ink/70">
-        <Icon size={16} aria-hidden="true" /> {label}
-      </span>
-      <span key={date ?? 'none'} className={`animate-tick mt-1 block text-lg font-semibold leading-tight ${out && date ? 'text-danger' : ''}`}>{date ? fmtShort(date) : 'Pick a day'}</span>
+      <span className="t-group block">{label}</span>
+      <span key={date ?? 'none'} className={`mt-1 block text-xl font-bold leading-tight tabular-nums ${out && date ? 'text-danger' : ''}`}>{date ? fmtShort(date) : 'Pick a day'}</span>
     </button>
   );
 }
@@ -100,29 +98,29 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div>
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line">
+        <div className="grid grid-cols-2 gap-2">
           <End icon={SignIn} label={inclusive ? 'First day' : 'Check-in'} date={checkIn} active={editStart} onClick={() => { setEditStart(true); setAwaitingEnd(false); }} />
           <End icon={SignOut} label={inclusive ? 'Last day' : 'Check-out'} date={awaitingEnd ? null : lastDay} out active={awaitingEnd && !editStart} onClick={() => { setEditStart(false); setAwaitingEnd(true); }} />
         </div>
-        <p className="mt-1 text-center text-base text-muted" aria-live="polite">
+        <p className="mt-2 text-center text-base text-muted" aria-live="polite">
           {editStart ? <span className="text-accent-text">{inclusive ? 'Now pick the new first day' : 'Now pick the new check-in day'}</span> : awaitingEnd ? <span className="text-accent-text">{words.pickEnd}</span> : checkIn && checkOut ? words.unit(nights) : words.pickStart}
         </p>
       </div>
 
-      <div className="rounded-lg border border-line p-3">
+      <div>
       <div className="mb-1 flex items-center justify-between">
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, -1))} aria-label="Previous month">
           <CaretLeft size={18} />
         </button>
-        <span className="text-base font-semibold" aria-live="polite">{fmtMonth(view)}</span>
+        <span className="text-[1.0625rem] font-bold" aria-live="polite">{fmtMonth(view)}</span>
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, 1))} aria-label="Next month">
           <CaretRight size={18} />
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-y-1 text-center text-sm text-muted">
+      <div className="grid grid-cols-7 gap-y-1 text-center text-[0.8125rem] font-semibold text-muted">
         {WEEKDAYS.map((w) => <span key={w} className="pb-1">{w}</span>)}
         {Array.from({ length: weekdayIndex(view) }, (_, i) => <span key={`pad-${i}`} />)}
         {days.map((d) => {
@@ -145,8 +143,8 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
               aria-label={`${fmtShort(d)}${isStart ? `, ${words.start}` : isEnd ? `, ${words.end}` : busy ? ', booked' : ''}`}
               aria-pressed={isStart || isEnd}
               style={isStart || isEnd ? { backgroundColor: (isStart ? inColor : outColor).bg, borderColor: (isStart ? inColor : outColor).border } : undefined}
-              className={`cell mx-auto flex size-11 items-center justify-center rounded-lg font-mono text-base lg:size-10 transition-colors active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
-                d === todayStr && !isStart && !isEnd ? 'ring-1 ring-accent' : ''
+              className={`cell mx-auto flex size-11 items-center justify-center rounded-lg font-mono text-base lg:size-10 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
+                d === todayStr && !isStart && !isEnd ? 'font-bold text-accent-text ring-1 ring-accent' : ''
               }`}
             >
               {dayOfMonth(d)}

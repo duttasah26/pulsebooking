@@ -1,4 +1,4 @@
-import { CaretDown, Baby, Megaphone, Note, Receipt, SlidersHorizontal, Users } from '@phosphor-icons/react';
+import { CaretDown, Baby, Megaphone, Note, Receipt, Users } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import ColorPicker from './ColorPicker';
 import StatusPicker from './StatusPicker';
@@ -12,16 +12,16 @@ import { CHANNELS, RATE_PLANS } from './bookingOptions';
 export default function MoreOptions({ f, defaultOpen = false, hideParty = false, hideStatus = false, hideColor = false }) {
   return (
     <details className="group card p-0" open={defaultOpen || undefined}>
-      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-2">
+      <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-5 py-3 transition-colors hover:bg-surface-2">
         <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-base font-semibold">
-            <SlidersHorizontal size={18} aria-hidden="true" className="shrink-0 text-muted" /> More options
+          <span className="block text-[1.0625rem] font-semibold">
+            More options
           </span>
-          <span className="block text-sm leading-snug text-muted">How they booked, meals, notes</span>
+          <span className="t-footnote block">How they booked, meals, notes</span>
         </span>
         <CaretDown size={18} aria-hidden="true" className="shrink-0 transition-transform duration-200 group-open:rotate-180" />
       </summary>
-      <div className="details-body space-y-4 border-t border-line p-3">
+      <div className="details-body space-y-5 border-t border-line p-5">
         {!hideStatus && <StatusPicker value={f.status} onChange={f.setStatus} />}
         {!hideParty && (
           <div className="grid grid-cols-2 gap-3">

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import BookingForm from './BookingForm';
 import BookingDetails from './BookingDetails';
 
@@ -6,8 +7,16 @@ import BookingDetails from './BookingDetails';
 //   onCancelEdit: leave the form without saving
 //   onClose:      the booking was deleted (close the panel or sheet)
 export default function ExistingBooking({ onPreview, editing, onCancelEdit, onDone, onClose, booking, group, rooms, isBusy, onSaved, onRemove, onConfirm, onPutOnHold, groupCount, onShowGroup, pending, onSavePending, onCancelPending }) {
+  // Switching between the details and the form (or to another booking) starts at the top, never halfway down.
+  const top = useRef(null);
+  useEffect(() => {
+    top.current?.closest('[data-scroll-body]')?.scrollTo({ top: 0 });
+  }, [editing, booking.id]);
+  const marker = <span ref={top} hidden />;
   if (editing) {
     return (
+      <>
+      {marker}
       <BookingForm
         mode="edit"
         booking={booking}
@@ -21,7 +30,8 @@ export default function ExistingBooking({ onPreview, editing, onCancelEdit, onDo
         onRemove={onRemove}
         onPreview={onPreview}
       />
+      </>
     );
   }
-  return <BookingDetails booking={booking} group={group} onSaved={onSaved} onDone={onDone} onRemoved={onClose} onRemove={onRemove} onConfirm={onConfirm} onPutOnHold={onPutOnHold} groupCount={groupCount} onShowGroup={onShowGroup} rooms={rooms} pending={pending} onSavePending={onSavePending} onCancelPending={onCancelPending} />;
+  return <>{marker}<BookingDetails booking={booking} group={group} onSaved={onSaved} onDone={onDone} onRemoved={onClose} onRemove={onRemove} onConfirm={onConfirm} onPutOnHold={onPutOnHold} groupCount={groupCount} onShowGroup={onShowGroup} rooms={rooms} pending={pending} onSavePending={onSavePending} onCancelPending={onCancelPending} /></>;
 }

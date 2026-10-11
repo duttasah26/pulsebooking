@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Eye, EyeSlash, LockKey, User, SignIn } from '@phosphor-icons/react';
+import { Eye, EyeSlash, LockKey, User } from '@phosphor-icons/react';
 import FieldLabel from '../components/FieldLabel';
 import { api } from '../lib/useApi';
 
@@ -44,14 +44,14 @@ export default function Login() {
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
       <main className="grid min-h-[100dvh] place-items-center px-4 py-10">
-        <div className="card w-full max-w-md space-y-6 p-6 sm:p-8">
+        <div className="card w-full max-w-md space-y-8 p-6 sm:p-10">
           <div className="flex flex-col items-center gap-2 text-center">
             <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority className="h-12 w-auto" />
-            <h1 className="text-xl font-semibold">Sign in to Pulse Rooms</h1>
+            <h1 className="t-display">Sign in</h1>
           </div>
 
           {!configured && (
-            <p role="alert" className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-2 text-base">
+            <p role="alert" className="rounded-lg bg-surface-2 px-4 py-3 text-base">
               Login is not set up yet. Add STAFF_ACCOUNTS and SESSION_SECRET to the environment variables (see .env.example).
             </p>
           )}
@@ -70,9 +70,9 @@ export default function Login() {
                 </button>
               </div>
             </div>
-            {error && <p key={error} role="alert" className="animate-shake rounded-lg border-2 border-danger bg-red-50 px-3 py-2 text-base text-danger">{error}</p>}
-            <button type="submit" className="btn btn-primary w-full" disabled={busy}>
-              {busy ? 'Signing in…' : <><SignIn size={18} aria-hidden="true" /> Sign In</>}
+            {error && <p key={error} role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}
+            <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
+              {busy ? 'Signing in…' : <>Sign In</>}
             </button>
           </form>
         </div>

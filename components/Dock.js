@@ -49,12 +49,13 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
       <aside
         ref={box}
         aria-label={label}
+        data-scroll-body
         style={maxH && !overlay ? { maxHeight: maxH } : undefined}
-        className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.5rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? `flex flex-col ${leaving ? 'animate-dock-out' : 'animate-dock-in'}` : 'hidden'}`}
+        className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.75rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? `flex flex-col ${leaving ? 'animate-dock-out' : 'animate-dock-in'}` : 'hidden'}`}
       >
         {/* Docked at the top of the panel however far its contents are scrolled: the name, Edit and Hide stay in reach. */}
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-line bg-surface px-4 py-1.5">
-          <h2 className="min-w-0 truncate text-base font-semibold">{title}</h2>
+        <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-2 border-b border-line bg-surface py-1.5 pl-5 pr-2">
+          <h2 className="t-title min-w-0 truncate">{title}</h2>
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => hide()}>
@@ -62,7 +63,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col bg-canvas px-4 pt-3">{children}</div>
+        <div className="flex flex-1 flex-col bg-surface px-5 pt-4">{children}</div>
       </aside>
 
       {!open && (
@@ -72,11 +73,11 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           aria-expanded="false"
           title={`Show ${label.toLowerCase()}`}
           onClick={() => onToggle(true)}
-          className={`animate-fade sticky top-[4.5rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-sm font-medium transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-muted/50 hover:bg-surface-2 hover:shadow-sm active:translate-y-0`}
+          className={`animate-fade sticky top-[4.75rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2`}
         >
           <CaretLeft size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>
-          {tabMark && <span aria-hidden="true" className="size-2 rounded-full bg-accent" />}
+          {tabMark && <span aria-hidden="true" className="size-2 rounded-sm bg-accent" />}
         </button>
       )}
     </>

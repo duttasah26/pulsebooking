@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Check, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Tag, User, Users, X } from '@phosphor-icons/react';
+import { Check, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Tag, User, Users } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import DateRangePicker from '../DateRangePicker';
@@ -17,26 +17,26 @@ import { STATUS_LABEL } from '../../lib/status';
 
 // Shown while a hold is open for editing: the two things that turn it into a real booking, in order, each ticked once done.
 function ConfirmSteps({ hasGuest, onCancel, busy }) {
-  const num = 'grid size-7 shrink-0 place-items-center rounded-full font-mono text-base font-semibold';
+  const num = 'grid size-7 shrink-0 place-items-center rounded-md font-mono text-base font-semibold';
   return (
-    <section aria-label="How to confirm this hold" className="animate-fade rounded-lg border-2 border-accent bg-accent-soft p-3">
+    <section aria-label="How to confirm this hold" className="animate-fade rounded-lg bg-accent-soft p-5">
       <div className="flex items-start justify-between gap-2">
-        <h2 className="text-lg font-semibold leading-tight">To confirm this booking</h2>
+        <h2 className="t-title">To confirm this booking</h2>
         {onCancel && (
           <button type="button" className="btn btn-quiet -mr-2 -mt-1 shrink-0 px-3" onClick={onCancel} disabled={busy}>
-            <X size={18} aria-hidden="true" /> Cancel
+            Cancel
           </button>
         )}
       </div>
       <ol className="mt-2 space-y-2 text-base">
         <li className="flex items-center gap-2.5">
-          <span className={`${num} ${hasGuest ? 'bg-accent text-accent-ink' : 'border-2 border-accent bg-surface text-accent-text'}`}>
+          <span className={`${num} ${hasGuest ? 'bg-accent text-accent-ink' : 'bg-surface text-accent-strong ring-1 ring-accent'}`}>
             {hasGuest ? <Check size={16} weight="bold" aria-label="Done" /> : 1}
           </span>
           Type the guest’s name
         </li>
         <li className="flex items-center gap-2.5">
-          <span className={`${num} border-2 border-accent bg-surface text-accent-text`}>2</span>
+          <span className={`${num} bg-surface text-accent-strong ring-1 ring-accent`}>2</span>
           Press <strong>Confirm Booking</strong>
         </li>
       </ol>
@@ -83,13 +83,13 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
   useEffect(() => () => onPreview?.(null), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); f.submit(false); }} className="form-area flex flex-1 flex-col gap-4 pb-1">
+    <form onSubmit={(e) => { e.preventDefault(); f.submit(false); }} className="form-area flex flex-1 flex-col gap-5 pb-1">
       {f.isHoldEdit ? (
         <ConfirmSteps hasGuest={Boolean(f.guestChoice)} onCancel={onCancel} busy={f.busy} />
       ) : (
         <div>
-          <h2 className="text-lg font-semibold leading-tight">Edit booking</h2>
-          <p className="text-base leading-snug text-ink/70">Change what you need, then press Save Changes.</p>
+          <h2 className="t-title">Edit booking</h2>
+          <p className="t-footnote mt-1">Change what you need, then press Save Changes.</p>
         </div>
       )}
       {!f.isHoldEdit && (
@@ -143,7 +143,7 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
 
       <MoreOptions f={f} hideStatus hideParty hideColor />
 
-      {f.error && <p role="alert" className="animate-shake rounded-lg border-2 border-danger bg-red-50 px-3 py-2 text-base text-danger">{f.error}</p>}
+      {f.error && <p role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{f.error}</p>}
 
       <FormFooter f={f} onCancel={f.isHoldEdit ? undefined : onCancel} />
     </form>

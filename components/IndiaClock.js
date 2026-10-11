@@ -10,9 +10,8 @@ const read = () => {
   return { date: dateFormat.format(now), hour: part.hour, minute: part.minute, period: (part.dayPeriod ?? '').toUpperCase() };
 };
 
-// The date and time in India (IST), whatever the computer's own clock or zone says, the middle column of the top bar's
-// three-column grid: exactly centred while the logo and the tabs fit either side, and pushed along (never under them) when
-// the tabs need more room. Plain on purpose: the time in large steady digits with AM or PM beside it, the date under it. No
+// The date and time in India (IST), whatever the computer's own clock or zone says, at the right of the top bar, beside
+// Settings. Plain on purpose: the time in steady figures with AM or PM beside it, the date before it on wide screens. No
 // seconds and no blinking, so nothing in the header moves while someone is working. It is drawn only once the page is in
 // the browser (so the server and the browser never disagree about "now") and re-read every few seconds, redrawing only
 // when the minute changes. With little room (a tablet) it is hidden; a phone and a small laptop show the time alone.
@@ -30,16 +29,14 @@ export default function IndiaClock() {
 
   return (
     <div
-      className="pointer-events-none flex items-center justify-center md:max-lg:hidden"
+      className="pointer-events-none flex items-center md:max-lg:hidden"
       title="India Standard Time"
       aria-label={now ? `India time: ${now.date}, ${now.hour}:${now.minute} ${now.period}` : 'India time'}
     >
-      <div className="flex min-h-10 flex-col items-center justify-center px-2 leading-none whitespace-nowrap text-ink" aria-hidden="true">
-        <div className="flex items-baseline gap-1.5 tabular-nums">
-          <span className="text-2xl font-semibold tracking-tight">{now ? `${now.hour}:${now.minute}` : '--:--'}</span>
-          <span className="text-base font-medium text-ink/70">{now?.period ?? ''}</span>
-        </div>
-        <span className="mt-1 hidden text-sm text-ink/75 xl:inline">{now?.date ?? ''} IST</span>
+      <div className="flex items-baseline gap-2 whitespace-nowrap leading-none text-ink" aria-hidden="true">
+        <span className="hidden text-[0.9375rem] text-muted xl:inline">{now?.date ?? ''}</span>
+        <span className="font-mono text-lg font-semibold">{now ? `${now.hour}:${now.minute}` : '--:--'}</span>
+        <span className="text-sm font-semibold text-muted">{now?.period ?? ''}</span>
       </div>
     </div>
   );

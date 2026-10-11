@@ -5,14 +5,14 @@ import FieldLabel from './FieldLabel';
 import { useStoredState } from '../lib/useStoredState';
 
 // An option may carry a tone { fill, edge } (a room's floor colour, a status colour, check-in green, check-out red). Off, the
-// chip is white with a dot and an edge in that colour; on, it is filled with the colour, has a dark edge and a tick. So the
-// colour tells what the choice is, and filled tells it is on.
+// chip is the plain tinted button with a small empty square in that colour; on, it is filled with the colour, edged in it and
+// carries a tick. So the colour tells what the choice is, and filled tells it is on. Without a tone, on is the green chip.
 export const chip = (on, tone) =>
-  `btn min-h-11 gap-1.5 px-3 lg:min-h-9 ${tone ? (on ? 'font-semibold' : '') : on ? 'border-accent bg-accent-soft font-semibold text-accent-text' : ''}`;
-export const toneStyle = (on, tone) => (tone ? (on ? { backgroundColor: tone.fill, borderColor: 'var(--ink)', borderWidth: 2 } : { borderColor: tone.edge }) : undefined);
+  `btn gap-2 px-3 ${tone ? (on ? 'font-semibold' : '') : on ? 'chip-on' : ''}`;
+export const toneStyle = (on, tone) => (tone && on ? { backgroundColor: tone.fill, borderColor: tone.edge, boxShadow: `inset 0 0 0 1px ${tone.edge}` } : undefined);
 export function Mark({ on, tone }) {
   if (!tone) return null;
-  return on ? <Check size={14} weight="bold" aria-hidden="true" className="shrink-0" /> : <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: tone.edge }} />;
+  return on ? <Check size={16} aria-hidden="true" className="shrink-0" /> : <span aria-hidden="true" className="size-3 shrink-0 rounded-sm" style={{ boxShadow: `inset 0 0 0 2px ${tone.edge}` }} />;
 }
 
 // Pick any number of options. options: [[value, label]], value: array of the chosen values.
@@ -21,7 +21,7 @@ export function ChipGroup({ legend, icon, options, value, onToggle, empty, legen
     <fieldset>
       <FieldLabel icon={icon} as="legend" hidden={legendHidden}>{legend}</FieldLabel>
       {options.length === 0 ? (
-        <p className="text-sm text-muted">{empty}</p>
+        <p className="t-footnote">{empty}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {options.map(([v, label, tone]) => (
@@ -42,9 +42,9 @@ export function Segmented({ legend, icon, options, value, onChange, legendHidden
     <fieldset>
       <FieldLabel icon={icon} as="legend" hidden={legendHidden}>{legend}</FieldLabel>
       {/* As many per row as fit (at least 7rem each), the rest on the next row, and a long label wraps inside its button: nothing runs into its neighbour. */}
-      <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(7rem, 1fr))' }}>
+      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(7rem, 1fr))' }}>
         {options.map(([v, label, tone]) => (
-          <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)} className={`${chip(value === v, tone)} h-auto justify-center !whitespace-normal px-2 py-1.5 text-center text-sm leading-tight`} style={toneStyle(value === v, tone)}>
+          <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)} className={`${chip(value === v, tone)} h-auto justify-center !whitespace-normal px-2 py-2 text-center text-[0.9375rem] leading-tight`} style={toneStyle(value === v, tone)}>
             <Mark on={value === v} tone={tone} />
             {label}
           </button>
@@ -63,32 +63,32 @@ export function NumberRange({ legend, icon, from, to, onFrom, onTo, unit }) {
         <input type="number" inputMode="numeric" min="0" name={`${legend}-min`} aria-label={`${legend}, at least`} placeholder="At least" className="field min-w-0 px-2" value={from} onChange={(e) => onFrom(e.target.value.replace(/\D/g, ''))} />
         <input type="number" inputMode="numeric" min="0" name={`${legend}-max`} aria-label={`${legend}, at most`} placeholder="At most" className="field min-w-0 px-2" value={to} onChange={(e) => onTo(e.target.value.replace(/\D/g, ''))} />
       </div>
-      {unit && <p className="mt-1 text-sm text-muted">{unit}</p>}
+      {unit && <p className="mt-1 t-footnote">{unit}</p>}
     </fieldset>
   );
 }
 
 // A section of the panel that folds away, so the panel shows only what you open. The title says what is inside and a
 // green number says how many choices are on in it. Whether it is open is remembered on this device.
+// eslint-disable-next-line no-unused-vars
 export function FoldSection({ id, title, icon: Icon, badge = 0, defaultOpen = false, children }) {
   const [open, setOpen] = useStoredState(`pulse.fold.${id}`, defaultOpen, { parse: (raw) => raw === '1', serialize: (v) => (v ? '1' : '0') });
   return (
-    <section className="rounded-lg border border-line bg-surface">
+    <section className="border-b border-line last:border-b-0">
       <h3>
         <button
           type="button"
           aria-expanded={open}
           aria-controls={`fold-${id}`}
           onClick={() => setOpen(!open)}
-          className="flex min-h-12 w-full items-center gap-2 px-3 text-left text-base font-semibold transition-colors duration-150 hover:bg-surface-2 lg:min-h-11"
+          className="flex min-h-12 w-full items-center gap-2 rounded-md px-1 text-left text-[1.0625rem] font-semibold transition-colors duration-150 hover:bg-surface-2"
         >
-          {Icon && <Icon size={18} aria-hidden="true" className="shrink-0 text-muted" />}
           <span className="min-w-0 flex-1 truncate">{title}</span>
-          {badge > 0 && <span className="grid min-w-6 place-items-center rounded bg-accent px-1.5 font-mono text-sm font-semibold text-accent-ink"><span className="sr-only">{badge} on: </span>{badge}</span>}
+          {badge > 0 && <span className="grid min-w-6 place-items-center rounded-md bg-ink px-1.5 font-mono text-sm font-semibold text-white"><span className="sr-only">{badge} on: </span>{badge}</span>}
           <CaretDown size={18} aria-hidden="true" className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </button>
       </h3>
-      {open && <div id={`fold-${id}`} className="animate-fade space-y-4 border-t border-line p-3">{children}</div>}
+      {open && <div id={`fold-${id}`} className="animate-fade space-y-5 px-1 pb-5 pt-2">{children}</div>}
     </section>
   );
 }

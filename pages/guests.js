@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack, ArrowClockwise } from '@phosphor-icons/react';
+import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
 import Head from 'next/head';
 import FieldLabel from '../components/FieldLabel';
 import Layout from '../components/Layout';
@@ -162,23 +162,23 @@ export default function Guests() {
     <Layout title="Guests">
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-3">
+        <div className="min-w-0 space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-lg font-semibold">Guests</h1>
+            <h1 className="t-display">Guests</h1>
             <button type="button" className="btn btn-primary" onClick={() => setOpen('new')}>
               <Plus size={18} aria-hidden="true" /> New Guest
             </button>
           </div>
 
-          {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           <SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />
+          {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
           {list.error && (
-            <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-sm text-danger">
+            <p role="alert" className="flex flex-wrap items-center gap-3 rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">
               Could not load guests: {list.error.message}. Check the connection and try again.
-              <button type="button" className="btn ml-3" onClick={list.reload}><ArrowClockwise size={16} aria-hidden="true" /> Retry</button>
+              <button type="button" className="btn btn-sm" onClick={list.reload}>Retry</button>
             </p>
           )}
 
@@ -187,12 +187,12 @@ export default function Guests() {
               {[0, 1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-16 rounded-lg" style={{ animationDelay: `${i * 90}ms` }} />)}
             </div>
           ) : guests.length === 0 ? (
-            <p className="rounded-lg border border-line bg-surface p-8 text-center text-muted">
+            <p className="rounded-lg border border-line bg-surface px-6 py-12 text-center text-base text-muted">
               {search || activeCount ? 'No guests match this search. Some filters may be on: clear them to see more.' : 'No guests yet. They are added when you create a booking.'}
             </p>
           ) : (
             <>
-              <p className="px-1 text-sm text-muted" role="status" aria-live="polite">{guests.length} {guests.length === 1 ? 'guest' : 'guests'}{guests.length === 100 ? ' (the first 100: narrow the search to see others)' : ''}</p>
+              <p className="t-group px-1 pt-2" role="status" aria-live="polite">{guests.length} {guests.length === 1 ? 'guest' : 'guests'}{guests.length === 100 ? ' (the first 100: narrow the search to see others)' : ''}</p>
               <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
                 {guests.map((g) => {
                   const partner = partnerOf(g);

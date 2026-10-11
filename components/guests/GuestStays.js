@@ -13,19 +13,19 @@ export default function GuestStays({ guest, rooms, onBookAgain }) {
   return (
     <section className="mt-6">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Stays ({stays.length})</h3>
+        <h3 className="t-group">Stays <span className="font-mono">{stays.length}</span></h3>
         <button type="button" className="btn" disabled={rooms.length === 0} onClick={bookAgain}>
           <Plus size={18} aria-hidden="true" /> Book Again
         </button>
       </div>
       {stays.length === 0 ? (
-        <p className="text-sm text-muted">No stays yet.</p>
+        <p className="t-footnote">No stays yet.</p>
       ) : (
         <ul className="divide-y divide-line rounded-lg border border-line">
           {stays.map((b) => (
-            <li key={b.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+            <li key={b.id} className="flex min-h-12 items-center justify-between gap-3 px-4 py-2.5 text-[0.9375rem]">
               <span className={`min-w-0 ${b.deleted_at ? 'line-through' : ''}`}>
-                <span className="flex items-center gap-1.5 font-medium">
+                <span className="flex items-center gap-1.5 font-semibold">
                   <CalendarBlank size={14} aria-hidden="true" className="shrink-0 text-muted" />
                   {fmtShort(b.check_in)} to {fmtShort(b.check_out)}
                 </span>

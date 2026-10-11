@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Buildings, CalendarBlank, Check, Clock, Minus, Note, Plus, SignIn, SignOut, Tag, TextAa, X, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, Buildings, CalendarBlank, Check, Clock, Minus, Note, Plus, SignIn, SignOut, Tag, TextAa, X } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import TimeSelect from '../TimeSelect';
 import ColorPicker from '../booking/ColorPicker';
@@ -36,14 +36,14 @@ function Part({ only, name, id, title, icon: Icon, badge, defaultOpen = false, c
 
 // A big plus and minus with the result in words between them, so the effect is read, not worked out.
 function Stepper({ label, icon, text, on, minus, plus, minusLabel, plusLabel }) {
-  const btn = 'btn size-12 shrink-0 border-line p-0 lg:size-12';
+  const btn = 'btn btn-lg btn-icon shrink-0';
   return (
     <div>
       <FieldLabel icon={icon} as="span">{label}</FieldLabel>
       <div className="flex items-center gap-2">
-        <button type="button" className={btn} aria-label={minusLabel} onClick={minus}><Minus size={20} weight="bold" aria-hidden="true" /></button>
-        <span className={`min-w-0 flex-1 rounded-lg border-2 px-3 py-2.5 text-center text-lg font-semibold transition-colors duration-150 ${on ? 'border-accent bg-accent-soft text-accent-text' : 'border-line text-muted'}`} aria-live="polite">{text}</span>
-        <button type="button" className={btn} aria-label={plusLabel} onClick={plus}><Plus size={20} weight="bold" aria-hidden="true" /></button>
+        <button type="button" className={btn} aria-label={minusLabel} onClick={minus}><Minus size={20} aria-hidden="true" /></button>
+        <span className={`min-w-0 flex-1 rounded-lg border-2 px-3 py-2.5 text-center text-lg font-semibold transition-colors duration-150 ${on ? "border-ink bg-surface text-ink" : "border-line text-muted"}`} aria-live="polite">{text}</span>
+        <button type="button" className={btn} aria-label={plusLabel} onClick={plus}><Plus size={20} aria-hidden="true" /></button>
       </div>
     </div>
   );
@@ -129,7 +129,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
             <ArrowLeft size={20} weight="bold" aria-hidden="true" />
           </button>
           <div className="min-w-0">
-            <h3 className="flex items-center gap-2 text-xl font-semibold leading-tight"><job.icon size={22} aria-hidden="true" /> {job.title}</h3>
+            <h3 className="t-title">{job.title}</h3>
             <p className="truncate text-base text-muted">{bookings.length} bookings, rooms {rooms}</p>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
               );
             })}
           </ul>
-          <p className="text-sm text-muted">Only the bookings you rename are changed. Give every booking of one guest the same new name to rename the guest itself.</p>
+          <p className="t-footnote">Only the bookings you rename are changed. Give every booking of one guest the same new name to rename the guest itself.</p>
         </Part>
 
         <Part only={only} name="dates" id="group-dates" title="Dates" icon={CalendarBlank} badge={counts.dates} defaultOpen>
@@ -183,12 +183,12 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
           />
           <div className="grid grid-cols-4 gap-2" role="group" aria-label="Quick moves, in days">
             {[-7, -1, 1, 7].map((n) => (
-              <button key={n} type="button" className="btn min-h-11 px-1 text-base" aria-label={`${Math.abs(n)} ${Math.abs(n) === 1 ? 'day' : 'days'} ${n > 0 ? 'later' : 'earlier'}`} onClick={() => setShift(shift + n)}>{n > 0 ? '+' : '-'}{Math.abs(n)}</button>
+              <button key={n} type="button" className="btn px-1 font-mono font-semibold" aria-label={`${Math.abs(n)} ${Math.abs(n) === 1 ? 'day' : 'days'} ${n > 0 ? 'later' : 'earlier'}`} onClick={() => setShift(shift + n)}>{n > 0 ? '+' : '-'}{Math.abs(n)}</button>
             ))}
           </div>
-          <p className="-mt-2 flex items-center justify-between text-sm text-muted">
+          <p className="-mt-2 flex items-center justify-between t-footnote">
             <span>Quick moves, in days</span>
-            {shift !== 0 && <button type="button" className="btn min-h-11 border-transparent px-2 text-sm lg:min-h-9" onClick={() => setShift(0)}><ArrowCounterClockwise size={16} aria-hidden="true" /> Reset</button>}
+            {shift !== 0 && <button type="button" className="btn btn-sm btn-quiet" onClick={() => setShift(0)}>Reset</button>}
           </p>
           <Stepper
             label="Make every stay longer or shorter"
@@ -200,7 +200,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
             minusLabel="One night shorter"
             plusLabel="One night longer"
           />
-          <p className="-mt-2 text-sm text-muted">The check-out day moves; the check-in day stays.</p>
+          <p className="-mt-2 t-footnote">The check-out day moves; the check-in day stays.</p>
 
           <FoldSection id="group-exact" title="Or pick exact dates" icon={SignIn} badge={(checkIn ? 1 : 0) + (checkOut ? 1 : 0)}>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -213,7 +213,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
                 <input id="bulk-out" type="date" className="field" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} />
               </div>
             </div>
-            <p className="text-sm text-muted">A date picked here replaces the move for that end. A room that is already taken on the new days will stop the change.</p>
+            <p className="t-footnote">A date picked here replaces the move for that end. A room that is already taken on the new days will stop the change.</p>
           </FoldSection>
 
           {/* The result, always in view: each booking before and after, and a ghost for each on the calendar. */}
@@ -238,7 +238,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
                 </li>
               ))}
             </ul>
-            {datesChange && <p className="text-sm text-muted">The dark dashed bars on the calendar show where they will land.</p>}
+            {datesChange && <p className="t-footnote">The dark dashed bars on the calendar show where they will land.</p>}
           </div>
           {bad.length > 0 && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-base text-danger">Some stays would end before they start. Change the dates so every stay has at least one night.</p>}
         </Part>
@@ -266,20 +266,20 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
       </div>
 
       {/* The Save bar stays at the bottom of the panel however far the form is scrolled, and says what will change. */}
-      <div className="sticky bottom-0 -mx-4 space-y-2 border-t border-line bg-surface px-4 py-3">
+      <div className="sticky bottom-0 -mx-5 space-y-2 border-t border-line bg-surface px-5 py-3">
         <p className="text-base" aria-live="polite">
           {anything ? <><strong>Will change:</strong> {parts.join(', ')}.</> : <span className="text-muted">Nothing changed yet.</span>}
         </p>
         <div className="flex gap-2">
-          <button type="button" className="btn min-h-12 flex-1 gap-2 text-base" onClick={onCancel}>
+          <button type="button" className="btn btn-lg btn-quiet flex-1" onClick={onCancel}>
             {only ? <ArrowLeft size={18} weight="bold" aria-hidden="true" /> : <X size={18} weight="bold" aria-hidden="true" />} {only ? 'Back' : 'Cancel'}
           </button>
           <button
             type="submit"
-            className="btn btn-primary min-h-12 flex-[2] gap-2 text-base disabled:border-line disabled:bg-surface-2 disabled:text-muted disabled:opacity-100 disabled:shadow-none"
+            className="btn btn-lg btn-primary flex-[2]"
             disabled={!anything || bad.length > 0}
           >
-            <Check size={18} weight="bold" aria-hidden="true" /> {anything ? 'Save Changes' : 'Nothing to save yet'}
+            {anything ? 'Save Changes' : 'Nothing to save yet'}
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Clock, X } from '@phosphor-icons/react';
+import { Clock } from '@phosphor-icons/react';
 
 // Live description of the selection being made, pinned to the top right of the grid.
 export function SelectionSummary({ summary }) {
@@ -23,8 +23,8 @@ export function TouchBar({ summary, onCancel, onHold }) {
           <span className="font-medium">{summary}</span>
           <span className="block text-muted">Now tap the last night</span>
         </p>
-        <button type="button" className="btn" onClick={onCancel}><X size={18} aria-hidden="true" /> Cancel</button>
-        <button type="button" className="btn btn-primary" onClick={onHold}><Clock size={18} aria-hidden="true" /> Hold 1 Night</button>
+        <button type="button" className="btn" onClick={onCancel}>Cancel</button>
+        <button type="button" className="btn btn-hold font-semibold" onClick={onHold}><Clock size={18} aria-hidden="true" /> Hold 1 Night</button>
       </div>
     </div>
   );
