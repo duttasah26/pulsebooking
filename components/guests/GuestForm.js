@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Buildings, Envelope, Note, Phone, User } from '@phosphor-icons/react';
+import { Buildings, Envelope, Note, Phone, Trash, User } from '@phosphor-icons/react';
 import Sheet from '../Sheet';
+import HoldButton from '../HoldButton';
 import BookingSheet from '../booking/BookingSheet';
 import FieldLabel from '../FieldLabel';
 import ColorPicker from '../booking/ColorPicker';
@@ -18,6 +19,22 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
   const [busy, setBusy] = useState(false);
   const [booking, setBooking] = useState(null);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  // Stays still on the calendar block deleting; deleted stays go with the guest.
+  const liveStays = (guest?.bookings ?? []).filter((b) => !b.deleted_at).length;
+
+  const remove = async () => {
+    setError('');
+    setBusy(true);
+    try {
+      await api(`/api/guests/${guest.id}`, { method: 'DELETE' });
+      toast({ message: `${guest.name} deleted`, duration: 3000 });
+      onChanged();
+      onClose();
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -110,6 +127,19 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
               <button type="button" className="btn px-3" onClick={onMerge}>
                 Merge with Another Guest
               </button>
+            </div>
+          )}
+          {!isNew && (
+            <div className="card">
+              <p className="t-headline">Delete this guest</p>
+              <p className="t-footnote mb-3">
+                {liveStays > 0
+                  ? `${guest.name} has ${liveStays} ${liveStays === 1 ? 'stay' : 'stays'} on the calendar. Delete those first, or merge this guest into another.`
+                  : 'Removes the guest for good. This cannot be undone.'}
+              </p>
+              <HoldButton className="btn btn-danger px-3" title="Press and hold to delete this guest" reminder="Hold the button to delete the guest" onConfirm={remove} disabled={busy || liveStays > 0}>
+                <Trash size={18} aria-hidden="true" /> Hold to Delete Guest
+              </HoldButton>
             </div>
           )}
           {error && <p role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}

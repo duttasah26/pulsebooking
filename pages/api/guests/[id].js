@@ -29,4 +29,23 @@ async function patch(req, res) {
   res.status(200).json(guest);
 }
 
-export default route({ GET: get, PATCH: patch });
+// DELETE /api/guests/:id removes the guest for good. Refused while any of their stays is still on the calendar
+// (not deleted): those must be deleted first, or the guest merged into another. Stays that were already deleted
+// go with the guest (their change history in booking_history is kept).
+async function remove(req, res) {
+  const id = parseId(req.query.id);
+  const result = await sql.begin(async (tx) => {
+    const [guest] = await tx`SELECT id, name FROM guests WHERE id = ${id} FOR UPDATE`;
+    if (!guest) throw new HttpError(404, 'Guest not found');
+    const [{ live }] = await tx`SELECT count(*)::int AS live FROM bookings WHERE guest_id = ${id} AND deleted_at IS NULL`;
+    if (live > 0) {
+      throw new HttpError(409, `${guest.name} has ${live} ${live === 1 ? 'stay' : 'stays'} on the calendar. Delete those first, or merge this guest into another.`);
+    }
+    await tx`DELETE FROM bookings WHERE guest_id = ${id} AND deleted_at IS NOT NULL`;
+    await tx`DELETE FROM guests WHERE id = ${id}`;
+    return { id, name: guest.name };
+  });
+  res.status(200).json(result);
+}
+
+export default route({ GET: get, PATCH: patch, DELETE: remove });
