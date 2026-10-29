@@ -274,9 +274,8 @@ export default function Bookings() {
             </button>
           </div>
 
-          <SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} />
+          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />} />
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
 
           {list.error && (

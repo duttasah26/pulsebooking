@@ -72,7 +72,7 @@ function Chip({ field }) {
   );
 }
 
-export default function FilterBar({ fields, onClearAll }) {
+export default function FilterBar({ fields, onClearAll, search }) {
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(null); // the key of the filter being added
   const on = fields.filter((f) => f.on);
@@ -83,40 +83,49 @@ export default function FilterBar({ fields, onClearAll }) {
     if (!next) setAdding(null);
   };
 
+  // The search box and the + Filter button share one row (search first); the applied filters take a row below only when there are some.
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
-      {on.map((f) => <Chip key={f.key} field={f} />)}
-      {on.length > 1 && onClearAll && <button type="button" className="btn btn-quiet btn-sm" onClick={onClearAll}>Clear</button>}
-      {(off.length > 0 || adding) && (
-        <Pop
-          open={open}
-          onToggle={toggle}
-          button={
-            <button type="button" aria-expanded={open} className="btn btn-sm" onClick={() => toggle(!open)}>
-              <Plus size={16} aria-hidden="true" /> Filter
-            </button>
-          }
-        >
-          {field ? (
-            <div className="space-y-3">
-              <button type="button" className="btn btn-quiet btn-sm -ml-2" onClick={() => setAdding(null)}>
-                <CaretLeft size={16} aria-hidden="true" /> {field.label}
+    <div className="space-y-3" role="group" aria-label="Search and filters">
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">{search}</div>
+        {(off.length > 0 || adding) && (
+          <Pop
+            open={open}
+            onToggle={toggle}
+            align="right"
+            button={
+              <button type="button" aria-expanded={open} className="btn min-h-12 shrink-0 gap-2 px-4 lg:min-h-11" onClick={() => toggle(!open)}>
+                <Plus size={18} aria-hidden="true" /> Filter
               </button>
-              {field.render({ close: () => toggle(false) })}
-            </div>
-          ) : (
-            <ul className="grid gap-0.5">
-              {off.map((f) => (
-                <li key={f.key}>
-                  <button type="button" className="btn btn-quiet w-full justify-start gap-3 px-3" onClick={() => setAdding(f.key)}>
-                    {f.Icon && <f.Icon size={18} aria-hidden="true" className="shrink-0 text-muted" />}
-                    {f.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Pop>
+            }
+          >
+            {field ? (
+              <div className="space-y-3">
+                <button type="button" className="btn btn-quiet btn-sm -ml-2" onClick={() => setAdding(null)}>
+                  <CaretLeft size={16} aria-hidden="true" /> {field.label}
+                </button>
+                {field.render({ close: () => toggle(false) })}
+              </div>
+            ) : (
+              <ul className="grid gap-0.5">
+                {off.map((f) => (
+                  <li key={f.key}>
+                    <button type="button" className="btn btn-quiet w-full justify-start gap-3 px-3" onClick={() => setAdding(f.key)}>
+                      {f.Icon && <f.Icon size={18} aria-hidden="true" className="shrink-0 text-muted" />}
+                      {f.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Pop>
+        )}
+      </div>
+      {on.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          {on.map((f) => <Chip key={f.key} field={f} />)}
+          {on.length > 1 && onClearAll && <button type="button" className="btn btn-quiet btn-sm" onClick={onClearAll}>Clear</button>}
+        </div>
       )}
     </div>
   );

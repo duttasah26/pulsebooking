@@ -191,9 +191,8 @@ export default function Guests() {
           <Swap id={tab} className="space-y-4">
           {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
           {tab === 'guests' && <>
-          <SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} />
+          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
