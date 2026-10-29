@@ -16,7 +16,7 @@ async function loadColors() {
 // GET /api/companies?q=zee  ->  [{ name, color, guests, stays }]  (A to Z)
 async function list(req, res) {
   const q = norm(req.query.q);
-  const like = q ? `%${q.replace(/[\%_]/g, (c) => '\' + c)}%` : '%';
+  const like = q ? `%${q.replace(/[\\%_]/g, (c) => '\\' + c)}%` : '%';
   const [rows, colors] = await Promise.all([
     sql`
       WITH org AS (
