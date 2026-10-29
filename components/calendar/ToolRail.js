@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
 import { ArrowUUpLeft, ArrowUUpRight, ChatCircleDots, CheckSquare, Clock, Cursor, Hand, Plus, Question } from '@phosphor-icons/react';
 import { OPEN_ASSISTANT } from '../Assistant';
 import ToolButton from './ToolButton';
@@ -89,17 +88,18 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
       )}
     </nav>
     {!touch && (
-      <motion.div
+      <div
         aria-hidden="true"
-        initial={false}
-        animate={{ opacity: tip ? 1 : 0, y: tip ? tip.y : 0 }}
-        transition={{ opacity: { duration: 0.14 }, y: { type: 'spring', stiffness: 650, damping: 44, mass: 0.7 } }}
-        style={{ position: 'fixed', left: tip?.x ?? -999, top: 0, translateY: '-50%' }}
+        style={{
+          position: 'fixed', left: tip?.x ?? -999, top: 0, opacity: tip ? 1 : 0,
+          transform: `translateY(${(tip?.y ?? 0) - 18}px)`,
+          transition: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 140ms ease-out',
+        }}
         className="pointer-events-none z-30 flex items-center gap-2 whitespace-nowrap rounded-md bg-ink px-3 py-1.5 text-[0.9375rem] font-semibold text-white shadow-lg"
       >
         {tip?.label}
         {tip?.key && <kbd className="rounded border border-white/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}
-      </motion.div>
+      </div>
     )}
     </>
   );
