@@ -107,17 +107,28 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
       )}
     </nav>
     {!touch && (
+      // Two layers: the outer one only travels from button to button (a long, soft ease); the inner one is the label itself, which
+      // fades in with a small step out from the dock, and changes colour smoothly when the tool under the pointer changes.
       <div
         aria-hidden="true"
         style={{
-          position: 'fixed', left: tip?.x ?? -999, top: 0, opacity: on ? 1 : 0,
+          position: 'fixed', left: tip?.x ?? -999, top: 0, willChange: 'transform',
           transform: `translateY(${(tip?.y ?? 0) - 18}px)`,
-          transition: `${glide ? 'transform 160ms cubic-bezier(0.22, 1, 0.36, 1), ' : ''}opacity 120ms ease-out`,
+          transition: glide ? 'transform 260ms cubic-bezier(0.32, 0.72, 0, 1)' : 'none',
         }}
-        className={`pointer-events-none z-30 flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-1.5 text-[0.9375rem] font-semibold shadow-lg ${TIP[tip?.tone] ?? TIP.ink}`}
+        className="pointer-events-none z-30"
       >
-        {tip?.label}
-        {tip?.key && <kbd className="rounded border border-current/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}
+        <div
+          style={{
+            opacity: on ? 1 : 0,
+            transform: on ? 'none' : 'translateX(-8px)',
+            transition: 'opacity 180ms ease-out, transform 220ms cubic-bezier(0.32, 0.72, 0, 1), background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out',
+          }}
+          className={`flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-1.5 text-[0.9375rem] font-semibold shadow-lg ${TIP[tip?.tone] ?? TIP.ink}`}
+        >
+          {tip?.label}
+          {tip?.key && <kbd className="rounded border border-current/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}
+        </div>
       </div>
     )}
     </>
