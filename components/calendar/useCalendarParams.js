@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { CalendarDots, GridFour, Rows, Sun } from '@phosphor-icons/react';
-import { useSettings } from '../SettingsProvider';
 import { daysInMonth, isDate, monthStart, today } from '../../lib/dates';
 
 // 'timeline' is the default: rooms down, dates across. 'month' flips it: rooms across, dates down.
@@ -16,10 +15,11 @@ export const MAX_SPAN = 92;
 
 // The last view, date, span and floors are also kept on this device. Coming back to the calendar with a bare address (from another
 // page, or after a reload) picks up where the person left off; an address that names a view or date wins.
+// Kept for this visit only (sessionStorage): opening the app fresh always starts on the current month.
 const STORE = 'pulse.calendar';
 const readStore = () => {
   try {
-    return JSON.parse(localStorage.getItem(STORE)) ?? {};
+    return JSON.parse(sessionStorage.getItem(STORE)) ?? {};
   } catch {
     return {};
   }
@@ -29,7 +29,6 @@ const readStore = () => {
 // floors is null for "every floor", otherwise a list of floor digits like ['1', '3'].
 export function useCalendarParams() {
   const router = useRouter();
-  const { settings, ready } = useSettings();
   const q = router.query;
   useEffect(() => {
     if (!router.isReady || q.view || q.date || q.span || q.floors) return;
@@ -39,16 +38,17 @@ export function useCalendarParams() {
     if (isDate(saved.date)) next.date = saved.date;
     if (Number.isInteger(saved.span) && saved.span >= 1 && saved.span <= MAX_SPAN) next.span = saved.span;
     if (typeof saved.floors === 'string' && saved.floors) next.floors = saved.floors;
-    if (Object.keys(next).length) router.replace({ pathname: '/', query: next }, undefined, { shallow: true });
+    // A moment later, so the router has finished its own first update of the address (a hard reload otherwise undoes this).
+    const timer = Object.keys(next).length ? setTimeout(() => router.replace({ pathname: '/', query: next }, undefined, { shallow: true }), 50) : null;
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady]);
-  // With nothing in the address, the calendar opens with the view and days chosen in Settings.
-  const view = VIEWS.some((v) => v.key === q.view) ? q.view : ready && VIEWS.some((v) => v.key === settings.defaultView) ? settings.defaultView : 'month';
+  // With nothing in the address, the calendar opens on the Month view, always (the Settings choice of a first view is no longer used).
+  const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'month';
   // With no date in the address the timeline opens on the first day of this month (Today still jumps to today).
   const date = isDate(q.date) ? q.date : view === 'timeline' ? monthStart(today()) : today();
   const spanParam = Number(q.span);
-  const chosen = ready ? settings.defaultSpan : 'auto';
-  const fallbackSpan = chosen === 'month' ? daysInMonth(monthStart(today())) : SPANS.includes(Number(chosen)) ? Number(chosen) : typeof window !== 'undefined' && window.innerWidth < 640 ? 7 : 14;
+  const fallbackSpan = daysInMonth(isDate(q.date) ? monthStart(q.date) : monthStart(today())); // a whole month, not 14 days
   const span = Number.isInteger(spanParam) && spanParam >= 1 && spanParam <= MAX_SPAN ? spanParam : fallbackSpan;
   const floorsParam = typeof q.floors === 'string' && q.floors ? q.floors : '';
   const floors = floorsParam ? floorsParam.split(',') : null;
@@ -59,7 +59,7 @@ export function useCalendarParams() {
       const next = { view, date, span, ...(floorsParam ? { floors: floorsParam } : {}), ...patch };
       if (!next.floors) delete next.floors;
       try {
-        localStorage.setItem(STORE, JSON.stringify({ view: next.view, date: next.date, span: next.span, floors: next.floors ?? '' }));
+        sessionStorage.setItem(STORE, JSON.stringify({ view: next.view, date: next.date, span: next.span, floors: next.floors ?? '' }));
       } catch {}
       router.replace({ pathname: '/', query: next }, undefined, { shallow: true });
     },
