@@ -11,6 +11,13 @@ import ToolButton from './ToolButton';
 //   On Hold drag across free nights to place a hold, or drag a hold to change it
 //   Hand    drag the calendar to move around it
 // then Undo and Redo (zoom lives in the top toolbar, beside the month). The pane scrolls if the screen is too short for all of it.
+// The name beside a tool wears the tool's colour: New green (a booking), On Hold straw with a dashed edge (a hold), the rest ink.
+const TIP = {
+  green: 'border-accent bg-accent text-accent-ink',
+  amber: 'border-dashed border-hold-edge bg-hold text-hold-ink',
+  ink: 'border-ink bg-ink text-white',
+};
+
 export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, onHelp }) {
   const openOn = !quickHold && !touchSelect && !hand && !drawing;
   // With a pointer (touch is false) the tools are icons alone and their names slide in beside them: one label that glides to the
@@ -22,14 +29,14 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
     const b = e.target.closest?.('button[data-tip]');
     if (!b || !nav.current) return setTip(null);
     const r = b.getBoundingClientRect();
-    setTip({ label: b.dataset.tip, key: b.dataset.key, y: r.top + r.height / 2, x: nav.current.getBoundingClientRect().right + 10 });
+    setTip({ label: b.dataset.tip, key: b.dataset.key, tone: b.dataset.tone, y: r.top + r.height / 2, x: nav.current.getBoundingClientRect().right + 10 });
   };
   return (
     <>
     <nav ref={nav} onMouseOver={show} onFocus={show} onMouseLeave={() => setTip(null)} onBlur={() => setTip(null)} onScroll={() => setTip(null)} aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1.5 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
       {/* Book: start a booking, or reserve nights. */}
       {onNew && (
-        <ToolButton {...v} keyHint="N" icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />
+        <ToolButton {...v} keyHint="N" tip="New Booking" icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />
       )}
       {canTool && (
         <>
@@ -95,10 +102,10 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
           transform: `translateY(${(tip?.y ?? 0) - 18}px)`,
           transition: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 140ms ease-out',
         }}
-        className="pointer-events-none z-30 flex items-center gap-2 whitespace-nowrap rounded-md bg-ink px-3 py-1.5 text-[0.9375rem] font-semibold text-white shadow-lg"
+        className={`pointer-events-none z-30 flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-1.5 text-[0.9375rem] font-semibold shadow-lg ${TIP[tip?.tone] ?? TIP.ink}`}
       >
         {tip?.label}
-        {tip?.key && <kbd className="rounded border border-white/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}
+        {tip?.key && <kbd className="rounded border border-current/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}
       </div>
     )}
     </>

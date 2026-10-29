@@ -9,14 +9,15 @@ const ON = {
   ink: 'bg-ink text-white hover:bg-ink active:bg-ink',
 };
 
-export default function ToolButton({ icon: Icon, label, title, on, onClick, disabled, tone = 'ink', vertical = false, iconOnly = false, side = false, keyHint }) {
+export default function ToolButton({ icon: Icon, label, title, on, onClick, disabled, tone = 'ink', vertical = false, iconOnly = false, side = false, keyHint, tip }) {
   const filled = on ? ON[tone] ?? ON.ink : 'btn-quiet text-ink';
   return (
     <button
       type="button"
       title={side ? undefined : title ?? label}
       aria-description={side ? title : undefined}
-      data-tip={side ? label : undefined}
+      data-tip={side ? tip ?? label : undefined}
+      data-tone={side ? tone : undefined}
       data-key={side ? keyHint : undefined}
       aria-label={label}
       aria-pressed={on}
