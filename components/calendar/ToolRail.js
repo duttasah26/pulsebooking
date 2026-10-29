@@ -100,7 +100,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
         <ToolButton
           {...v}
           icon={ChatCircleDots}
-          label="Ask"
+          label="Assistant"
           title="Ask the assistant about rooms, nights, guests and contacts"
           onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))}
         />
