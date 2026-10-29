@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRemoveBooking } from './useRemoveBooking';
-import { api } from '../../lib/useApi';
+import { api, useApi } from '../../lib/useApi';
 import { useSettings } from '../SettingsProvider';
 import { shareOut } from '../../lib/party';
 import { addDays, diffDays } from '../../lib/dates';
@@ -146,6 +146,17 @@ export function useBookingForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomIds, checkIn, checkOut, color, nights]);
 
+  // Companies already known, to suggest while typing the company. A company with a preset colour gives it to a new booking
+  // until a colour is chosen by hand.
+  const companyList = useApi('/api/companies').data ?? [];
+  const colorTouched = useRef(edit);
+  useEffect(() => {
+    if (edit || colorTouched.current) return;
+    const preset = companyList.find((c) => c.name.toLowerCase() === organization.trim().toLowerCase())?.color;
+    if (preset) setColor(preset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organization, companyList.length]);
+
   // A guest's usual organization fills the field until it is edited by hand.
   const guestOrg = guestChoice?.guest?.organization ?? guestChoice?.newGuest?.organization;
   useEffect(() => {
@@ -290,7 +301,7 @@ export function useBookingForm({
     setCheckInTime: (v) => { timesTouched.current = true; setCheckInTime(v); },
     setCheckOutTime: (v) => { timesTouched.current = true; setCheckOutTime(v); },
     status, setStatus, channel, setChannel, ratePlan, setRatePlan, adults, children, setChildren,
-    notes, setNotes, color, setColor, organization, editOrganization, label, setLabel,
+    notes, setNotes, color, setColor: (v) => { colorTouched.current = true; setColor(v); }, companies: companyList, organization, editOrganization, label, setLabel,
     away, setAway, extraStays, setExtraStays, guestChoice, setGuestChoice, typedGuest, setTypedGuest, submit, remove,
   };
 }

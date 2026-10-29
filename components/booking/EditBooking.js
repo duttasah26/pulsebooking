@@ -113,7 +113,8 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         )}
       </Card>
       <Card icon={Buildings} title="Company or group (optional)">
-        <input id="b-org" name="organization" aria-label="Company or group" className="field" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        <input id="b-org" name="organization" aria-label="Company or group" className="field" list="b-org-list" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        <datalist id="b-org-list">{(f.companies ?? []).map((c) => <option key={c.name} value={c.name} />)}</datalist>
       </Card>
       <Card icon={Users} title="How many people?">
         <div className="grid grid-cols-2 gap-3">

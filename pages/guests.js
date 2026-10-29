@@ -12,6 +12,7 @@ import { DOCK_GRID } from '../components/Dock';
 import FilterSortPanel from '../components/bookings/FilterSortPanel';
 import GuestRow, { GUEST_COLUMNS } from '../components/guests/GuestRow';
 import GuestSheet from '../components/guests/GuestSheet';
+import CompanyList from '../components/guests/CompanyList';
 import DuplicatesPanel from '../components/guests/DuplicatesPanel';
 import MergeSheet from '../components/guests/MergeSheet';
 import { useApi } from '../lib/useApi';
@@ -35,15 +36,16 @@ const NATURAL_DIR = { name: 'asc', stays: 'desc', recent: 'desc' };
 //   from/to: stayed between these days    org: organization contains    contact: phone | email | both | any | none
 //   smin/smax: how many stays    cols: the columns switched OFF, separated by commas    dens: compact (empty = roomy)
 const URL_DEFAULTS = {
-  sort: 'name', dir: '', sort2: '', dir2: '', room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '', cols: '', dens: '',
+  tab: 'guests', sort: 'name', dir: '', sort2: '', dir2: '', room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '', cols: '', dens: '',
 };
+const TABS = [['guests', 'Guests'], ['companies', 'Companies']];
 const CLEAR_FILTERS = { room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '' };
 
 export default function Guests() {
   const { settings } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
-  const { sort, dir: dirParam, sort2, dir2, room, floor, from, to, org, contact, smin, smax, cols, dens } = values;
+  const { tab, sort, dir: dirParam, sort2, dir2, room, floor, from, to, org, contact, smin, smax, cols, dens } = values;
   const { q, setQ, search, ready } = useUrlSearch();
   const [dockOpen, setDockOpen] = useStoredState('pulse.guestFiltersOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   const [open, setOpen] = useState(null); // guest id, or 'new'
@@ -161,7 +163,7 @@ export default function Guests() {
   return (
     <Layout title="Guests">
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
-      <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
+      <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <h1 className="t-display">Guests</h1>
@@ -170,6 +172,13 @@ export default function Guests() {
             </button>
           </div>
 
+          <div role="tablist" aria-label="Guests or companies" className="flex gap-2">
+            {TABS.map(([key, label]) => (
+              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setParams({ tab: key })} className={`btn ${tab === key ? 'btn-primary' : ''}`}>{label}</button>
+            ))}
+          </div>
+          {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
+          {tab === 'guests' && <>
           <SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
@@ -201,9 +210,10 @@ export default function Guests() {
               </ul>
             </>
           )}
+          </>}
         </div>
 
-        {wide && <FilterDock wide open={dockOpen} onToggle={setDockOpen}>{panel}</FilterDock>}
+        {wide && tab === 'guests' && <FilterDock wide open={dockOpen} onToggle={setDockOpen}>{panel}</FilterDock>}
       </div>
 
       {open && <GuestSheet id={open} onClose={() => setOpen(null)} onChanged={() => { list.reload(); dupes.reload(); }} />}
