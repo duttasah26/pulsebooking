@@ -34,7 +34,6 @@ const STAY_ROWS = [
 const TABS = [
   { id: 'look', label: 'Look and feel', Icon: Palette },
   { id: 'bookings', label: 'Bookings', Icon: Clock },
-  { id: 'calendar', label: 'Calendar', Icon: CalendarBlank },
   { id: 'rooms', label: 'Rooms', Icon: Bed },
   { id: 'account', label: 'Account', Icon: UserCircle },
 ];
@@ -277,30 +276,6 @@ export default function Settings() {
                 checked={settings.autoCheckout !== false}
                 onChange={(on) => apply({ autoCheckout: on }, on ? 'Automatic check-out is on' : 'Automatic check-out is off')}
               />
-            </Group>
-
-            )}
-
-            {tab === 'calendar' && (
-            <Group id="calendar" icon={SlidersHorizontal} title="Calendar" scope="Everyone" hint="What the calendar shows when you open it. You can still change it any time from the toolbar.">
-              <Setting label="Open the calendar with" hint="The view you see first.">
-                <Segmented
-                  legend="Opening view"
-                  legendHidden
-                  options={[['timeline', 'Timeline'], ['month', 'Month'], ['calendar', 'Occupancy'], ['day', 'Day']]}
-                  value={settings.defaultView}
-                  onChange={(v) => apply({ defaultView: v })}
-                />
-              </Setting>
-              <Setting label="Days in the timeline" hint="How many days fit across the Timeline when it opens. Automatic is 7 on a phone and 14 on a bigger screen.">
-                <Segmented
-                  legend="Days in the timeline"
-                  legendHidden
-                  options={[['auto', 'Automatic'], ['7', '7 days'], ['14', '14 days'], ['30', '30 days'], ['month', 'Whole month']]}
-                  value={settings.defaultSpan}
-                  onChange={(v) => apply({ defaultSpan: v })}
-                />
-              </Setting>
             </Group>
 
             )}

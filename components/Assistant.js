@@ -118,7 +118,7 @@ export default function Assistant() {
       <header className="flex min-h-14 items-center gap-2 border-b border-line py-2 pl-4 pr-2">
         <div className="min-w-0 flex-1">
           <h2 className="t-headline">Assistant</h2>
-          <p className="truncate t-footnote">Answers from your bookings. It changes nothing.</p>
+          <p className="truncate t-footnote">Answers from your bookings. It asks before it books or changes anything.</p>
         </div>
         {messages.length > 0 && (
           <button type="button" className="btn btn-quiet btn-icon" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">

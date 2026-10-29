@@ -117,7 +117,7 @@ export function useBookingForm({
     if (d.adults !== undefined) { adultsTouched.current = true; setAdults(d.adults); }
     if (d.children !== undefined) setChildren(d.children);
     if (d.notes) setNotes(d.notes);
-    if (d.color) setColor(d.color);
+    if (d.color) { colorTouched.current = true; setColor(d.color); }
     if (d.organization) { orgTouched.current = true; setOrganization(d.organization); }
     if (d.label) setLabel(d.label);
     if (d.guestChoice) setGuestChoice(d.guestChoice);
@@ -148,7 +148,7 @@ export function useBookingForm({
 
   // Companies already known, to suggest while typing the company. A company with a preset colour gives it to a new booking
   // until a colour is chosen by hand.
-  const companyList = useApi('/api/companies').data ?? [];
+  const companyList = useApi(edit ? null : '/api/companies').data ?? [];
   const colorTouched = useRef(edit);
   useEffect(() => {
     if (edit || colorTouched.current) return;

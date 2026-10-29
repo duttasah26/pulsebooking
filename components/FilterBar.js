@@ -44,8 +44,7 @@ function Pop({ button, children, open, onToggle, align = 'left' }) {
 
 const SEG = 'inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap bg-tint px-2.5 text-[0.9375rem] lg:min-h-8';
 
-function Chip({ field }) {
-  const [open, setOpen] = useState(false);
+function Chip({ field, open, setOpen }) {
   const { Icon } = field;
   return (
     <div className="flex items-stretch gap-px text-ink">
@@ -59,7 +58,7 @@ function Chip({ field }) {
         onToggle={setOpen}
         button={
           <button type="button" aria-expanded={open} aria-label={`${field.label} ${field.operator} ${field.value}. Change`} onClick={() => setOpen(!open)} className={`${SEG} font-semibold hover:bg-ink/10`}>
-            <span className="max-w-[14rem] truncate">{field.value}</span>
+            <span className="max-w-[14rem] truncate">{field.value || 'Any'}</span>
           </button>
         }
       >
@@ -75,8 +74,9 @@ function Chip({ field }) {
 export default function FilterBar({ fields, onClearAll, search }) {
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(null); // the key of the filter being added
-  const on = fields.filter((f) => f.on);
-  const off = fields.filter((f) => !f.on);
+  const [editing, setEditing] = useState(null); // the key of the chip whose pop-up is open: it stays while its value is emptied to retype
+  const on = fields.filter((f) => f.on || f.key === editing);
+  const off = fields.filter((f) => !on.includes(f));
   const field = off.find((f) => f.key === adding) ?? fields.find((f) => f.key === adding);
   const toggle = (next) => {
     setOpen(next);
@@ -123,7 +123,7 @@ export default function FilterBar({ fields, onClearAll, search }) {
       </div>
       {on.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          {on.map((f) => <Chip key={f.key} field={f} />)}
+          {on.map((f) => <Chip key={f.key} field={f} open={editing === f.key} setOpen={(next) => setEditing(next ? f.key : null)} />)}
           {on.length > 1 && onClearAll && <button type="button" className="btn btn-quiet btn-sm" onClick={onClearAll}>Clear</button>}
         </div>
       )}
