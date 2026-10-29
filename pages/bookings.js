@@ -5,11 +5,11 @@ import Layout from '../components/Layout';
 import BookingSheet from '../components/booking/BookingSheet';
 import BookingRow, { BOOKING_COLUMNS } from '../components/bookings/BookingRow';
 import ViewsBar from '../components/ViewsBar';
+import FilterBar from '../components/FilterBar';
 import ViewOptions from '../components/ViewOptions';
-import { ChipGroup, FoldSection, NumberRange, Segmented } from '../components/FilterParts';
+import { ChipGroup, NumberRange, Segmented } from '../components/FilterParts';
 import FilterSortPanel from '../components/bookings/FilterSortPanel';
 import FilterDock from '../components/FilterDock';
-import FieldLabel from '../components/FieldLabel';
 import SearchBox from '../components/SearchBox';
 import { DOCK_GRID } from '../components/Dock';
 import { SORTS, TABS } from '../components/bookings/bookingTabs';
@@ -24,7 +24,7 @@ import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
 import { useSettings } from '../components/SettingsProvider';
 import { colorFor, roomShade, stayColor } from '../lib/colors';
-import { addDays, today } from '../lib/dates';
+import { addDays, fmtShort, today } from '../lib/dates';
 
 // The whole state of the screen lives in the URL, so it survives a reload and can be saved as a named view.
 //   holds '1' = show on-hold bookings too    dir '' = the filter's natural order    room, floor, status: several, separated by commas
@@ -161,64 +161,83 @@ export default function Bookings() {
     { key: 'long', label: 'Long stays', on: nmin === '7' && !nmax, onToggle: () => setParams(nmin === '7' && !nmax ? { nmin: '' } : { nmin: '7', nmax: '' }) },
     { key: 'nocontact', label: 'No phone or email', on: contact === 'no', onToggle: () => setParams({ contact: contact === 'no' ? '' : 'no' }) },
   ].filter(Boolean);
+  // The filters, as chips under the search box (see FilterBar). Each one reads and writes the same URL params as before.
+  const roomNumber = (id) => (rooms.data ?? []).find((r) => String(r.id) === id)?.number ?? id;
+  const statusLabel = (v) => (v === 'holds' ? 'On hold' : STATUS_OPTIONS.find(([x]) => x === v)?.[1] ?? v);
+  const statusValues = [...csvList(status), ...(holdsFilterable && showHolds ? ['holds'] : [])];
+  const words = (list) => (list.length > 2 ? `${list.slice(0, 2).join(', ')} +${list.length - 2}` : list.join(', '));
+  const nightsText = nmin && nmax ? `${nmin} to ${nmax}` : nmin ? `${nmin} or more` : `up to ${nmax}`;
+  const datesText = df && dt ? (df === dt ? fmtShort(df) : `${fmtShort(df)} to ${fmtShort(dt)}`) : df ? `from ${fmtShort(df)}` : `until ${fmtShort(dt)}`;
+  const filterFields = [
+    {
+      key: 'room', label: 'Room', Icon: Bed, on: Boolean(room), operator: csvList(room).length > 1 ? 'is any of' : 'is', value: words(csvList(room).map(roomNumber)),
+      clear: () => setParams({ room: '' }),
+      render: () => <ChipGroup legend="Rooms" legendHidden options={roomOptions} value={csvList(room)} onToggle={(id) => setParams({ room: toggleCsv(room, id) })} empty="No rooms yet." />,
+    },
+    floorKeys.length > 1 && {
+      key: 'floor', label: 'Floor', Icon: Stack, on: Boolean(floor), operator: csvList(floor).length > 1 ? 'is any of' : 'is', value: words(csvList(floor).map((f) => `Floor ${f}`)),
+      clear: () => setParams({ floor: '' }),
+      render: () => <ChipGroup legend="Floor" legendHidden options={floorKeys.map((f) => [f, `Floor ${f}`, shadeOf(`${f}01`)])} value={csvList(floor)} onToggle={(f) => setParams({ floor: toggleCsv(floor, f) })} />,
+    },
+    (statusFilterable || holdsFilterable) && {
+      key: 'status', label: 'Status', Icon: Tag, on: statusValues.length > 0, operator: statusValues.length > 1 ? 'is any of' : 'is', value: words(statusValues.map(statusLabel)),
+      clear: () => setParams({ status: '', holds: '' }),
+      render: () => (
+        <ChipGroup
+          legend="Status"
+          legendHidden
+          options={[
+            ...(statusFilterable ? STATUS_OPTIONS.filter(([v]) => v !== 'on_hold').map(([v, l]) => [v, l, toneOf(colorFor({ status: v }, settings))]) : []),
+            ...(holdsFilterable ? [['holds', 'On hold', toneOf(colorFor({ status: 'on_hold' }, settings))]] : []),
+          ]}
+          value={statusValues}
+          onToggle={(v) => (v === 'holds' ? setParams({ holds: showHolds ? '' : '1' }) : setParams({ status: toggleCsv(status, v) }))}
+        />
+      ),
+    },
+    {
+      key: 'org', label: 'Organization', Icon: Buildings, on: Boolean(org), operator: 'contains', value: org,
+      clear: () => setParams({ org: '' }),
+      render: () => <input name="org" aria-label="Organization contains" className="field" value={org} onChange={(e) => setParams({ org: e.target.value })} autoComplete="off" placeholder="For example Infosys" autoFocus />,
+    },
+    {
+      key: 'contact', label: 'Contact', Icon: Phone, on: Boolean(contact), operator: 'is', value: contact === 'yes' ? 'Has contact' : 'None saved',
+      clear: () => setParams({ contact: '' }),
+      render: ({ close }) => (
+        <Segmented legend="Contact" legendHidden options={[['yes', 'Has contact'], ['no', 'None saved']]} value={contact} onChange={(v) => { setParams({ contact: v }); close(); }} />
+      ),
+    },
+    {
+      key: 'dates', label: rby === 'check_in' ? 'Arriving' : rby === 'check_out' ? 'Leaving' : 'Dates', Icon: CalendarBlank, on: Boolean(df || dt), operator: rby ? 'on' : 'staying', value: df || dt ? datesText : '',
+      clear: () => setParams({ rby: '', df: '', dt: '' }),
+      render: () => (
+        <div className="space-y-3">
+          <Segmented
+            legend="Dates"
+            legendHidden
+            options={[['', 'Staying'], ['check_in', 'Arriving', toneOf(stayColor('checkIn', settings))], ['check_out', 'Leaving', toneOf(stayColor('checkOut', settings))]]}
+            value={rby}
+            onChange={(v) => setParams({ rby: v })}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <input type="date" name="df" aria-label="From date" className="field min-w-0 px-2 text-sm" value={df} max={dt || undefined} onChange={(e) => setParams({ df: e.target.value })} />
+            <input type="date" name="dt" aria-label="Until date" className="field min-w-0 px-2 text-sm" value={dt} min={df || undefined} onChange={(e) => setParams({ dt: e.target.value })} />
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'nights', label: 'Nights', Icon: Hourglass, on: Boolean(nmin || nmax), operator: 'is', value: nmin || nmax ? nightsText : '',
+      clear: () => setParams({ nmin: '', nmax: '' }),
+      render: () => <NumberRange legend="Nights" icon={Hourglass} from={nmin} to={nmax} onFrom={(v) => setParams({ nmin: v })} onTo={(v) => setParams({ nmax: v })} unit="How long the stay is" />,
+    },
+  ].filter(Boolean);
   const panel = (
     <FilterSortPanel
       filters={TABS}
       filter={active.key}
       onFilter={(key) => setParams({ tab: key, dir: '' })}
       foldId="bookings"
-      extra={
-        <div className="space-y-2">
-          <FoldSection id="bookings-rooms" title="Rooms" icon={Bed} badge={csvList(room).length + csvList(floor).length}>
-            {floorKeys.length > 1 && (
-              <ChipGroup legend="Floor" icon={Stack} options={floorKeys.map((f) => [f, `Floor ${f}`, shadeOf(`${f}01`)])} value={csvList(floor)} onToggle={(f) => setParams({ floor: toggleCsv(floor, f) })} />
-            )}
-            <ChipGroup legend="Rooms" icon={Bed} options={roomOptions} value={csvList(room)} onToggle={(id) => setParams({ room: toggleCsv(room, id) })} empty="No rooms yet." />
-          </FoldSection>
-          {(statusFilterable || holdsFilterable) && (
-            <FoldSection id="bookings-status" title="Status" icon={Tag} badge={csvList(status).length + (holdsFilterable && showHolds ? 1 : 0)}>
-              <ChipGroup
-                legend="Status"
-                legendHidden
-                options={[
-                  ...(statusFilterable ? STATUS_OPTIONS.filter(([v]) => v !== 'on_hold').map(([v, l]) => [v, l, toneOf(colorFor({ status: v }, settings))]) : []),
-                  ...(holdsFilterable ? [['holds', 'On hold', toneOf(colorFor({ status: 'on_hold' }, settings))]] : []),
-                ]}
-                value={[...csvList(status), ...(showHolds ? ['holds'] : [])]}
-                onToggle={(v) => (v === 'holds' ? setParams({ holds: showHolds ? '' : '1' }) : setParams({ status: toggleCsv(status, v) }))}
-              />
-              {holdsFilterable && <p className="t-footnote">On hold bookings are tentative, so lists leave them out unless you switch On hold on.</p>}
-            </FoldSection>
-          )}
-          <FoldSection id="bookings-guest" title="Guest" icon={Buildings} badge={(org ? 1 : 0) + (contact ? 1 : 0)}>
-            <div>
-              <FieldLabel icon={Buildings} htmlFor="f-org">Organization contains</FieldLabel>
-              <input id="f-org" name="org" className="field" value={org} onChange={(e) => setParams({ org: e.target.value })} autoComplete="off" placeholder="For example Infosys" />
-            </div>
-            <Segmented
-              legend="Contact"
-              icon={Phone}
-              options={[['', 'Any'], ['yes', 'Has contact'], ['no', 'None saved']]}
-              value={contact}
-              onChange={(v) => setParams({ contact: v })}
-            />
-          </FoldSection>
-          <FoldSection id="bookings-dates" title="Dates and nights" icon={CalendarBlank} badge={(df || dt ? 1 : 0) + (nmin || nmax ? 1 : 0)}>
-            <Segmented
-              legend="Dates"
-              icon={CalendarBlank}
-              options={[['', 'Staying'], ['check_in', 'Arriving', toneOf(stayColor('checkIn', settings))], ['check_out', 'Leaving', toneOf(stayColor('checkOut', settings))]]}
-              value={rby}
-              onChange={(v) => setParams({ rby: v })}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <input type="date" name="df" aria-label="From date" className="field min-w-0 px-2 text-sm" value={df} max={dt || undefined} onChange={(e) => setParams({ df: e.target.value })} />
-              <input type="date" name="dt" aria-label="Until date" className="field min-w-0 px-2 text-sm" value={dt} min={df || undefined} onChange={(e) => setParams({ dt: e.target.value })} />
-            </div>
-            <NumberRange legend="Nights" icon={Hourglass} from={nmin} to={nmax} onFrom={(v) => setParams({ nmin: v })} onTo={(v) => setParams({ nmax: v })} unit="How long the stay is" />
-          </FoldSection>
-        </div>
-      }
       sorts={SORTS}
       sort={sort}
       onSort={(value) => setParams({ sort: value })}
@@ -257,6 +276,7 @@ export default function Bookings() {
 
           <SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
+          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} />
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
 
           {list.error && (

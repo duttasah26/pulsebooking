@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
 import Head from 'next/head';
-import FieldLabel from '../components/FieldLabel';
 import Layout from '../components/Layout';
 import FilterDock from '../components/FilterDock';
 import SearchBox from '../components/SearchBox';
 import ViewsBar from '../components/ViewsBar';
+import FilterBar from '../components/FilterBar';
 import ViewOptions from '../components/ViewOptions';
-import { ChipGroup, FoldSection, NumberRange, Segmented } from '../components/FilterParts';
+import { ChipGroup, NumberRange, Segmented } from '../components/FilterParts';
 import { DOCK_GRID } from '../components/Dock';
 import FilterSortPanel from '../components/bookings/FilterSortPanel';
 import GuestRow, { GUEST_COLUMNS } from '../components/guests/GuestRow';
@@ -22,7 +22,7 @@ import { useQueryParams } from '../lib/useQueryState';
 import { useStoredState } from '../lib/useStoredState';
 import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
-import { addDays, monthStart, today } from '../lib/dates';
+import { addDays, fmtShort, monthStart, today } from '../lib/dates';
 import { useSettings } from '../components/SettingsProvider';
 import { roomShade } from '../lib/colors';
 
@@ -99,44 +99,54 @@ export default function Guests() {
     { key: 'phone', label: 'Has a phone', on: contact === 'phone', onToggle: () => setParams({ contact: contact === 'phone' ? '' : 'phone' }) },
     { key: 'nocontact', label: 'No phone or email', on: contact === 'none', onToggle: () => setParams({ contact: contact === 'none' ? '' : 'none' }) },
   ];
+  // The filters, as chips under the search box (see FilterBar). Each one reads and writes the same URL params as before.
+  const roomNumber = (id) => (rooms.data ?? []).find((r) => String(r.id) === id)?.number ?? id;
+  const words = (list) => (list.length > 2 ? `${list.slice(0, 2).join(', ')} +${list.length - 2}` : list.join(', '));
+  const CONTACT = { phone: 'Has a phone', email: 'Has an email', both: 'Phone and email', none: 'No phone or email', any: 'Any contact' };
+  const staysText = smin && smax ? `${smin} to ${smax}` : smin ? `${smin} or more` : `up to ${smax}`;
+  const datesText = from && to ? (from === to ? fmtShort(from) : `${fmtShort(from)} to ${fmtShort(to)}`) : from ? `from ${fmtShort(from)}` : `until ${fmtShort(to)}`;
+  const filterFields = [
+    {
+      key: 'room', label: 'Stayed in', Icon: Bed, on: Boolean(room), operator: csvList(room).length > 1 ? 'is any of' : 'is', value: words(csvList(room).map(roomNumber)),
+      clear: () => setParams({ room: '' }),
+      render: () => <ChipGroup legend="Rooms" legendHidden options={roomOptions} value={csvList(room)} onToggle={(id) => setParams({ room: toggleCsv(room, id) })} empty="No rooms yet." />,
+    },
+    floorKeys.length > 1 && {
+      key: 'floor', label: 'Floor', Icon: Stack, on: Boolean(floor), operator: csvList(floor).length > 1 ? 'is any of' : 'is', value: words(csvList(floor).map((f) => `Floor ${f}`)),
+      clear: () => setParams({ floor: '' }),
+      render: () => <ChipGroup legend="Floor" legendHidden options={floorKeys.map((f) => [f, `Floor ${f}`, roomShade({ number: `${f}01` }, settings)])} value={csvList(floor)} onToggle={(f) => setParams({ floor: toggleCsv(floor, f) })} />,
+    },
+    {
+      key: 'dates', label: 'Stayed', Icon: CalendarBlank, on: Boolean(from || to), operator: 'between', value: from || to ? datesText : '',
+      clear: () => setParams({ from: '', to: '' }),
+      render: () => (
+        <div className="grid grid-cols-2 gap-2">
+          <input type="date" name="from" aria-label="Stayed from" className="field min-w-0 px-2 text-sm" value={from} max={to || undefined} onChange={(e) => setParams({ from: e.target.value })} />
+          <input type="date" name="to" aria-label="Stayed until" className="field min-w-0 px-2 text-sm" value={to} min={from || undefined} onChange={(e) => setParams({ to: e.target.value })} />
+        </div>
+      ),
+    },
+    {
+      key: 'contact', label: 'Contact', Icon: Phone, on: Boolean(contact), operator: 'is', value: CONTACT[contact] ?? contact,
+      clear: () => setParams({ contact: '' }),
+      render: ({ close }) => (
+        <Segmented legend="Contact saved" legendHidden options={[['phone', 'Phone'], ['email', 'Email'], ['both', 'Both'], ['none', 'None']]} value={contact} onChange={(v) => { setParams({ contact: v }); close(); }} />
+      ),
+    },
+    {
+      key: 'org', label: 'Organization', Icon: Buildings, on: Boolean(org), operator: 'contains', value: org,
+      clear: () => setParams({ org: '' }),
+      render: () => <input name="org" aria-label="Organization contains" className="field" value={org} onChange={(e) => setParams({ org: e.target.value })} autoComplete="off" placeholder="For example Infosys" autoFocus />,
+    },
+    {
+      key: 'stays', label: 'Stays', Icon: Hash, on: Boolean(smin || smax), operator: 'is', value: smin || smax ? staysText : '',
+      clear: () => setParams({ smin: '', smax: '' }),
+      render: () => <NumberRange legend="Stays" icon={Hash} from={smin} to={smax} onFrom={(v) => setParams({ smin: v })} onTo={(v) => setParams({ smax: v })} unit="For example at least 3 to find regulars" />,
+    },
+  ].filter(Boolean);
   const panel = (
     <FilterSortPanel
       foldId="guests"
-      extra={
-        <div className="space-y-2">
-          <FoldSection id="guests-rooms" title="Stayed in" icon={Bed} badge={csvList(room).length + csvList(floor).length}>
-            {floorKeys.length > 1 && (
-              <ChipGroup legend="Floor" icon={Stack} options={floorKeys.map((f) => [f, `Floor ${f}`, roomShade({ number: `${f}01` }, settings)])} value={csvList(floor)} onToggle={(f) => setParams({ floor: toggleCsv(floor, f) })} />
-            )}
-            <ChipGroup legend="Rooms" icon={Bed} options={roomOptions} value={csvList(room)} onToggle={(id) => setParams({ room: toggleCsv(room, id) })} empty="No rooms yet." />
-          </FoldSection>
-          <FoldSection id="guests-dates" title="Stayed between" icon={CalendarBlank} badge={from || to ? 1 : 0}>
-            <div>
-              <FieldLabel icon={CalendarBlank} as="span">Any stay overlapping these days</FieldLabel>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="date" name="from" aria-label="Stayed from" className="field min-w-0 px-2 text-sm" value={from} max={to || undefined} onChange={(e) => setParams({ from: e.target.value })} />
-                <input type="date" name="to" aria-label="Stayed until" className="field min-w-0 px-2 text-sm" value={to} min={from || undefined} onChange={(e) => setParams({ to: e.target.value })} />
-              </div>
-            </div>
-          </FoldSection>
-          <FoldSection id="guests-contact" title="Contact and organization" icon={Phone} badge={(org ? 1 : 0) + (contact ? 1 : 0)}>
-            <Segmented
-              legend="Contact saved"
-              icon={Phone}
-              options={[['', 'Any'], ['phone', 'Phone'], ['email', 'Email'], ['both', 'Both'], ['none', 'None']]}
-              value={contact}
-              onChange={(v) => setParams({ contact: v })}
-            />
-            <div>
-              <FieldLabel icon={Buildings} htmlFor="g-org">Organization contains</FieldLabel>
-              <input id="g-org" name="org" className="field" value={org} onChange={(e) => setParams({ org: e.target.value })} autoComplete="off" placeholder="For example Infosys" />
-            </div>
-          </FoldSection>
-          <FoldSection id="guests-stays" title="Number of stays" icon={Hash} badge={smin || smax ? 1 : 0}>
-            <NumberRange legend="Stays" icon={Hash} from={smin} to={smax} onFrom={(v) => setParams({ smin: v })} onTo={(v) => setParams({ smax: v })} unit="For example at least 3 to find regulars" />
-          </FoldSection>
-        </div>
-      }
       sorts={SORTS}
       sort={sort}
       onSort={(value) => setParams({ sort: value, dir: '' })}
@@ -183,6 +193,7 @@ export default function Guests() {
           {tab === 'guests' && <>
           <SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
+          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} />
           <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
