@@ -44,7 +44,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
               type="button"
               aria-pressed={f.on}
               onClick={f.onToggle}
-              className={`btn shrink-0 ${f.on ? 'btn-on' : ''}`}
+              className={`btn shrink-0 ${f.on ? (f.tone ? 'font-semibold' : 'btn-on') : ''}`}
               style={toneStyle(f.on, f.tone)}
             >
               <Mark on={f.on} tone={f.tone} />
