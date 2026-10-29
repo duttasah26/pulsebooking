@@ -24,16 +24,28 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
   // button under the pointer or keyboard focus. On a phone held sideways the name stays under the symbol, as there is no hover.
   const v = touch ? { vertical: true } : { vertical: true, side: true };
   const nav = useRef(null);
-  const [tip, setTip] = useState(null); // { label, key, y, x }
+  // The label keeps its last place when it fades out, so it never travels from the top of the screen: it appears right beside the
+  // button (fading in), and only slides when it moves from one button to the next.
+  const [tip, setTip] = useState(null); // { label, key, tone, y, x }
+  const [on, setOn] = useState(false);
+  const wasOn = useRef(false);
+  const [glide, setGlide] = useState(false);
+  const hide = () => {
+    wasOn.current = false;
+    setOn(false);
+  };
   const show = (e) => {
     const b = e.target.closest?.('button[data-tip]');
-    if (!b || !nav.current) return setTip(null);
+    if (!b || !nav.current) return hide();
     const r = b.getBoundingClientRect();
+    setGlide(wasOn.current);
+    wasOn.current = true;
+    setOn(true);
     setTip({ label: b.dataset.tip, key: b.dataset.key, tone: b.dataset.tone, y: r.top + r.height / 2, x: nav.current.getBoundingClientRect().right + 10 });
   };
   return (
     <>
-    <nav ref={nav} onMouseOver={show} onFocus={show} onMouseLeave={() => setTip(null)} onBlur={() => setTip(null)} onScroll={() => setTip(null)} aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1.5 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
+    <nav ref={nav} onMouseOver={show} onFocus={show} onMouseLeave={hide} onBlur={hide} onScroll={hide} aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1.5 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
       {/* Book: start a booking, or reserve nights. */}
       {onNew && (
         <ToolButton {...v} keyHint="N" tip="New Booking" icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />
@@ -98,9 +110,9 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
       <div
         aria-hidden="true"
         style={{
-          position: 'fixed', left: tip?.x ?? -999, top: 0, opacity: tip ? 1 : 0,
+          position: 'fixed', left: tip?.x ?? -999, top: 0, opacity: on ? 1 : 0,
           transform: `translateY(${(tip?.y ?? 0) - 18}px)`,
-          transition: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 140ms ease-out',
+          transition: `${glide ? 'transform 160ms cubic-bezier(0.22, 1, 0.36, 1), ' : ''}opacity 120ms ease-out`,
         }}
         className={`pointer-events-none z-30 flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-1.5 text-[0.9375rem] font-semibold shadow-lg ${TIP[tip?.tone] ?? TIP.ink}`}
       >
