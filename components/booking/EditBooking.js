@@ -138,8 +138,8 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         <DateRangePicker checkIn={f.checkIn} checkOut={f.checkOut} onChange={f.setDates} isBusy={(d) => Boolean(f.nightBusy(d))} />
       </Card>
       <MomentPair>
-        <Moment icon={SignIn} label="Check-in" id="b-in" time={f.checkInTime} onTime={f.setCheckInTime} />
-        <Moment icon={SignOut} label="Check-out" id="b-out" time={f.checkOutTime} onTime={f.setCheckOutTime} />
+        <Moment icon={SignIn} tone="text-accent-text" label="Check-in" id="b-in" time={f.checkInTime} onTime={f.setCheckInTime} />
+        <Moment icon={SignOut} tone="text-danger" label="Check-out" id="b-out" time={f.checkOutTime} onTime={f.setCheckOutTime} />
       </MomentPair>
 
       <MoreOptions f={f} hideStatus hideParty hideColor />

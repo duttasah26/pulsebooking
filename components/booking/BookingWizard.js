@@ -363,8 +363,8 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         <div>
           {allIds.length > 1 && <p className="mb-1 text-base font-medium">{forAll ? 'Times for all rooms' : `Times for Room ${numberOf(activeId)}`}</p>}
           <MomentPair>
-            <Moment icon={SignIn} label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
-            <Moment icon={SignOut} label="Check-out" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
+            <Moment icon={SignIn} tone="text-accent-text" label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
+            <Moment icon={SignOut} tone="text-danger" label="Check-out" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
           </MomentPair>
         </div>
         {f.nights >= 3 && (
