@@ -12,6 +12,7 @@ import { DOCK_GRID } from '../components/Dock';
 import FilterSortPanel from '../components/bookings/FilterSortPanel';
 import GuestRow, { GUEST_COLUMNS } from '../components/guests/GuestRow';
 import GuestSheet from '../components/guests/GuestSheet';
+import { Swap } from '../components/Motion';
 import CompanyList from '../components/guests/CompanyList';
 import DuplicatesPanel from '../components/guests/DuplicatesPanel';
 import MergeSheet from '../components/guests/MergeSheet';
@@ -172,11 +173,12 @@ export default function Guests() {
             </button>
           </div>
 
-          <div role="tablist" aria-label="Guests or companies" className="flex gap-2">
+          <div role="tablist" aria-label="Guests or companies" className="seg">
             {TABS.map(([key, label]) => (
-              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setParams({ tab: key })} className={`btn ${tab === key ? 'btn-primary' : ''}`}>{label}</button>
+              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
             ))}
           </div>
+          <Swap id={tab} className="space-y-4">
           {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
           {tab === 'guests' && <>
           <SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />
@@ -211,6 +213,7 @@ export default function Guests() {
             </>
           )}
           </>}
+          </Swap>
         </div>
 
         {wide && tab === 'guests' && <FilterDock wide open={dockOpen} onToggle={setDockOpen}>{panel}</FilterDock>}

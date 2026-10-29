@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Buildings, Users } from '@phosphor-icons/react';
+import { Row } from '../Motion';
 import SearchBox from '../SearchBox';
 import Sheet from '../Sheet';
 import ColorPicker from '../booking/ColorPicker';
@@ -39,10 +40,10 @@ export default function CompanyList({ onSearchGuests }) {
         </p>
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
-          {companies.map((c) => {
+          {companies.map((c, i) => {
             const tone = resolveColor(c.color);
             return (
-              <li key={c.name}>
+              <Row key={c.name} index={i}>
                 <button type="button" onClick={() => setOpen(c.name)} className="flex min-h-[4.5rem] w-full items-center gap-4 px-4 py-3 text-left hover:bg-surface-2 md:px-5">
                   <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-md border" style={tone ? { backgroundColor: tone.bg, borderColor: tone.border } : undefined}>
                     <Buildings size={20} />
@@ -54,7 +55,7 @@ export default function CompanyList({ onSearchGuests }) {
                     </span>
                   </span>
                 </button>
-              </li>
+              </Row>
             );
           })}
         </ul>
@@ -72,7 +73,7 @@ export default function CompanyList({ onSearchGuests }) {
               hint="Guests of this company, and new bookings for it, take this colour on the calendar."
             />
             <button type="button" className="btn btn-block" onClick={() => { onSearchGuests(company.name); setOpen(null); }}>
-              <Users size={18} aria-hidden="true" /> Show its guests
+              Show Its Guests
             </button>
           </div>
         </Sheet>
