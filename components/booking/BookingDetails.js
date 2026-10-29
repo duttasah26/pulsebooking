@@ -1,4 +1,4 @@
-import { Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash } from '@phosphor-icons/react';
+import { Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
@@ -8,6 +8,7 @@ import { useRemoveBooking } from './useRemoveBooking';
 import { formatTime } from '../TimeSelect';
 import { colorFor, roomShade } from '../../lib/colors';
 import { fmtBooked, fmtShort, nightsLabel } from '../../lib/dates';
+import { displayName } from '../../lib/staff';
 
 // One end of the stay: the date and the time, in large type. With no time of its own it shows the default time, marked.
 function Moment({ label, date, time, fallback }) {
@@ -42,6 +43,8 @@ export default function BookingDetails({
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
   const { settings } = useSettings();
   const c = colorFor(b, settings);
+  // Edited = changed more than a minute after it was made (a booking's updated_at starts out equal to created_at).
+  const edited = b.updated_at && b.created_at && new Date(b.updated_at) - new Date(b.created_at) > 60000;
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -94,7 +97,20 @@ export default function BookingDetails({
         <Line icon={Megaphone}>Booked via {b.channel}</Line>
         <Line icon={Receipt}>{b.rate_plan}</Line>
         {b.notes && <Line icon={Note}>{b.notes}</Line>}
-        {b.created_at && <Line icon={Clock}><span title={new Date(b.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}>Booked {fmtBooked(b.created_at)}</span></Line>}
+        {b.created_at && (
+          <Line icon={Clock}>
+            <span title={new Date(b.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}>
+              Booked {fmtBooked(b.created_at)}{b.created_by ? ` by ${displayName(b.created_by)}` : ''}
+            </span>
+          </Line>
+        )}
+        {edited && (
+          <Line icon={PencilSimple}>
+            <span title={new Date(b.updated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}>
+              Last edited {fmtBooked(b.updated_at)}{b.updated_by ? ` by ${displayName(b.updated_by)}` : ''}
+            </span>
+          </Line>
+        )}
       </ul>
 
       {/* One button to a line, full width, so the words always fit (the side panel is narrow). */}

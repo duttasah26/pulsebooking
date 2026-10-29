@@ -2,6 +2,7 @@ import { Buildings, Check, Clock, Phone, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
+import { displayName } from '../../lib/staff';
 import { fmtBooked, fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
 
 // The columns a view can show or hide. The guest's name is always there.
@@ -61,7 +62,7 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
               {b.created_at && !(b.status === 'on_hold' && onConfirm) && (
                 <span className="hidden min-w-0 items-center gap-1 lg:flex" title="When this booking was made">
                   <Clock size={14} aria-hidden="true" className="shrink-0" />
-                  <span className="truncate">Booked {fmtBooked(b.created_at)}</span>
+                  <span className="truncate">Booked {fmtBooked(b.created_at)}{b.created_by ? ` by ${displayName(b.created_by)}` : ''}</span>
                 </span>
               )}
             </span>

@@ -1,3 +1,4 @@
+import { displayName } from '../../lib/staff';
 import { useState } from 'react';
 import { Check, LockKey, SignOut, UserCircle, WarningCircle } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
@@ -52,7 +53,7 @@ export default function AccountPanel() {
           <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-lg bg-surface-2 text-3xl font-semibold text-ink/80">{me.loading ? '' : initial}</span>
           <div className="min-w-0 flex-1">
             <p className="text-base text-muted">Signed in as</p>
-            <p className="break-words text-2xl font-bold leading-tight">{me.loading ? '…' : name ?? 'Nobody'}</p>
+            <p className="break-words text-2xl font-bold leading-tight">{me.loading ? '…' : name ? displayName(name) : 'Nobody'}</p>
             {!me.loading && !name && <p className="text-base text-muted">Sign in is off on this computer.</p>}
           </div>
         </div>
