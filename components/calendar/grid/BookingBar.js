@@ -4,6 +4,7 @@ import { useSettings } from '../../SettingsProvider';
 import { colorFor, roomShade } from '../../../lib/colors';
 import { fmtShort } from '../../../lib/dates';
 import { packInfo } from './barInfo';
+import { LABEL, MONTH_HEAD } from './gridLayout';
 
 // One size observer for every bar on the calendar (a busy month has hundreds), not one each.
 const sizeWatchers = new WeakMap();
@@ -82,7 +83,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
 
-  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-hidden rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? 'text-sm' : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
+  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-clip rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? 'text-sm' : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
     hold ? 'border-dashed' : ''
   } ${
     g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''
@@ -108,6 +109,11 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     [rows, b, roomTone.fill, roomTone.edge, hold, size.w, size.h, beside],
   );
 
+  // The name stays in view: when a long booking runs past the edge of the screen (a stay from late October into November), its
+  // name slides along the bar to the edge of the visible part, beside the room labels (timeline) or under the room names (month).
+  // overflow-clip, not overflow-hidden, on the bar keeps this working: clip does not make the bar a scroll container of its own.
+  const pin = rows ? { left: LABEL + 6 } : { top: MONTH_HEAD + 6 };
+
   const content = (
     <>
       {picked && <MarchingDashes color={c.border} />}
@@ -122,11 +128,11 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         </span>
       )}
       {lines.length === 0 ? (
-        <span className={rows ? 'truncate' : 'line-clamp-6 min-w-0 whitespace-normal leading-tight hyphens-auto [overflow-wrap:anywhere]'}>
+        <span style={pin} className={`sticky ${rows ? 'truncate' : 'line-clamp-6 min-w-0 whitespace-normal leading-tight hyphens-auto [overflow-wrap:anywhere]'}`}>
           {b.name}
         </span>
       ) : (
-        <span className="flex min-w-0 flex-1 flex-col justify-center gap-px leading-4">
+        <span style={pin} className="sticky flex min-w-0 flex-col justify-center gap-px leading-4">
           <span className="truncate font-semibold">{b.name}</span>
           {lines.map((line) => (
             <span key={line.nodes[0].key} className="flex min-w-0 items-center gap-1 overflow-hidden font-normal">
