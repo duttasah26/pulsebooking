@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowUUpLeft, ArrowUUpRight, ChatCircleDots, CheckSquare, Clock, Cursor, Hand, Plus, Question } from '@phosphor-icons/react';
 import { OPEN_ASSISTANT } from '../Assistant';
 import ToolButton from './ToolButton';
@@ -12,16 +14,28 @@ import ToolButton from './ToolButton';
 // then Undo and Redo (zoom lives in the top toolbar, beside the month). The pane scrolls if the screen is too short for all of it.
 export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, onHelp }) {
   const openOn = !quickHold && !touchSelect && !hand && !drawing;
+  // With a pointer (touch is false) the tools are icons alone and their names slide in beside them: one label that glides to the
+  // button under the pointer or keyboard focus. On a phone held sideways the name stays under the symbol, as there is no hover.
+  const v = touch ? { vertical: true } : { vertical: true, side: true };
+  const nav = useRef(null);
+  const [tip, setTip] = useState(null); // { label, key, y, x }
+  const show = (e) => {
+    const b = e.target.closest?.('button[data-tip]');
+    if (!b || !nav.current) return setTip(null);
+    const r = b.getBoundingClientRect();
+    setTip({ label: b.dataset.tip, key: b.dataset.key, y: r.top + r.height / 2, x: nav.current.getBoundingClientRect().right + 10 });
+  };
   return (
-    <nav aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1.5 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
+    <>
+    <nav ref={nav} onMouseOver={show} onFocus={show} onMouseLeave={() => setTip(null)} onBlur={() => setTip(null)} onScroll={() => setTip(null)} aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1.5 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
       {/* Book: start a booking, or reserve nights. */}
       {onNew && (
-        <ToolButton vertical icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />
+        <ToolButton {...v} keyHint="N" icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />
       )}
       {canTool && (
         <>
           <ToolButton
-            vertical
+            {...v}
             icon={Clock}
             tone="amber"
             label="On Hold"
@@ -32,7 +46,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
           <hr className="mx-2 my-1 border-line" />
           {/* Look: open, pick, or move around. */}
           <ToolButton
-            vertical
+            {...v}
             icon={Cursor}
             tone="ink"
             label="Open"
@@ -40,14 +54,14 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
             on={openOn}
             onClick={onToggleMouse}
           />
-          <ToolButton vertical icon={CheckSquare} label="Select" title={touch ? 'Select: tap bookings to pick several, then delete them together' : 'Select: click bookings to pick several, no Ctrl needed. Move them, stretch them or delete them together'} on={touchSelect} onClick={onToggleSelect} />
-          <ToolButton vertical icon={Hand} label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
+          <ToolButton {...v} icon={CheckSquare} label="Select" title={touch ? 'Select: tap bookings to pick several, then delete them together' : 'Select: click bookings to pick several, no Ctrl needed. Move them, stretch them or delete them together'} on={touchSelect} onClick={onToggleSelect} />
+          <ToolButton {...v} icon={Hand} label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
           <hr className="mx-2 my-1 border-line" />
         </>
       )}
       {/* Fix: undo and redo. */}
       <ToolButton
-        vertical
+        {...v}
         icon={ArrowUUpLeft}
         label="Undo"
         title={history.canUndo ? `Undo: ${history.undoLabel} (Ctrl+Z)` : 'Nothing to undo'}
@@ -55,7 +69,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
         onClick={history.undo}
       />
       <ToolButton
-        vertical
+        {...v}
         icon={ArrowUUpRight}
         label="Redo"
         title={history.canRedo ? `Redo: ${history.redoLabel} (Ctrl+Shift+Z)` : 'Nothing to redo'}
@@ -63,10 +77,10 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
         onClick={history.redo}
       />
       <hr className="mx-2 my-1 border-line" />
-      {onHelp && <ToolButton vertical icon={Question} label="Help" title="How to use the calendar" onClick={onHelp} />}
+      {onHelp && <ToolButton {...v} icon={Question} label="Help" title="How to use the calendar" onClick={onHelp} />}
       {!touch && (
         <ToolButton
-          vertical
+          {...v}
           icon={ChatCircleDots}
           label="Ask"
           title="Ask the assistant about rooms, nights, guests and contacts"
@@ -74,5 +88,19 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
         />
       )}
     </nav>
+    {!touch && (
+      <motion.div
+        aria-hidden="true"
+        initial={false}
+        animate={{ opacity: tip ? 1 : 0, y: tip ? tip.y : 0 }}
+        transition={{ opacity: { duration: 0.14 }, y: { type: 'spring', stiffness: 650, damping: 44, mass: 0.7 } }}
+        style={{ position: 'fixed', left: tip?.x ?? -999, top: 0, translateY: '-50%' }}
+        className="pointer-events-none z-30 flex items-center gap-2 whitespace-nowrap rounded-md bg-ink px-3 py-1.5 text-[0.9375rem] font-semibold text-white shadow-lg"
+      >
+        {tip?.label}
+        {tip?.key && <kbd className="rounded border border-white/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}
+      </motion.div>
+    )}
+    </>
   );
 }
