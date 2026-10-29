@@ -143,6 +143,10 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
   })();
   const done = [!guestProblem, !stayProblem && !extraProblem, null]; // null: nothing is required on step 3
   const [hint, setHint] = useState('');
+  // A draft brought back after leaving the page already has its rooms and days: show them on the calendar again.
+  useEffect(() => {
+    if (f.roomIds.length && f.checkIn && f.checkOut) setReached((r) => Math.max(r, 1));
+  }, [f.roomIds.length, f.checkIn, f.checkOut]);
   const go = (i) => { setHint(''); setStep(i); setReached((r) => Math.max(r, i)); };
   // What is drawn on the calendar while New Booking is on. The first stay fills in the rooms and days. Another stay for the
   // same days adds its rooms; one for other days becomes a further stay in the same booking (listed in step 2, each editable, with an X).
