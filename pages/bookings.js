@@ -167,7 +167,7 @@ export default function Bookings() {
   const statusValues = [...csvList(status), ...(holdsFilterable && showHolds ? ['holds'] : [])];
   const words = (list) => (list.length > 2 ? `${list.slice(0, 2).join(', ')} +${list.length - 2}` : list.join(', '));
   const nightsText = nmin && nmax ? `${nmin} to ${nmax}` : nmin ? `${nmin} or more` : `up to ${nmax}`;
-  const datesText = df && dt ? (df === dt ? fmtShort(df) : `${fmtShort(df)} to ${fmtShort(dt)}`) : df ? `from ${fmtShort(df)}` : `until ${fmtShort(dt)}`;
+  const datesText = !df && !dt ? '' : df && dt ? (df === dt ? fmtShort(df) : `${fmtShort(df)} to ${fmtShort(dt)}`) : df ? `from ${fmtShort(df)}` : `until ${fmtShort(dt)}`;
   const filterFields = [
     {
       key: 'room', label: 'Room', Icon: Bed, on: Boolean(room), operator: csvList(room).length > 1 ? 'is any of' : 'is', value: words(csvList(room).map(roomNumber)),

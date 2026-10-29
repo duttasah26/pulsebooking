@@ -104,7 +104,7 @@ export default function Guests() {
   const words = (list) => (list.length > 2 ? `${list.slice(0, 2).join(', ')} +${list.length - 2}` : list.join(', '));
   const CONTACT = { phone: 'Has a phone', email: 'Has an email', both: 'Phone and email', none: 'No phone or email', any: 'Any contact' };
   const staysText = smin && smax ? `${smin} to ${smax}` : smin ? `${smin} or more` : `up to ${smax}`;
-  const datesText = from && to ? (from === to ? fmtShort(from) : `${fmtShort(from)} to ${fmtShort(to)}`) : from ? `from ${fmtShort(from)}` : `until ${fmtShort(to)}`;
+  const datesText = !from && !to ? '' : from && to ? (from === to ? fmtShort(from) : `${fmtShort(from)} to ${fmtShort(to)}`) : from ? `from ${fmtShort(from)}` : `until ${fmtShort(to)}`;
   const filterFields = [
     {
       key: 'room', label: 'Stayed in', Icon: Bed, on: Boolean(room), operator: csvList(room).length > 1 ? 'is any of' : 'is', value: words(csvList(room).map(roomNumber)),
