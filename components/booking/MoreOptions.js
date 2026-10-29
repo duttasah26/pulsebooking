@@ -39,7 +39,7 @@ export default function MoreOptions({ f, defaultOpen = false, hideParty = false,
         <Choice icon={Megaphone} id="b-channel" label="How did they book?" options={[...new Set([...CHANNELS, f.channel])].map((c) => [c, c])} value={f.channel} onChange={f.setChannel} />
         <Choice icon={Receipt} id="b-rate" label="Meals included" options={RATE_PLANS} value={f.ratePlan} onChange={f.setRatePlan} />
 
-        {!hideColor && <ColorPicker color={f.color} onChange={f.setColor} hint="Auto uses the guest's colour, else the status colour." />}
+        {!hideColor && <ColorPicker color={f.color} onChange={f.setColor} />}
 
         <div>
           <FieldLabel icon={Note} htmlFor="b-notes">Notes</FieldLabel>

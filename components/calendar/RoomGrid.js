@@ -34,7 +34,7 @@ const MAX_ROW_PX = 240;
 
 export default function RoomGrid({
   rooms, days, bookings, orientation, onCreate, onOpen, onDelete, onToggleRoom, activeIds, activeRoomIds, zoom = 1,
-  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft, extraReserve = 0, onBlank, spot = null,
+  holdEnabled = true, picked, onPick, onView, preview, visibleDays, onNeedMore, onShift, isBusy, pending, onPending, linkedFor, widthScale = 1, onWidthScale, homeKey, lead = 0, anchorDate, onNeedBack, onOpenGroup, tapToPick = false, touchUi = false, onZoom, pan = false, drawing = false, onRemoveDraft, extraReserve = 0, onBlank, spot = null, hideDone = false,
 }) {
   const rows = orientation === 'rows';
   const n = days.length;
@@ -354,6 +354,7 @@ export default function RoomGrid({
     const sorted = [...drawn].sort((x, y) => (x.check_in < y.check_in ? -1 : x.check_in > y.check_in ? 1 : x.id - y.id));
     for (const b of sorted) {
       if (b.status === 'cancelled') continue;
+      if (hideDone && b.status === 'checked_out') continue; // hidden bars still hold their nights (useOccupancy), so nothing can be drawn over them
       const r = roomIndex.get(b.room_id);
       const g = r === undefined ? null : barGeometry(
         { rows, start, n, cellH }, b.check_in, b.check_out,
@@ -362,7 +363,7 @@ export default function RoomGrid({
       if (g) out.push({ b, r, g });
     }
     return out;
-  }, [drawn, roomIndex, rows, start, n, cellH, defaultIn, defaultOut]);
+  }, [drawn, roomIndex, rows, start, n, cellH, defaultIn, defaultOut, hideDone]);
 
   // The booking being filled in (see BookingWizard) as a see-through bar in each chosen room.
   const ghosts = useMemo(() => {

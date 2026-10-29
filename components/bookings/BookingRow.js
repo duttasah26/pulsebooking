@@ -1,8 +1,8 @@
-import { Buildings, Check, Clock, Phone, X } from '@phosphor-icons/react';
+import { Buildings, Check, Phone, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
-import { fmtBooked, fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
+import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
 
 // The columns a view can show or hide. The guest's name is always there.
 export const BOOKING_COLUMNS = [
@@ -58,12 +58,6 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
                   <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
                 </span>
               )}
-              {b.created_at && !(b.status === 'on_hold' && onConfirm) && (
-                <span className="hidden min-w-0 items-center gap-1 lg:flex" title="When this booking was made">
-                  <Clock size={14} aria-hidden="true" className="shrink-0" />
-                  <span className="truncate">Booked {fmtBooked(b.created_at)}</span>
-                </span>
-              )}
             </span>
           )}
         </span>
@@ -76,8 +70,8 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
         {show('dates') && (
           <span className="col-span-2 flex min-w-0 items-start pl-5 text-[0.9375rem] md:col-span-1 md:pl-0">
             <span className="min-w-0">
-              <span className="font-semibold text-accent-text">{fmtShort(b.check_in)}{b.check_in_time ? ` ${b.check_in_time}` : ''}</span> to{' '}
-              <span className="font-semibold text-danger">{fmtShort(b.check_out)}{b.check_out_time ? ` ${b.check_out_time}` : ''}</span>
+              <span className="font-semibold text-accent-text">{fmtShort(b.check_in)}</span> to{' '}
+              <span className="font-semibold text-danger">{fmtShort(b.check_out)}</span>
               <span className="text-muted">, {nightsLabel(b.nights)}</span>
             </span>
           </span>

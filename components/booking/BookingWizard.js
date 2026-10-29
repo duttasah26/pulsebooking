@@ -143,6 +143,10 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
   })();
   const done = [!guestProblem, !stayProblem && !extraProblem, null]; // null: nothing is required on step 3
   const [hint, setHint] = useState('');
+  // A draft brought back after leaving the page already has its rooms and days: show them on the calendar again.
+  useEffect(() => {
+    if (f.roomIds.length && f.checkIn && f.checkOut) setReached((r) => Math.max(r, 1));
+  }, [f.roomIds.length, f.checkIn, f.checkOut]);
   const go = (i) => { setHint(''); setStep(i); setReached((r) => Math.max(r, i)); };
   // What is drawn on the calendar while New Booking is on. The first stay fills in the rooms and days. Another stay for the
   // same days adds its rooms; one for other days becomes a further stay in the same booking (listed in step 2, each editable, with an X).
@@ -191,7 +195,9 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
   const allIds = [...new Set([...f.roomIds, ...f.extraStays.map((x) => x.roomIds[0])])];
   const [chosenRoom, setChosenRoom] = useState(null);
   const activeId = allIds.includes(chosenRoom) ? chosenRoom : allIds[0];
-  const activeExtra = f.roomIds.includes(activeId) ? null : f.extraStays.find((x) => x.roomIds[0] === activeId) ?? null;
+  // With several rooms, the days and times apply to ALL of them (a group booking) until one room is picked to differ.
+  const forAll = allIds.length > 1 && !allIds.includes(chosenRoom);
+  const activeExtra = forAll || f.roomIds.includes(activeId) ? null : f.extraStays.find((x) => x.roomIds[0] === activeId) ?? null;
   const activeStay = activeExtra ?? { checkIn: f.checkIn, checkOut: f.checkOut };
   // Each room has its own arrival and leaving time too; a further stay with none of its own uses the first stay's.
   const timeIn = activeExtra ? activeExtra.checkInTime ?? f.checkInTime : f.checkInTime;
@@ -199,6 +205,10 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
   const numberOf = (id) => rooms.find((r) => r.id === id)?.number ?? '?';
   // The days of one room. A room that shared the first stay's days moves out into its own stay when its days change.
   const setRoomDates = (id, a, b) => {
+    if (forAll) {
+      f.setDates(a, b);
+      return f.setExtraStays((list) => list.map((x) => ({ ...x, checkIn: a, checkOut: b })));
+    }
     if (allIds.length === 0) return f.setDates(a, b); // no room chosen yet: these are just the days
     if (f.roomIds.includes(id)) {
       if (f.roomIds.length === 1) return f.setDates(a, b);
@@ -211,6 +221,11 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
   // The arrival or leaving time of one room: { checkInTime } or { checkOutTime }. Like the days, it moves the room out of
   // a shared stay when it differs.
   const setRoomTimes = (id, change) => {
+    if (forAll) {
+      if ('checkInTime' in change) f.setCheckInTime(change.checkInTime);
+      else f.setCheckOutTime(change.checkOutTime);
+      return f.setExtraStays((list) => list.map((x) => ({ ...x, ...change })));
+    }
     if (allIds.length === 0) return 'checkInTime' in change ? f.setCheckInTime(change.checkInTime) : f.setCheckOutTime(change.checkOutTime);
     if (f.roomIds.includes(id)) {
       if (f.roomIds.length === 1) return 'checkInTime' in change ? f.setCheckInTime(change.checkInTime) : f.setCheckOutTime(change.checkOutTime);
@@ -226,9 +241,10 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
       return setChosenRoom(id);
     }
     if (!allIds.includes(id)) {
-      if (f.roomIds.includes(activeId)) f.setRoomIds((ids) => [...ids, id]);
+      if (forAll || f.roomIds.includes(activeId)) f.setRoomIds((ids) => [...ids, id]);
       else f.setExtraStays((list) => [...list, { roomIds: [id], checkIn: activeStay.checkIn, checkOut: activeStay.checkOut }]);
-      return setChosenRoom(id);
+      if (allIds.length === 1) setChosenRoom(null); // two rooms now: the days are for both
+      return;
     }
     if (allIds.length === 1) return;
     if (f.roomIds.includes(id)) {
@@ -295,7 +311,8 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           <GuestPicker initial={f.initialGuest} onChange={f.setGuestChoice} onQuery={f.setTypedGuest} />
         </Card>
         <Card icon={Buildings} title="Company or group (optional)">
-          <input id="b-org" name="organization" aria-label="Company or group" className="field" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+          <input id="b-org" name="organization" aria-label="Company or group" className="field" list="b-org-list" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        <datalist id="b-org-list">{(f.companies ?? []).map((c) => <option key={c.name} value={c.name} />)}</datalist>
         </Card>
         <Card icon={Users} title="How many people?">
           <div className="grid grid-cols-2 gap-3">
@@ -305,7 +322,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           {allIds.length > 1 && <p className="text-base text-muted">One adult per room to start: {allIds.length} rooms, {allIds.length} guests. Change it if more are coming.</p>}
         </Card>
         <Card icon={Palette} title="Colour on the calendar (optional)">
-          <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} hint="Auto uses the guest's colour, else the status colour." />
+          <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} />
         </Card>
       </div>
 
@@ -319,15 +336,18 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <div role="group" aria-label="Choose the room these days are for" className="space-y-1">
               <p className="text-base font-medium">Days for</p>
               <div className="flex flex-wrap gap-1.5">
+                <button type="button" aria-pressed={forAll} onClick={() => setChosenRoom('all')} className={`btn px-3 font-semibold ${forAll ? 'ring-2 ring-ink ring-offset-2' : ''}`}>
+                  All rooms
+                </button>
                 {allIds.map((id) => {
                   const shade = roomShade({ number: numberOf(id) }, settings); // the room's floor colour, as on the calendar
                   return (
                     <button
                       key={id}
                       type="button"
-                      aria-pressed={id === activeId}
+                      aria-pressed={!forAll && id === activeId}
                       onClick={() => setChosenRoom(id)}
-                      className={`btn px-3 font-semibold ${id === activeId ? 'ring-2 ring-ink ring-offset-2' : ''}`}
+                      className={`btn px-3 font-semibold ${!forAll && id === activeId ? 'ring-2 ring-ink ring-offset-2' : ''}`}
                       style={{ backgroundColor: shade.fill, borderColor: shade.edge }}
                     >
                       Room <span className="font-mono">{numberOf(id)}</span>
@@ -341,14 +361,14 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             checkIn={activeStay.checkIn}
             checkOut={activeStay.checkOut}
             onChange={(a, b) => setRoomDates(activeId, a, b)}
-            isBusy={(d) => Boolean(rest.isBusy?.(activeId, d))}
+            isBusy={(d) => (forAll ? allIds : [activeId]).some((id) => rest.isBusy?.(id, d))}
           />
         </Card>
         <div>
-          {allIds.length > 1 && <p className="mb-1 text-base font-medium">Times for Room {numberOf(activeId)}</p>}
+          {allIds.length > 1 && <p className="mb-1 text-base font-medium">{forAll ? 'Times for all rooms' : `Times for Room ${numberOf(activeId)}`}</p>}
           <MomentPair>
-            <Moment icon={SignIn} label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
-            <Moment icon={SignOut} label="Check-out" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
+            <Moment icon={SignIn} tone="text-accent-text" label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
+            <Moment icon={SignOut} tone="text-danger" label="Check-out" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
           </MomentPair>
         </div>
         {f.nights >= 3 && (

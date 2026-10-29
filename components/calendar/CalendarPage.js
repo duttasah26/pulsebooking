@@ -23,6 +23,7 @@ import Head from 'next/head';
 import Presence from '../Presence';
 import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
+import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
@@ -71,6 +72,7 @@ export default function CalendarPage() {
   const [viewPicked, setViewPicked] = useState(false); // show the details of everything picked, side by side
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
+  const [showDone, setShowDone] = useStoredState('pulse.showCheckedOut', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') }); // show or hide stays that have checked out
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
 
   // Everything date-based is computed on the client only, so server and browser never disagree about "today".
@@ -270,6 +272,7 @@ export default function CalendarPage() {
   };
   // Forget the whole draft and empty the form (used when its only stay is removed).
   const dropDraft = () => {
+    clearBookingDraft();
     stopDrawing();
     setDraftKey((k) => k + 1);
   };
@@ -506,6 +509,8 @@ export default function CalendarPage() {
           span={span}
           title={monthAligned && shift === 0 ? fmtMonth(date) : calendarTitle(view, shownDate, span)}
           monthAligned={monthAligned}
+          showDone={showDone}
+          onToggleDone={() => setShowDone(!showDone)}
           onStep={(dir) => (monthAligned ? goMonth(dir) : set({ date: stepDate(view, shownDate, span, dir) }))}
           set={set}
           floorKeys={floorKeys}
@@ -602,6 +607,7 @@ export default function CalendarPage() {
                 widthScale={colScale}
                 homeKey={homeKey}
                 onWidthScale={setColScale}
+                  hideDone={!showDone}
                   isBusy={isBusy}
                   pending={pending}
                   onPending={holdPending}

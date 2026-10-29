@@ -1,11 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRemoveBooking } from './useRemoveBooking';
-import { api } from '../../lib/useApi';
+import { api, useApi } from '../../lib/useApi';
 import { useSettings } from '../SettingsProvider';
 import { shareOut } from '../../lib/party';
 import { addDays, diffDays } from '../../lib/dates';
 
 const NEVER_BUSY = () => false;
+
+// A new booking that was started and left unfilled is kept on this device, so changing page (or a reload) does not lose it.
+// It is cleared when the booking is saved or the draft is thrown away.
+const DRAFT = 'pulse.bookingDraft';
+export const clearBookingDraft = () => {
+  try {
+    localStorage.removeItem(DRAFT);
+  } catch {}
+};
+const readDraft = () => {
+  try {
+    return JSON.parse(localStorage.getItem(DRAFT));
+  } catch {
+    return null;
+  }
+};
 
 /*
   All the state and actions behind the booking form (the form components only draw it).
@@ -80,11 +96,66 @@ export function useBookingForm({
   const ignoreId = edit ? booking.id : null;
   const { remove, removing, removeError } = useRemoveBooking({ booking, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
 
+  // Create mode: pick up the draft left behind (once), then keep it up to date as the form changes.
+  const restored = useRef(edit);
+  const waitingFor = useRef(null); // the saved draft's text, until the form has taken it in (so the first, empty render does not erase it)
+  useEffect(() => {
+    if (restored.current) return;
+    const d = defaults?.roomIds?.length || defaults?.checkIn ? null : readDraft(); // a booking drawn on the grid starts fresh
+    restored.current = true;
+    if (!d) return;
+    waitingFor.current = JSON.stringify(d);
+    setTimeout(() => { waitingFor.current = null; }, 1500);
+    if (Array.isArray(d.roomIds)) setRoomIds(d.roomIds);
+    if (d.checkIn) setCheckIn(d.checkIn);
+    if (d.checkOut) setCheckOut(d.checkOut);
+    if (d.checkInTime !== undefined) { timesTouched.current = true; setCheckInTime(d.checkInTime); }
+    if (d.checkOutTime !== undefined) setCheckOutTime(d.checkOutTime);
+    if (d.status) setStatus(d.status);
+    if (d.channel) setChannel(d.channel);
+    if (d.ratePlan) setRatePlan(d.ratePlan);
+    if (d.adults !== undefined) { adultsTouched.current = true; setAdults(d.adults); }
+    if (d.children !== undefined) setChildren(d.children);
+    if (d.notes) setNotes(d.notes);
+    if (d.color) { colorTouched.current = true; setColor(d.color); }
+    if (d.organization) { orgTouched.current = true; setOrganization(d.organization); }
+    if (d.label) setLabel(d.label);
+    if (d.guestChoice) setGuestChoice(d.guestChoice);
+    if (d.typedGuest) setTypedGuest(d.typedGuest);
+    if (Array.isArray(d.extraStays)) setExtraStays(d.extraStays);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (edit || !restored.current) return;
+    const empty = !roomIds.length && !checkIn && !guestChoice && !typedGuest.trim() && !notes && !label && !extraStays.length;
+    const snapshot = JSON.stringify({ roomIds, checkIn, checkOut, checkInTime, checkOutTime, status, channel, ratePlan, adults, children, notes, color, organization, label, guestChoice, typedGuest, extraStays });
+    if (waitingFor.current) {
+      if (snapshot !== waitingFor.current) return;
+      waitingFor.current = null;
+    }
+    try {
+      if (empty) localStorage.removeItem(DRAFT);
+      else localStorage.setItem(DRAFT, snapshot);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomIds, checkIn, checkOut, checkInTime, checkOutTime, status, channel, ratePlan, adults, children, notes, color, organization, label, guestChoice, typedGuest, extraStays]);
+
   // Show the booking on the calendar grid while it is being filled in.
   useEffect(() => {
     if (onPreview && nights >= 1) onPreview({ roomIds, checkIn, checkOut, color });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomIds, checkIn, checkOut, color, nights]);
+
+  // Companies already known, to suggest while typing the company. A company with a preset colour gives it to a new booking
+  // until a colour is chosen by hand.
+  const companyList = useApi(edit ? null : '/api/companies').data ?? [];
+  const colorTouched = useRef(edit);
+  useEffect(() => {
+    if (edit || colorTouched.current) return;
+    const preset = companyList.find((c) => c.name.toLowerCase() === organization.trim().toLowerCase())?.color;
+    if (preset) setColor(preset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organization, companyList.length]);
 
   // A guest's usual organization fills the field until it is edited by hand.
   const guestOrg = guestChoice?.guest?.organization ?? guestChoice?.newGuest?.organization;
@@ -213,6 +284,7 @@ export function useBookingForm({
         };
         onSaved(away ? 'Booking created in two parts' : finalStatus === 'on_hold' ? 'Hold placed' : extraBodies.length ? `${made.length} bookings created` : roomIds.length > 1 ? `${roomIds.length} rooms booked` : 'Booking created', entry);
       }
+      if (!edit) clearBookingDraft();
       onDone();
     } catch (err) {
       setError(err.message);
@@ -229,7 +301,7 @@ export function useBookingForm({
     setCheckInTime: (v) => { timesTouched.current = true; setCheckInTime(v); },
     setCheckOutTime: (v) => { timesTouched.current = true; setCheckOutTime(v); },
     status, setStatus, channel, setChannel, ratePlan, setRatePlan, adults, children, setChildren,
-    notes, setNotes, color, setColor, organization, editOrganization, label, setLabel,
+    notes, setNotes, color, setColor: (v) => { colorTouched.current = true; setColor(v); }, companies: companyList, organization, editOrganization, label, setLabel,
     away, setAway, extraStays, setExtraStays, guestChoice, setGuestChoice, typedGuest, setTypedGuest, submit, remove,
   };
 }

@@ -3,24 +3,31 @@ import TimeSelect from '../TimeSelect';
 
 // The look shared by the new-booking form, the edit form and the booking details: plain sentence-case titles in dark ink,
 // one card per group of related fields (never a box around every field), and big controls that are easy to read and hit.
-// Titles are words alone; the `icon` props are accepted and not drawn.
-export const TITLE = 'block text-[1.0625rem] font-semibold leading-6 text-ink';
+// Card titles and the check-in / check-out ends carry a small icon, so the stacked cards of a form can be told apart at a glance.
+// Field labels and buttons stay words alone.
+export const TITLE = 'flex items-center gap-2 text-[1.0625rem] font-semibold leading-6 text-ink';
 
 // A group of related fields under one title, as a card.
-export function Card({ title, children }) {
+export function Card({ icon: Icon, title, children }) {
   return (
     <section className="card space-y-4">
-      <h3 className={TITLE}>{title}</h3>
+      <h3 className={TITLE}>
+        {Icon && <Icon size={20} aria-hidden="true" className="shrink-0 text-muted" />}
+        {title}
+      </h3>
       {children}
     </section>
   );
 }
 
 // One end of the stay (check-in or check-out): the title, the date (optional) and the time, as in the details.
-export function Moment({ label, id, date, onDate, min, time, onTime }) {
+export function Moment({ icon: Icon, tone, label, id, date, onDate, min, time, onTime }) {
   return (
     <div className="space-y-2 bg-surface p-4">
-      <label htmlFor={`${id}-${date === undefined ? 'time' : 'date'}`} className={TITLE}>{label}</label>
+      <label htmlFor={`${id}-${date === undefined ? 'time' : 'date'}`} className={TITLE}>
+        {Icon && <Icon size={20} aria-hidden="true" className={`shrink-0 ${tone ?? 'text-muted'}`} />}
+        {label}
+      </label>
       {date !== undefined && (
         <input id={`${id}-date`} name={`${id}-date`} type="date" className="field min-w-0 px-2 font-semibold [&::-webkit-calendar-picker-indicator]:ml-0 [&::-webkit-calendar-picker-indicator]:p-0" value={date} min={min} onChange={(e) => e.target.value && onDate(e.target.value)} />
       )}

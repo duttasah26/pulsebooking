@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
-import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
+import { Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
+import { useMotionBits } from '../../lib/useMotionBits';
 import FloorToggle from './FloorToggle';
 import { ZoomControl } from './ZoomBar';
 import RangePopover from './RangePopover';
@@ -46,11 +47,17 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
 // live in the pane on the left. A phone held sideways has no height to spare, so both rows become one: the second row
 // scrolls sideways beside the first.
 export default function CalendarToolbar({
-  view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor,
+  view, date, span, title, onStep, set, floorKeys, shownFloors, onToggleFloor, showDone = true, onToggleDone,
   monthAligned, onHome, onResetView, wide, phone = false, summary = null, canTool, quickHold, drawing, touchSelect, hand, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, zoom, onZoom, onNew,
 }) {
   const [rangeOpen, setRangeOpen] = useState(false);
   const swipe = useRef(null);
+  const bits = useMotionBits();
+  const stepDir = useRef(1); // which way the date was last stepped, so the heading can slide the same way
+  const step = (dir) => {
+    stepDir.current = dir;
+    onStep(dir);
+  };
   const onTouchStart = (e) => {
     const t = e.touches[0];
     swipe.current = { x: t.clientX, y: t.clientY };
@@ -61,7 +68,7 @@ export default function CalendarToolbar({
     if (!s) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - s.x;
-    if (Math.abs(dx) > 70 && Math.abs(t.clientY - s.y) < 40) onStep(dx < 0 ? 1 : -1); // left: later days, right: earlier days
+    if (Math.abs(dx) > 70 && Math.abs(t.clientY - s.y) < 40) step(dx < 0 ? 1 : -1); // left: later days, right: earlier days
   };
   const show = ({ date: d, span: n }) => {
     setRangeOpen(false);
@@ -78,11 +85,11 @@ export default function CalendarToolbar({
         onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
       >
         <div role="group" aria-label="Move through the days" className="flex shrink-0 items-center gap-1">
-          <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(-1)} aria-label="Previous">
+          <button type="button" className="btn btn-icon shrink-0" onClick={() => step(-1)} aria-label="Previous">
             <CaretLeft size={18} />
           </button>
           <button type="button" className="btn shrink-0 px-4 font-semibold" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
-          <button type="button" className="btn btn-icon shrink-0" onClick={() => onStep(1)} aria-label="Next">
+          <button type="button" className="btn btn-icon shrink-0" onClick={() => step(1)} aria-label="Next">
             <CaretRight size={18} />
           </button>
         </div>
@@ -107,7 +114,7 @@ export default function CalendarToolbar({
         )}
         <div className="flex min-w-0 flex-1 basis-48 items-center gap-2 max-md:basis-full md:mx-2 short:flex-none short:basis-auto">
           <div className="min-w-0 flex-1">
-            <h1 className="min-w-0 text-[1.375rem] font-bold leading-tight tracking-[-0.015em] @[44rem]:text-[1.75rem] short:max-w-36 short:truncate short:text-base">{title}</h1>
+            <h1 className="min-w-0 text-[1.375rem] font-bold leading-tight tracking-[-0.015em] @[44rem]:text-[1.75rem] short:max-w-36 short:truncate short:text-base">{bits ? <bits.TitleSwap text={title} dir={stepDir.current} /> : title}</h1>
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
           </div>
         </div>
@@ -118,6 +125,14 @@ export default function CalendarToolbar({
       <div className="no-scrollbar flex flex-wrap items-center gap-2 max-md:flex-nowrap max-md:overflow-x-auto short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
+        {onToggleDone && (view === 'timeline' || view === 'month') && (
+          <div role="group" aria-label="Checked out stays" className="seg">
+            <button type="button" aria-pressed={showDone} onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className={`seg-item shrink-0 ${showDone ? '' : 'text-muted'}`}>
+              {showDone ? <Eye size={18} aria-hidden="true" /> : <EyeSlash size={18} aria-hidden="true" />}
+              Checked out
+            </button>
+          </div>
+        )}
         {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
         {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
       </div>

@@ -111,7 +111,6 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
             id="g-color-label"
             label="Guest colour (optional)"
             autoLabel="None"
-            hint="This guest's bookings use this colour on the calendar. None uses the status colour."
             color={form.color}
             onChange={(color) => setForm({ ...form, color })}
           />

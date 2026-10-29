@@ -148,7 +148,8 @@ Status is told by shape too: on hold is dashed and hatched.
   on Hold everywhere). An ellipsis only when the button opens more choices (Go to…, Custom range…).
 - **Icons**: Phosphor only, **bold** by default (its stroke matches Atkinson), **fill** for the chosen tab or tool. A
   text button carries no icon unless the icon carries meaning: add (plus), delete (trash), hold (clock), help (question).
-  Cancel, Save, Confirm, Back, Retry, Edit and View are words alone. Field labels and card titles are words alone.
+  Cancel, Save, Confirm, Back, Retry, Edit and View are words alone. Field labels are words alone. Card titles in the booking
+  forms carry a small muted icon, and Check-in and Check-out carry their symbols (green, brick), so stacked cards can be told apart.
 - **Segmented control** (`seg` and `seg-item`): a tinted track with the chosen segment raised in white. Used for the main
   navigation, the calendar views, floors, the booking steps and sort direction.
 - **Navigation**: Calendar, Bookings and Guests as a segmented control in the white header, with words always visible;

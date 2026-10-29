@@ -113,7 +113,8 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         )}
       </Card>
       <Card icon={Buildings} title="Company or group (optional)">
-        <input id="b-org" name="organization" aria-label="Company or group" className="field" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        <input id="b-org" name="organization" aria-label="Company or group" className="field" list="b-org-list" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
+        <datalist id="b-org-list">{(f.companies ?? []).map((c) => <option key={c.name} value={c.name} />)}</datalist>
       </Card>
       <Card icon={Users} title="How many people?">
         <div className="grid grid-cols-2 gap-3">
@@ -123,7 +124,7 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         {several && <p className="text-base text-muted">The total for all {f.targets.length} rooms, shared out between them.</p>}
       </Card>
       <Card icon={Palette} title="Colour on the calendar (optional)">
-        <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} hint="Auto uses the guest's colour, else the status colour." />
+        <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} />
       </Card>
 
       {several ? (
@@ -137,8 +138,8 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         <DateRangePicker checkIn={f.checkIn} checkOut={f.checkOut} onChange={f.setDates} isBusy={(d) => Boolean(f.nightBusy(d))} />
       </Card>
       <MomentPair>
-        <Moment icon={SignIn} label="Check-in" id="b-in" time={f.checkInTime} onTime={f.setCheckInTime} />
-        <Moment icon={SignOut} label="Check-out" id="b-out" time={f.checkOutTime} onTime={f.setCheckOutTime} />
+        <Moment icon={SignIn} tone="text-accent-text" label="Check-in" id="b-in" time={f.checkInTime} onTime={f.setCheckInTime} />
+        <Moment icon={SignOut} tone="text-danger" label="Check-out" id="b-out" time={f.checkOutTime} onTime={f.setCheckOutTime} />
       </MomentPair>
 
       <MoreOptions f={f} hideStatus hideParty hideColor />
