@@ -23,6 +23,7 @@ import Head from 'next/head';
 import Presence from '../Presence';
 import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
+import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
@@ -270,6 +271,7 @@ export default function CalendarPage() {
   };
   // Forget the whole draft and empty the form (used when its only stay is removed).
   const dropDraft = () => {
+    clearBookingDraft();
     stopDrawing();
     setDraftKey((k) => k + 1);
   };
