@@ -124,7 +124,7 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         {several && <p className="text-base text-muted">The total for all {f.targets.length} rooms, shared out between them.</p>}
       </Card>
       <Card icon={Palette} title="Colour on the calendar (optional)">
-        <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} hint="Auto uses the guest's colour, else the status colour." />
+        <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} />
       </Card>
 
       {several ? (

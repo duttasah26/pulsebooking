@@ -87,11 +87,9 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
           id="ng-color-label"
           label="Guest colour (optional)"
           autoLabel="None"
-          hint="Their bookings use this colour on the calendar. None uses the status colour."
           color={draft.color}
           onChange={(color) => setDraft({ ...draft, color })}
         />
-        <p className="t-footnote">Phone and email are optional. Add one if two guests share a name.</p>
         <button type="button" className="btn" onClick={() => { setAdding(false); setQuery(draft.name); }}>
           Back to Search
         </button>

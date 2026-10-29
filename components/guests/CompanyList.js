@@ -70,7 +70,6 @@ export default function CompanyList({ onSearchGuests }) {
               autoLabel="None"
               color={company.color}
               onChange={setColor}
-              hint="Guests of this company, and new bookings for it, take this colour on the calendar."
             />
             <button type="button" className="btn btn-block" onClick={() => { onSearchGuests(company.name); setOpen(null); }}>
               Show Its Guests

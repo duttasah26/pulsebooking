@@ -318,7 +318,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           {allIds.length > 1 && <p className="text-base text-muted">One adult per room to start: {allIds.length} rooms, {allIds.length} guests. Change it if more are coming.</p>}
         </Card>
         <Card icon={Palette} title="Colour on the calendar (optional)">
-          <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} hint="Auto uses the guest's colour, else the status colour." />
+          <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} />
         </Card>
       </div>
 
