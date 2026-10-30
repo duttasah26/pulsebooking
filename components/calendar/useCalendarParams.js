@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import { CalendarDots, GridFour, Rows, Sun } from '@phosphor-icons/react';
 import { daysInMonth, isDate, monthStart, today } from '../../lib/dates';
 
-// 'timeline' is the default: rooms down, dates across. 'month' flips it: rooms across, dates down.
+// 'month' is the default and comes first: rooms across, dates down. 'timeline' flips it: rooms down, dates across.
 export const VIEWS = [
-  { key: 'timeline', label: 'Timeline', Icon: Rows },
   { key: 'month', label: 'Month', Icon: GridFour },
+  { key: 'timeline', label: 'Timeline', Icon: Rows },
   { key: 'calendar', label: 'Occupancy', Icon: CalendarDots },
   { key: 'day', label: 'Day', Icon: Sun },
 ];
