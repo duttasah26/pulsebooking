@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import IndiaClock from './IndiaClock';
+import GlobalSearch from './GlobalSearch';
 import { OPEN_ASSISTANT } from './Assistant';
 import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, UserCircle, Users } from '@phosphor-icons/react';
 
@@ -66,6 +67,10 @@ export default function Layout({ title, wide = false, children }) {
               </Link>
             ))}
           </nav>
+
+          <div className="hidden min-w-0 flex-1 md:block short:hidden">
+            <GlobalSearch />
+          </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1">
             <IndiaClock />
