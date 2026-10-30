@@ -8,6 +8,9 @@
 // the booking bars themselves (see BookingBar), not here.
 export const NAV_WIDTH = 16;
 
+// Dragging the block scrolls at half the pace of the pointer (the ends, which change the row height, follow it one to one).
+const DRAG_PACE = 0.5;
+
 export default function RoomNavigator({ scrollRef, rooms, first, inView, width, height, minView, maxView, onView, rowPx }) {
   const n = rooms.length;
   const pct = (rows) => `${Math.max(0, Math.min(100, (rows / n) * 100))}%`;
@@ -23,7 +26,7 @@ export default function RoomNavigator({ scrollRef, rooms, first, inView, width, 
     const move = (ev) => {
       const d = (ev.clientY - y0) * perPx;
       if (mode === 'move') {
-        scrollRef.current.scrollTop = Math.max(0, (start.first + d) * rowPx);
+        scrollRef.current.scrollTop = Math.max(0, (start.first + d * DRAG_PACE) * rowPx);
       } else if (mode === 'bottom') {
         onView(clampView(start.inView + d), start.first);
       } else {
