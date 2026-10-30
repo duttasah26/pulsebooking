@@ -43,7 +43,7 @@
   --btn: rgb(38 31 28 / 0.11);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
   --btn-hover: rgb(38 31 28 / 0.16);
   --btn-press: rgb(38 31 28 / 0.22);
-  --danger-btn: #f4d8d2;
+  --danger-btn: #f8e7e3;
 }
 
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
@@ -226,8 +226,8 @@ body {
     @apply text-danger;
     background-color: var(--danger-btn);
   }
-  .btn-danger:hover, .btn-block-danger:hover { background-color: #eec6bd; }
-  .btn-danger:active, .btn-block-danger:active { background-color: #e7b4a9; }
+  .btn-danger:hover, .btn-block-danger:hover { background-color: #f2d6cf; }
+  .btn-danger:active, .btn-block-danger:active { background-color: #ecc5bc; }
   .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-btn); }
 
   .btn-hold, .btn-block-hold {
@@ -248,11 +248,6 @@ body {
   .btn-inverse.btn-quiet { background-color: transparent; }
   .btn-inverse.btn-quiet:hover { background-color: rgb(255 255 255 / 0.12); }
   .btn-inverse:focus-visible { outline-color: #ffffff; }
-  /* Delete on an ink bar: solid brick with white words, so it sits with the white-tint buttons beside it and still reads as leaving. */
-  .btn-inverse.btn-danger { @apply font-semibold text-white; background-color: #b5382a; }
-  .btn-inverse.btn-danger:hover { background-color: #c4432f; }
-  .btn-inverse.btn-danger:active { background-color: #a03022; }
-  .btn-inverse.btn-danger:disabled { background-color: rgb(255 255 255 / 0.18); }
 
   /* Forms keep 44px targets and 16px type on every screen. */
   .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
