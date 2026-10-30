@@ -35,7 +35,7 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
   return (
     <select aria-label="Days shown" className="field !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
       {SPANS.map((n) => <option key={n} value={n}>{n} days</option>)}
-      <option value="month">Month</option>
+      <option value="month">This month</option>
       {!preset && !monthAligned && <option value={span}>{span} days (custom)</option>}
       <option value="custom">Custom range…</option>
     </select>
@@ -127,9 +127,9 @@ export default function CalendarToolbar({
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {onToggleDone && (view === 'timeline' || view === 'month') && (
           <div role="group" aria-label="Checked out stays" className="seg">
-            <button type="button" aria-pressed={showDone} onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className={`seg-item shrink-0 ${showDone ? '' : 'text-muted'}`}>
-              {showDone ? <Eye size={18} aria-hidden="true" /> : <EyeSlash size={18} aria-hidden="true" />}
-              Checked out
+            <button type="button" onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="seg-item shrink-0">
+              {showDone ? <EyeSlash size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+              {showDone ? 'Hide checked out' : 'Show checked out'}
             </button>
           </div>
         )}
