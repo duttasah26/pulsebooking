@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Sun, Trash, X } from '@phosphor-icons/react';
+import { Clock, Gauge, Trash, X } from '@phosphor-icons/react';
 import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
@@ -27,7 +27,7 @@ import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
-import TodayPanel from './TodayPanel';
+import OverviewPanel from './OverviewPanel';
 import { useBookingData } from './useBookingData';
 import { useHistory } from './useHistory';
 import { useHoldActions } from './useHoldActions';
@@ -675,14 +675,14 @@ export default function CalendarPage() {
 
         {wide && todayOpen && !formOpen && (
           <div className="absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full">
-            <TodayPanel bookings={bookingList} day={spot?.d} onOpen={(b) => { setTodayOpen(false); openEdit(b); }} onClose={() => setTodayOpen(false)} />
+            <OverviewPanel bookings={bookingList} roomCount={roomList.length} day={spot?.d} onOpen={(b) => { setTodayOpen(false); openEdit(b); }} onClose={() => setTodayOpen(false)} />
           </div>
         )}
         <BookingPanel
           renderSide={() => (
-            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Today: who arrives, leaves and stays" className="animate-fade flex h-28 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
-              <Sun size={18} aria-hidden="true" />
-              <span className="[writing-mode:vertical-rl]">Today</span>
+            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Overview: rooms in use, coming up, holds and today" className="animate-fade flex h-32 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
+              <Gauge size={18} aria-hidden="true" />
+              <span className="[writing-mode:vertical-rl]">Overview</span>
             </button>
           )}
           wide={wide}

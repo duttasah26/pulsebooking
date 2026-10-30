@@ -68,8 +68,8 @@ export default function Layout({ title, wide = false, children }) {
             ))}
           </nav>
 
-          {/* Bookings and Guests have their own search box, so the header one is left out there. */}
-          {pathname !== '/bookings' && pathname !== '/guests' && (
+          {/* The header search is on the calendar page only: Bookings and Guests have their own, and Settings has nothing to search. */}
+          {pathname === '/' && (
             <div className="hidden min-w-0 flex-1 md:block short:hidden">
               <GlobalSearch />
             </div>
