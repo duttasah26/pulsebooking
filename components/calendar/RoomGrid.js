@@ -230,6 +230,35 @@ export default function RoomGrid({
     [drawn, drawing, preview],
   );
   const { roomIndex, occupancy } = useOccupancy(rooms, withDraft, days);
+
+  // The mouse wheel scrolls the calendar gently. One click of the wheel moves the calendar a little (about a third of the usual
+  // distance), so it is easy to stop where you want. In the Timeline the days run across, so the wheel moves along the days (unless the
+  // rooms themselves scroll); in the Month view the days run down, so it moves down them. A trackpad, Shift, a sideways wheel and
+  // Ctrl (zoom) are left to the browser.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return undefined;
+    const PACE = 0.35;
+    const onWheel = (e) => {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.deltaX) return;
+      if (e.deltaMode === 0 && Math.abs(e.deltaY) < 50) return; // a trackpad glide, not a click of a wheel
+      const dy = (e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY) * PACE;
+      if (rows) {
+        if (el.scrollHeight > el.clientHeight + 2) return; // the rooms scroll too: leave the wheel to them
+        const room = el.scrollWidth - el.clientWidth - 1;
+        if ((dy < 0 && el.scrollLeft <= 0) || (dy > 0 && el.scrollLeft >= room)) return; // at the end: the page may scroll
+        e.preventDefault();
+        el.scrollLeft += dy;
+      } else {
+        const room = el.scrollHeight - el.clientHeight - 1;
+        if ((dy < 0 && el.scrollTop <= 0) || (dy > 0 && el.scrollTop >= room)) return;
+        e.preventDefault();
+        el.scrollTop += dy;
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [rows]);
   const selection = useGridSelection({ rooms, days, occupancy, onCreate });
   const { sel, summary, isFree, selected, cornerR, cornerI, roomCount, nightCount } = selection;
   // Timeline: every room is always shown (the page scrolls down), and only the dates scroll sideways. Its scrollbar sits
