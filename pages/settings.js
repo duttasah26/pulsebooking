@@ -141,7 +141,7 @@ export default function Settings() {
 
   return (
     <Layout title="Settings">
-      <div className="mx-auto max-w-5xl">
+      <div className="max-w-5xl">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <h1 className="t-display">Settings</h1>
           <p role="status" aria-live="polite" className="min-h-6 text-base font-semibold text-accent-text">{saved}</p>
@@ -165,7 +165,7 @@ export default function Settings() {
                   aria-selected={on}
                   aria-controls="settings-panel"
                   onClick={() => { setTab(id); setSaved(''); }}
-                  className={`btn shrink-0 justify-start gap-3 px-3 lg:min-h-11 lg:text-base ${on ? 'btn-on' : 'btn-quiet'}`}
+                  className={`btn shrink-0 justify-start gap-3 px-3 lg:min-h-9 ${on ? 'btn-on' : 'btn-quiet'}`}
                 >
                   <Icon size={18} weight={on ? 'fill' : 'bold'} aria-hidden="true" className="shrink-0" />
                   {label}
