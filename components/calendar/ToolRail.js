@@ -45,7 +45,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
   };
   return (
     <>
-    <nav ref={nav} onMouseOver={show} onFocus={show} onMouseLeave={hide} onBlur={hide} onScroll={hide} aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-1.5 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
+    <nav ref={nav} onMouseOver={show} onFocus={show} onMouseLeave={hide} onBlur={hide} onScroll={hide} aria-label="Tools" className="no-scrollbar sticky top-[4.75rem] flex max-h-[calc(100dvh-5.25rem)] flex-col gap-1 self-start overflow-y-auto rounded-lg border border-line bg-surface p-2 short:top-12 short:max-h-[calc(100dvh-3.5rem)]">
       {/* Book: start a booking, or reserve nights. */}
       {onNew && (
         <ToolButton {...v} keyHint="N" tip="New Booking" icon={Plus} tone="green" label="New" title="New Booking: open an empty form, then draw the stay on the calendar" on={drawing} onClick={onNew} />

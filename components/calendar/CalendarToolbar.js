@@ -76,7 +76,7 @@ export default function CalendarToolbar({
     set(n === 1 ? { date: d } : { date: d, span: n, view: 'timeline' }); // one day just jumps; more opens the timeline for those days
   };
   return (
-    <div className="space-y-3 short:flex short:items-center short:gap-1.5 short:space-y-0">
+    <div className="space-y-4 short:flex short:items-center short:gap-1.5 short:space-y-0">
       {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
       <div
         className="flex flex-wrap items-center gap-2 short:shrink-0 short:flex-nowrap"

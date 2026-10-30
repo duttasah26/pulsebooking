@@ -57,7 +57,7 @@ export default function Layout({ title, wide = false, children }) {
                 href={href}
                 aria-current={here === href ? 'page' : undefined}
                 title={label}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-[0.9375rem] transition-colors duration-150 short:px-2.5 ${
+                className={`inline-flex min-h-10 items-center gap-2 rounded-md px-3 lg:min-h-9 text-[0.9375rem] transition-colors duration-150 short:px-2.5 ${
                   here === href ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'
                 }`}
               >
@@ -90,7 +90,7 @@ export default function Layout({ title, wide = false, children }) {
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-28 pt-4 outline-none md:px-6 md:pb-8 md:pt-5 short:pb-3 short:pt-2`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-28 pt-4 outline-none md:px-6 md:pb-8 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
       {/* Phone tab bar: five places, a filled symbol and an emerald label for the one you are on. */}
       <nav
