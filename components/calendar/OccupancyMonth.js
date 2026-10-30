@@ -93,7 +93,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
     return () => window.removeEventListener('resize', measure);
   }, [rows, onDate]);
   // Three densities, by how tall a cell is.
-  const tight = cellH !== null && cellH < 62;
+  const tight = cellH !== null && cellH < 52; // 8px dots need about 52px: the day number, three rows of dots and the padding
   const roomy = cellH === null || cellH >= 100;
   const dot = tight ? 4 : roomy ? 12 : 8;
   const gapX = tight ? 1.5 : roomy ? 8 : 5;
