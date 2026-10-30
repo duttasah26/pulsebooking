@@ -6,7 +6,7 @@ export default function FormFooter({ f, onCancel }) {
   const { edit, busy, unconfirmed, roomIds, isHoldEdit } = f;
   const saving = busy || unconfirmed;
   return (
-    <div className="sticky bottom-0 -mx-5 mt-auto flex gap-3 border-t border-line bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
+    <div className="sticky bottom-0 -mx-4 mt-auto flex gap-3 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
       {onCancel && (
         <button type="button" className="btn btn-lg btn-quiet" onClick={onCancel} disabled={busy}>
           Cancel

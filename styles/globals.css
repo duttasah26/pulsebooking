@@ -253,6 +253,8 @@ body {
   .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
   .form-area .btn-lg, .form-area .btn-block { @apply min-h-12 lg:min-h-12; }
   .form-area .label { @apply lg:mb-2; }
+  /* Cards inside a side panel or sheet: 16px, so the fields keep their width (the panel itself has 16px at each side). */
+  .form-area .card { @apply p-4; }
   /* A choice that is on (booked via, meals): green edge, green tint, green words. */
   .chip-on {
     @apply border-accent font-semibold text-accent-strong;

@@ -63,7 +63,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col bg-surface px-5 pt-4">{children}</div>
+        <div className="flex flex-1 flex-col bg-surface px-4 pt-4">{children}</div>
       </aside>
 
       {!open && (

@@ -122,7 +122,7 @@ export default function BookingDetails({
       </ul>
 
       {/* One button to a line, full width, so the words always fit (the side panel is narrow). */}
-      <div className="sticky bottom-0 -mx-5 mt-auto grid grid-cols-2 gap-3 border-t border-line bg-surface px-5 pb-3 pt-3">
+      <div className="sticky bottom-0 -mx-4 mt-auto grid grid-cols-2 gap-3 border-t border-line bg-surface px-4 pb-3 pt-3">
         {b.status === 'on_hold' && onConfirm && (
           <button type="button" className="btn btn-block btn-primary col-span-2" onClick={() => onConfirm(b)} disabled={b.id < 0}>
             Confirm Booking

@@ -266,7 +266,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
       </div>
 
       {/* The Save bar stays at the bottom of the panel however far the form is scrolled, and says what will change. */}
-      <div className="sticky bottom-0 -mx-5 space-y-2 border-t border-line bg-surface px-5 py-3">
+      <div className="sticky bottom-0 -mx-4 space-y-2 border-t border-line bg-surface px-4 py-3">
         <p className="text-base" aria-live="polite">
           {anything ? <><strong>Will change:</strong> {parts.join(', ')}.</> : <span className="text-muted">Nothing changed yet.</span>}
         </p>

@@ -138,7 +138,7 @@ export default function SelectionPanel({
 
           {/* Docked at the bottom of the panel however far it is scrolled: the buttons that change the state of everything picked, then
               Delete last and apart, because it is the one you cannot take back lightly (real bookings need a hold; holds delete with a click). */}
-          <div className="sticky bottom-0 -mx-5 grid grid-cols-2 gap-3 border-t border-line bg-surface px-5 py-3">
+          <div className="sticky bottom-0 -mx-4 grid grid-cols-2 gap-3 border-t border-line bg-surface px-4 py-3">
 
                 {holds.length > 0 && (
                   <button type="button" className="btn btn-block btn-primary col-span-2" onClick={() => onConfirmAll(holds)}>
