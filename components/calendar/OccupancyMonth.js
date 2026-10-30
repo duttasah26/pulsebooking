@@ -93,11 +93,13 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
     return () => window.removeEventListener('resize', measure);
   }, [rows, onDate]);
   // Three densities, by how tall a cell is.
-  const tight = cellH !== null && cellH < 62;
+  const tight = cellH !== null && cellH < 52; // 8px dots need about 52px: the day number, three rows of dots and the padding
   const roomy = cellH === null || cellH >= 100;
-  const dot = tight ? 4 : roomy ? 12 : 8;
   const gapX = tight ? 1.5 : roomy ? 8 : 5;
-  const gapY = tight ? 2 : roomy ? 8 : 4;
+  const gapY = tight ? 2 : roomy ? 8 : 3;
+  // The dots are sized to what is left in the cell (its height less the padding, the day number line, the gap under it and the gaps
+  // between the three rows, shared by the three rows of dots), so the last row is never cut off.
+  const dot = roomy ? 12 : Math.max(4, Math.min(10, Math.floor(((cellH ?? 62) - (tight ? 8 : 12) - (tight ? 16 : 18) - 2 - 1 - 2 * gapY) / 3)));
 
   return (
     <div className="space-y-3">
@@ -116,9 +118,9 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                     type="button"
                     {...hold(`month-${i}`, () => onDate(addMonths(first, Math.sign(i - 2))), () => onDate(m))}
                     aria-current={sel ? 'date' : undefined}
-                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold shadow-sm' : 'border-transparent hover:bg-surface-2'} ${m === monthStart(todayStr) ? 'ring-2 ring-accent ring-offset-2' : ''}`}
+                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'}`}
                   >
-                    <span className="text-base">{fmtMonthShort(m)}</span>
+                    <span className={`text-base ${m === monthStart(todayStr) ? 'font-semibold text-accent-text' : ''}`}>{fmtMonthShort(m).replace('Sept', 'Sep')}</span>
                     <span className="font-mono text-[0.8125rem] text-muted">{m.slice(0, 4)}</span>
                   </button>
                 </li>
@@ -154,7 +156,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                 type="button"
                 onClick={() => onPickDay(d)}
                 aria-label={`${fmtDayMonth(d)}: ${counts[i]} of ${total} rooms taken, ${Math.max(0, total - counts[i])} free`}
-                className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : 'p-1.5 sm:p-2'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
+                className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
               >
                 <span className="flex w-full items-baseline gap-2">
                   <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-semibold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
@@ -167,7 +169,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                         <span
                           key={r.id}
                           className="block shrink-0 rounded-full"
-                          style={{ width: dot, height: dot, ...(taken[i].has(r.id) ? { backgroundColor: shade.edge } : { boxShadow: `inset 0 0 0 1px ${shade.edge}` }) }}
+                          style={{ width: dot, height: dot, ...(taken[i].has(r.id) ? { backgroundColor: shade.edge } : { boxShadow: `inset 0 0 0 1.5px ${shade.edge}` }) }}
                         />
                       ))}
                     </span>
@@ -179,8 +181,8 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
         </div>
 
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1 pt-3 text-[0.9375rem] text-muted" aria-label="What the dots mean">
-          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-ink" aria-hidden="true" /> Room taken</li>
-          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1px var(--ink)' }} aria-hidden="true" /> Room free</li>
+          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-muted" aria-hidden="true" /> Room taken</li>
+          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px var(--muted)' }} aria-hidden="true" /> Room free</li>
           {floors.map(({ floor, shade }) => (
             <li key={floor} className="flex items-center gap-1.5">
               <span className="size-3 rounded-full" style={{ backgroundColor: shade.edge }} aria-hidden="true" /> {FLOOR_NAME[floor] ?? `Floor ${floor}`}

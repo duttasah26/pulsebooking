@@ -199,7 +199,7 @@ export default function HelpGuide({ onClose }) {
               title="Move a stay, or make it longer or shorter"
               steps={[
                 <>Press <strong>Select</strong> in the tools, then press the booking to pick it. (A hold can also be changed with <PencilPill />.)</>,
-                <>Drag the bar to other days or another room. To change the length, drag the small white tab at the end of the bar.</>,
+                <>Drag the bar to other days or another room. To change the length, drag the small white dot at the end of the bar.</>,
                 <>Press <SavePill /> in the yellow box. It shows the old and new dates. Nothing changes until you press Save.</>,
               ]}
               note="Would rather not drag? Press the booking, press Edit, and type the new dates. On a keyboard, pick the booking, then press Alt with the left or right arrow to move it, Alt and Shift to change check-out, Alt and Ctrl to change check-in."

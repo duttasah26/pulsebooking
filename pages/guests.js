@@ -19,6 +19,7 @@ import MergeSheet from '../components/guests/MergeSheet';
 import { useApi } from '../lib/useApi';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import { useQueryParams } from '../lib/useQueryState';
+import { tabKeys } from '../lib/tabKeys';
 import { useStoredState } from '../lib/useStoredState';
 import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
@@ -35,9 +36,9 @@ const NATURAL_DIR = { name: 'asc', stays: 'desc', recent: 'desc' };
 // The whole state of the screen lives in the URL, so it survives a reload and can be saved as a named view.
 //   dir '' = the natural order for that sort    sort2/dir2: the second sort    room, floor: several, separated by commas
 //   from/to: stayed between these days    org: organization contains    contact: phone | email | both | any | none
-//   smin/smax: how many stays    cols: the columns switched OFF, separated by commas    dens: compact (empty = roomy)
+//   smin/smax: how many stays    cols: the columns switched OFF, separated by commas    (row density, roomy or compact, is one choice for both lists: pulse.density)
 const URL_DEFAULTS = {
-  tab: 'guests', sort: 'name', dir: '', sort2: '', dir2: '', room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '', cols: '', dens: '',
+  tab: 'guests', sort: 'name', dir: '', sort2: '', dir2: '', room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '', cols: '',
 };
 const TABS = [['guests', 'Guests'], ['companies', 'Companies']];
 const CLEAR_FILTERS = { room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '' };
@@ -46,7 +47,7 @@ export default function Guests() {
   const { settings } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
-  const { tab, sort, dir: dirParam, sort2, dir2, room, floor, from, to, org, contact, smin, smax, cols, dens } = values;
+  const { tab, sort, dir: dirParam, sort2, dir2, room, floor, from, to, org, contact, smin, smax, cols } = values;
   const { q, setQ, search, ready } = useUrlSearch();
   const [dockOpen, setDockOpen] = useStoredState('pulse.guestFiltersOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   const [open, setOpen] = useState(null); // guest id, or 'new'
@@ -70,7 +71,8 @@ export default function Guests() {
   const list = useApi(ready ? `/api/guests?${params}` : null);
   const guests = list.data ?? [];
   const hidden = csvList(cols);
-  const density = dens === 'compact' ? 'compact' : 'roomy';
+  // Roomy or compact is remembered on this device and shared by Bookings and Guests.
+  const [density, setDensity] = useStoredState('pulse.density', 'roomy', { parse: (raw) => (raw === 'compact' || raw === 'roomy' ? raw : undefined) });
 
   // Guests that may be the same person (Z B and ZB), looked for across the whole list. Only pointed out, never merged alone.
   const dupes = useApi('/api/guests/duplicates');
@@ -162,7 +164,7 @@ export default function Guests() {
           hidden={hidden}
           onToggleColumn={(key) => setParams({ cols: toggleCsv(cols, key) })}
           density={density}
-          onDensity={(v) => setParams({ dens: v === 'compact' ? 'compact' : '' })}
+          onDensity={(v) => setDensity(v === 'compact' ? 'compact' : 'roomy')}
         />
       }
       activeCount={activeCount}
@@ -183,9 +185,9 @@ export default function Guests() {
             </button>
           </div>
 
-          <div role="tablist" aria-label="Guests or companies" className="seg">
+          <div role="tablist" aria-label="Guests or companies" onKeyDown={tabKeys} className="seg">
             {TABS.map(([key, label]) => (
-              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
+              <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
             ))}
           </div>
           <Swap id={tab} className="space-y-4">
@@ -213,7 +215,7 @@ export default function Guests() {
             </p>
           ) : (
             <>
-              <p className="t-group px-1 pt-2" role="status" aria-live="polite">{guests.length} {guests.length === 1 ? 'guest' : 'guests'}{guests.length === 100 ? ' (the first 100: narrow the search to see others)' : ''}</p>
+              <p className={search || activeCount || guests.length === 100 ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{guests.length} {guests.length === 1 ? 'guest' : 'guests'}{guests.length === 100 ? ' (the first 100: narrow the search to see others)' : ''}</p>
               <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
                 {guests.map((g) => {
                   const partner = partnerOf(g);

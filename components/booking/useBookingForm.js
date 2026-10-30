@@ -10,6 +10,13 @@ const NEVER_BUSY = () => false;
 // A new booking that was started and left unfilled is kept on this device, so changing page (or a reload) does not lose it.
 // It is cleared when the booking is saved or the draft is thrown away.
 const DRAFT = 'pulse.bookingDraft';
+// A draft is kept on this device, which at a front desk is shared: it holds a guest by id, name and company only, never a phone
+// number or email. A guest not saved yet comes back as a name, and their contact is typed again.
+const safeChoice = (c) => {
+  if (c?.guestId) return { guestId: c.guestId, guest: c.guest ? { id: c.guest.id, name: c.guest.name, organization: c.guest.organization } : undefined };
+  if (c?.newGuest) return { newGuest: { name: c.newGuest.name, organization: c.newGuest.organization } };
+  return null;
+};
 export const clearBookingDraft = () => {
   try {
     localStorage.removeItem(DRAFT);
@@ -104,6 +111,7 @@ export function useBookingForm({
     const d = defaults?.roomIds?.length || defaults?.checkIn ? null : readDraft(); // a booking drawn on the grid starts fresh
     restored.current = true;
     if (!d) return;
+    d.guestChoice = safeChoice(d.guestChoice); // a draft saved before this rule may hold contact details
     waitingFor.current = JSON.stringify(d);
     setTimeout(() => { waitingFor.current = null; }, 1500);
     if (Array.isArray(d.roomIds)) setRoomIds(d.roomIds);
@@ -128,7 +136,7 @@ export function useBookingForm({
   useEffect(() => {
     if (edit || !restored.current) return;
     const empty = !roomIds.length && !checkIn && !guestChoice && !typedGuest.trim() && !notes && !label && !extraStays.length;
-    const snapshot = JSON.stringify({ roomIds, checkIn, checkOut, checkInTime, checkOutTime, status, channel, ratePlan, adults, children, notes, color, organization, label, guestChoice, typedGuest, extraStays });
+    const snapshot = JSON.stringify({ roomIds, checkIn, checkOut, checkInTime, checkOutTime, status, channel, ratePlan, adults, children, notes, color, organization, label, guestChoice: safeChoice(guestChoice), typedGuest, extraStays });
     if (waitingFor.current) {
       if (snapshot !== waitingFor.current) return;
       waitingFor.current = null;
@@ -152,7 +160,7 @@ export function useBookingForm({
   const colorTouched = useRef(edit);
   useEffect(() => {
     if (edit || colorTouched.current) return;
-    const preset = companyList.find((c) => c.name.toLowerCase() === organization.trim().toLowerCase())?.color;
+    const preset = companyList.find((c) => c.name.toLowerCase() === organization.trim().replace(/\s+/g, ' ').toLowerCase())?.color;
     if (preset) setColor(preset);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization, companyList.length]);

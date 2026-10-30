@@ -78,7 +78,7 @@ function StepList({ step, done, onGo }) {
               type="button"
               onClick={() => onGo(i)}
               aria-current={current ? 'step' : undefined}
-              className="seg-item min-h-11 w-full gap-2 px-2 lg:min-h-10"
+              className="seg-item min-h-11 w-full gap-2 px-2 lg:min-h-9"
             >
               {/* The step number turns into an exclamation mark while the step is not filled in. */}
               {missing ? (
@@ -300,7 +300,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
 
       <div>
         <h2 className="t-title">{ASKS[step].title}</h2>
-        <p className="t-footnote mt-1">{ASKS[step].help}</p>
+        <p className="t-footnote mt-2">{ASKS[step].help}</p>
       </div>
 
       {hint && (guestProblem || stayProblem || extraProblem) ? <p key={hint} className="animate-shake flex items-center gap-2 rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger" role="alert"><WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />{hint}</p> : null}
@@ -413,7 +413,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <input id="b-label" name="label" className="field" placeholder="For example, Sharma wedding party…" value={f.label} onChange={(e) => f.setLabel(e.target.value)} autoComplete="off" />
           </div>
         )}
-        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-5" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
+        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-4" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="t-title break-words">{guestName ?? 'No guest yet'}</h3>
@@ -459,7 +459,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
 
       {f.error && <p role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{f.error}</p>}
 
-      <div className="sticky bottom-0 -mx-5 mt-auto flex gap-3 border-t border-line bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-4">
+      <div className="sticky bottom-0 -mx-4 mt-auto flex gap-3 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-4">
         {step > 0 ? (
           <button type="button" className="btn btn-lg btn-quiet" onClick={() => go(step - 1)} disabled={f.busy}>
             Back

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
@@ -24,15 +24,29 @@ import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
 import { useSettings } from '../components/SettingsProvider';
 import { colorFor, roomShade, stayColor } from '../lib/colors';
-import { addDays, fmtShort, today } from '../lib/dates';
+import { addDays, diffDays, fmtMonth, fmtShort, today } from '../lib/dates';
 
 // The whole state of the screen lives in the URL, so it survives a reload and can be saved as a named view.
 //   holds '1' = show on-hold bookings too    dir '' = the filter's natural order    room, floor, status: several, separated by commas
 //   sort2/dir2: the second sort    org: organization contains    contact: yes | no    nmin/nmax: nights    rby: stay | check_in | check_out with df, dt
-//   cols: the columns switched OFF, separated by commas    dens: compact (empty = roomy)
+//   cols: the columns switched OFF, separated by commas    (row density, roomy or compact, is one choice for both lists: pulse.density)
+// With the list in arrival order, a heading starts each stretch: Today, Tomorrow, this week, next week, then by month (and Last week
+// or the month for what has gone). The week runs Monday to Sunday.
+function arrivalGroup(checkIn) {
+  const t = today();
+  if (checkIn === t) return 'Today';
+  if (checkIn === addDays(t, 1)) return 'Tomorrow';
+  const dow = (new Date(`${t}T00:00:00`).getDay() + 6) % 7; // Monday = 0
+  const weeks = Math.floor((diffDays(addDays(t, -dow), checkIn)) / 7);
+  if (weeks === 0) return 'This week';
+  if (weeks === 1) return 'Next week';
+  if (weeks === -1) return 'Last week';
+  return fmtMonth(checkIn);
+}
+
 const URL_DEFAULTS = {
   tab: 'upcoming', sort: 'check_in', dir: '', sort2: '', dir2: '', holds: '', room: '', floor: '', status: '',
-  org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '', dens: '',
+  org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '',
 };
 const CLEAR_FILTERS = { room: '', floor: '', status: '', org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', holds: '' };
 
@@ -43,7 +57,7 @@ export default function Bookings() {
 
   // The filter, sort and search live in the URL, so they survive a reload and can be shared.
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
-  const { tab, sort, dir: dirParam, sort2, dir2, holds, room, floor, status, org, contact, nmin, nmax, rby, df, dt, cols, dens } = values;
+  const { tab, sort, dir: dirParam, sort2, dir2, holds, room, floor, status, org, contact, nmin, nmax, rby, df, dt, cols } = values;
   const { q, setQ, search, ready } = useUrlSearch();
   const [dockOpen, setDockOpen] = useStoredState('pulse.filtersOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   const [sheet, setSheet] = useState(null);
@@ -76,7 +90,8 @@ export default function Bookings() {
   add('q', search);
   const list = useApi(ready ? url : null);
   const hidden = csvList(cols);
-  const density = dens === 'compact' ? 'compact' : 'roomy';
+  // Roomy or compact is remembered on this device and shared by Bookings and Guests.
+  const [density, setDensity] = useStoredState('pulse.density', 'roomy', { parse: (raw) => (raw === 'compact' || raw === 'roomy' ? raw : undefined) });
 
   // Saved views: the params that differ from the screen's start (and the search text), kept in the database.
   const { views, loading: viewsLoading, save: saveView, remove: removeView } = useSavedViews('bookings');
@@ -253,7 +268,7 @@ export default function Bookings() {
           hidden={hidden}
           onToggleColumn={(key) => setParams({ cols: toggleCsv(cols, key) })}
           density={density}
-          onDensity={(v) => setParams({ dens: v === 'compact' ? 'compact' : '' })}
+          onDensity={(v) => setDensity(v === 'compact' ? 'compact' : 'roomy')}
         />
       }
       activeCount={activeCount}
@@ -292,16 +307,29 @@ export default function Bookings() {
           ) : rows.length === 0 ? (
             <p className="rounded-lg border border-line bg-surface px-6 py-12 text-center text-base text-muted">
               {search
-                ? `Nothing matches “${search}” here.`
+                ? (
+                  <>
+                    Nothing matches “{search}” here.
+                    {tab !== 'all' && <span className="mt-3 block"><button type="button" className="btn btn-sm" onClick={() => setParams({ tab: 'all' })}>Search All Bookings</button></span>}
+                  </>
+                )
                 : `${active.empty}${activeCount ? ' Some filters are on: clear them to see more.' : ''}${holdsFilterable && !showHolds ? ' On-hold bookings are hidden: turn on Show On Hold to see them.' : ''}`}
             </p>
           ) : (
             <>
-            <p className="t-group px-1 pt-2" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
+            {/* The count is shown only when a search or filter narrowed the list (it says how many matched); otherwise screen readers still hear it. */}
+            <p className={search || activeCount ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
-              {rows.map((b) => (
-                <BookingRow key={b.id} b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
-              ))}
+              {rows.map((b, i) => {
+                const group = sort === 'check_in' && !sort2 ? arrivalGroup(b.check_in) : null;
+                const heading = group && group !== (i > 0 ? arrivalGroup(rows[i - 1].check_in) : null);
+                return (
+                  <Fragment key={b.id}>
+                    {heading && <li className="bg-surface-2 px-4 py-1.5 md:px-5"><h3 className="t-group">{group}</h3></li>}
+                    <BookingRow b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
+                  </Fragment>
+                );
+              })}
             </ul>
             </>
           )}

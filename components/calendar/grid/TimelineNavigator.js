@@ -5,6 +5,10 @@
 //   drag its left end:     the same, keeping the last visible day where it is
 //   click the track:       jumps there
 // Wider days means fewer days in view, so the block shrinks as you widen them.
+// Dragging the block scrolls at half the pace of the pointer, so a small slip of the hand does not throw the calendar days away. The
+// two ends (which change the day width) still follow the pointer one to one.
+const DRAG_PACE = 0.5;
+
 export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, span, minScale, maxScale, onScale }) {
   const pct = (days) => `${Math.max(0, Math.min(100, (days / n) * 100))}%`;
   // inView days at this scale: span / scale, so the limits in days are span / maxScale and span / minScale.
@@ -20,7 +24,7 @@ export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, 
     const move = (ev) => {
       const d = (ev.clientX - x0) * perPx;
       if (mode === 'move') {
-        scrollRef.current.scrollLeft = Math.max(0, (start.first + d) * dayPx);
+        scrollRef.current.scrollLeft = Math.max(0, (start.first + d * DRAG_PACE) * dayPx);
       } else if (mode === 'right') {
         const v = clampView(start.inView + d);
         onScale(span / v, start.first);
@@ -57,7 +61,7 @@ export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, 
       <div
         onPointerDown={(e) => drag(e, 'move')}
         title="Drag to scroll through the days"
-        className="group/thumb absolute inset-y-px cursor-grab rounded-full bg-[color-mix(in_srgb,var(--muted)_55%,transparent)] hover:bg-muted active:cursor-grabbing"
+        className="group/thumb absolute inset-y-px cursor-grab rounded-full bg-muted hover:bg-ink/80 active:cursor-grabbing"
         style={{ left: pct(first), width: pct(inView), minWidth: 28 }}
       >
         <span
@@ -65,14 +69,14 @@ export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, 
           title="Drag to change the day width"
           className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize items-center justify-center"
         >
-          <span className="h-2 w-px rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-white" />
         </span>
         <span
           onPointerDown={(e) => drag(e, 'right')}
           title="Drag to change the day width"
           className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize items-center justify-center"
         >
-          <span className="h-2 w-px rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-white" />
         </span>
       </div>
     </div>

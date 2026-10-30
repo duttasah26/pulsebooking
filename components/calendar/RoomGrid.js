@@ -3,6 +3,7 @@ import { addDays, diffDays, fmtDayMonth, nightsLabel, today } from '../../lib/da
 import { HEAD, LABEL, barGeometry, cellSize, dayFraction, gridMinWidth, gridTemplate, placeAt } from './grid/gridLayout';
 import { useSettings } from '../SettingsProvider';
 import { useOccupancy } from './grid/useOccupancy';
+import { useRowSize } from '../../lib/devicePrefs';
 import { useGridSelection } from './grid/useGridSelection';
 import { useMarquee } from './grid/useMarquee';
 import { useBarResize } from './grid/useBarResize';
@@ -68,7 +69,7 @@ export default function RoomGrid({
       // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
       const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
-      const base = short ? 8 : window.innerWidth < 768 ? 84 : 36;
+      const base = short ? 8 : window.innerWidth < 768 ? 84 : 48; // 48: the page padding under the grid, so the page itself does not scroll
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
       setAvail(Math.max(short ? 130 : window.innerWidth < 768 ? 180 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
@@ -145,8 +146,11 @@ export default function RoomGrid({
   const [heightScale, setHeightScale] = useState(1);
   const rowAnchor = useRef(null);
   const topRowRef = useRef(0);
-  const fitRow = rows && avail ? Math.min(160, Math.max(MIN_ROW_PX, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
-  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(MIN_ROW_PX, Math.round(fitRow * heightScale))) : baseH;
+  const [rowSize] = useRowSize();
+  const roomy = rowSize === 'roomy'; // Settings: rows at least 40px tall, with larger names, even if the rooms then scroll
+  const minRow = roomy ? 40 : MIN_ROW_PX;
+  const fitRow = rows && avail ? Math.min(160, Math.max(minRow, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(minRow, Math.round(fitRow * heightScale))) : baseH;
   const rowPx = cellH * zoom;
   const boxH = Math.max(0, (avail ?? 0) - 2); // the scrolling box, less its border
   const rowsInView = rows && avail ? (boxH / zoom - HEAD) / cellH : rooms.length; // rooms in view, exactly
@@ -226,6 +230,35 @@ export default function RoomGrid({
     [drawn, drawing, preview],
   );
   const { roomIndex, occupancy } = useOccupancy(rooms, withDraft, days);
+
+  // The mouse wheel scrolls the calendar gently. One click of the wheel moves the calendar a little (about a third of the usual
+  // distance), so it is easy to stop where you want. In the Timeline the days run across, so the wheel moves along the days (unless the
+  // rooms themselves scroll); in the Month view the days run down, so it moves down them. A trackpad, Shift, a sideways wheel and
+  // Ctrl (zoom) are left to the browser.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return undefined;
+    const PACE = 0.35;
+    const onWheel = (e) => {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.deltaX) return;
+      if (e.deltaMode === 0 && Math.abs(e.deltaY) < 50) return; // a trackpad glide, not a click of a wheel
+      const dy = (e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY) * PACE;
+      if (rows) {
+        if (el.scrollHeight > el.clientHeight + 2) return; // the rooms scroll too: leave the wheel to them
+        const room = el.scrollWidth - el.clientWidth - 1;
+        if ((dy < 0 && el.scrollLeft <= 0) || (dy > 0 && el.scrollLeft >= room)) return; // at the end: the page may scroll
+        e.preventDefault();
+        el.scrollLeft += dy;
+      } else {
+        const room = el.scrollHeight - el.clientHeight - 1;
+        if ((dy < 0 && el.scrollTop <= 0) || (dy > 0 && el.scrollTop >= room)) return;
+        e.preventDefault();
+        el.scrollTop += dy;
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [rows]);
   const selection = useGridSelection({ rooms, days, occupancy, onCreate });
   const { sel, summary, isFree, selected, cornerR, cornerI, roomCount, nightCount } = selection;
   // Timeline: every room is always shown (the page scrolls down), and only the dates scroll sideways. Its scrollbar sits
@@ -430,7 +463,7 @@ export default function RoomGrid({
           ref={gridRef}
           role="grid"
           aria-label="Room availability"
-          style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), zoom }}
+          style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH, fill: Boolean(rows && avail && (HEAD + rooms.length * cellH) * zoom < avail - 2 - rooms.length) }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), minHeight: rows && avail ? Math.max(0, (avail - 2) / zoom) : undefined, zoom }}
         >
           <GridCorner />
           {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} isToday={d === todayStr} narrow={cellW * zoom < 36} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />) : heads}
@@ -466,6 +499,7 @@ export default function RoomGrid({
               style={place(r, g.a, g.len)}
               active={Boolean(activeIds?.has(b.id))}
               faded={Boolean(preview?.replaces?.includes(b.id))}
+              large={roomy}
               selectMode={selecting}
               picked={Boolean(picked?.has(b.id))}
               onOpen={onOpen}
@@ -524,7 +558,7 @@ export default function RoomGrid({
         />
       )}
       {rows && fitW > 0 && !touchUi && (
-        <div className="mt-1.5 flex items-center gap-2 text-sm text-muted">
+        <div className="-mt-px flex items-center gap-2 text-sm text-muted">
           <div className="min-w-0 flex-1">
             <LiveTimelineNavigator
               bus={scrollBus.current}

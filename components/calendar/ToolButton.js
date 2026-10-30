@@ -24,7 +24,7 @@ export default function ToolButton({ icon: Icon, label, title, on, onClick, disa
       disabled={disabled}
       onClick={onClick}
       className={`btn ${
-        side ? 'min-h-11 w-full px-1 lg:min-h-10' : vertical ? 'h-auto min-h-14 w-full flex-col gap-1 px-1 py-2 lg:min-h-14 lg:px-1' : (iconOnly ? 'btn-icon' : 'px-3')
+        side ? 'min-h-11 w-full px-1 lg:min-h-9' : vertical ? 'h-auto min-h-14 w-full flex-col gap-1 px-1 py-2 lg:min-h-14 lg:px-1' : (iconOnly ? 'btn-icon' : 'px-3')
       } ${filled}`}
     >
       <Icon size={side ? 24 : vertical ? 22 : 20} weight={on ? 'fill' : 'bold'} />

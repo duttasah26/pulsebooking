@@ -116,10 +116,7 @@ export default function Assistant() {
       className={`${place} flex h-[min(34rem,calc(100dvh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg`}
     >
       <header className="flex min-h-14 items-center gap-2 border-b border-line py-2 pl-4 pr-2">
-        <div className="min-w-0 flex-1">
-          <h2 className="t-headline">Assistant</h2>
-          <p className="truncate t-footnote">Answers from your bookings. It asks before it books or changes anything.</p>
-        </div>
+        <h2 className="t-headline min-w-0 flex-1">Assistant</h2>
         {messages.length > 0 && (
           <button type="button" className="btn btn-quiet btn-icon" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">
             <ArrowCounterClockwise size={16} aria-hidden="true" />

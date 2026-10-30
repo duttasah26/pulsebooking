@@ -27,6 +27,9 @@ import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
+import OverviewPanel from './OverviewPanel';
+import { useApi } from '../../lib/useApi';
+import { useShowDone } from '../../lib/devicePrefs';
 import { useBookingData } from './useBookingData';
 import { useHistory } from './useHistory';
 import { useHoldActions } from './useHoldActions';
@@ -71,8 +74,11 @@ export default function CalendarPage() {
   const [editSelection, setEditSelection] = useState(false); // the selected bookings' names as editable cells
   const [viewPicked, setViewPicked] = useState(false); // show the details of everything picked, side by side
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
+  const [todayOpen, setTodayOpen] = useState(false); // the Today panel, lying over the calendar's right edge like the booking panel
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
-  const [showDone, setShowDone] = useStoredState('pulse.showCheckedOut', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') }); // show or hide stays that have checked out
+  useEffect(() => { if (formOpen) setTodayOpen(false); }, [formOpen]); // opening the booking panel closes the Today panel
+  useEffect(() => { setTodayOpen(false); }, [view]); // and so does changing the view (it would cover the new one)
+  const [showDone, setShowDone] = useShowDone(); // show or hide stays that have checked out (also a choice in Settings)
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
 
   // Everything date-based is computed on the client only, so server and browser never disagree about "today".
@@ -335,6 +341,19 @@ export default function CalendarPage() {
     setPanel({ booking, editing: false });
     setFormOpen(true);
   };
+  // Coming from the header search (/?open=<booking id>): once that booking is loaded, open it in the panel. Its bar lights up on the
+  // calendar like any open booking, and the address goes back to plain.
+  useEffect(() => {
+    const id = Number(router.query.open);
+    if (!router.isReady || !id) return;
+    const found = bookingList.find((b) => b.id === id);
+    if (!found) return;
+    if (found.group_id && bookingList.some((b) => b.id !== found.id && b.group_id === found.group_id)) openGroup(found); // every room of the party lights up
+    else openEdit(found);
+    const { open: _open, ...rest } = router.query;
+    router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.open, bookingList]);
   const reload = (message, entry) => {
     bookings.reload();
     if (entry) history.push(entry); // a save from the form is undoable too
@@ -343,6 +362,8 @@ export default function CalendarPage() {
 
   // Arrivals, departures and stays beside the title. They follow what you clicked: nothing is Today; a date is that day; a room is that
   // room over the days on screen; a cell is that room on that day. Counted from the bookings already loaded (cancelled ones left out).
+  // The plain "Today" counts come from their own request (yesterday to tomorrow), so they stay right when the calendar shows another month.
+  const todayRows = useApi(mounted ? `/api/bookings?from=${addDays(today(), -1)}&to=${addDays(today(), 1)}` : null).data;
   const todaySummary = useMemo(() => {
     const room = spot?.roomId != null ? (rooms.data ?? []).find((r) => r.id === spot.roomId) : null;
     let from;
@@ -361,16 +382,19 @@ export default function CalendarPage() {
       to = from;
       label = 'Today';
     }
-    const live = bookingList.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
+    const source = !spot && !room && Array.isArray(todayRows) ? todayRows : bookingList;
+    const live = source.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
+    const stayers = live.filter((b) => b.check_in <= to && b.check_out > from);
     return (
       <TodaySummary
         label={label}
         arriving={live.filter((b) => b.check_in >= from && b.check_in <= to).length}
         leaving={live.filter((b) => b.check_out >= from && b.check_out <= to).length}
-        staying={live.filter((b) => b.check_in <= to && b.check_out > from).length}
+        staying={room ? stayers.length : new Set(stayers.map((b) => b.room_id)).size}
+        total={room ? undefined : (rooms.data ?? []).length || undefined}
       />
     );
-  }, [bookingList, spot, rooms.data, shownDate, span, view]);
+  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;
@@ -656,7 +680,22 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        {wide && todayOpen && !formOpen && (
+          <div className="absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full">
+            <OverviewPanel bookings={bookingList} roomCount={roomList.length} day={spot?.d} onOpen={(b) => {
+              setTodayOpen(false);
+              // A booking outside the days on screen: take the calendar to it first (the address then opens it, as the header search does).
+              if (bookingList.some((x) => x.id === b.id)) openEdit(b);
+              else set({ view: 'timeline', date: addDays(b.check_in, -3), span: 21, open: b.id });
+            }} onClose={() => setTodayOpen(false)} />
+          </div>
+        )}
         <BookingPanel
+          renderSide={() => (
+            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Overview: rooms in use, coming up, holds and today" className="animate-fade flex h-32 w-11 flex-col items-center rounded-lg border border-line bg-surface py-4 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
+              <span className="[writing-mode:vertical-rl]">Overview</span>
+            </button>
+          )}
           wide={wide}
           formOpen={formOpen}
           onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change
@@ -696,24 +735,23 @@ export default function CalendarPage() {
   );
 }
 
-// Loading looks like the calendar it will become (dates down the side, rooms across the top, a few stays drawn in), so
-// nothing jumps when the data arrives. The shimmer sweeps once across all of it.
-const SKELETON_STAYS = { 1: [[0, 3]], 3: [[2, 2]], 4: [[0, 2]], 6: [[1, 3]], 8: [[3, 2]], 9: [[0, 1]], 11: [[2, 3]] };
+// Loading looks like the calendar it will become (the Timeline: rooms down the side, days across the top, a few stays drawn
+// in), so nothing jumps when the data arrives. It is still, with no shimmer.
+const SKELETON_STAYS = { 1: [[3, 5]], 3: [[0, 3]], 5: [[8, 4]], 7: [[2, 6]], 9: [[10, 3]], 11: [[5, 4]], 13: [[1, 3]], 15: [[9, 5]] };
 function GridSkeleton() {
-  const cols = 6;
+  const days = 14;
+  const rooms = 18;
   return (
-    <div className="rounded-lg border border-line bg-surface p-2" aria-busy="true" aria-label="Loading calendar…">
-      <div className="mb-2 grid gap-1.5" style={{ gridTemplateColumns: `3.5rem repeat(${cols}, minmax(0, 1fr))` }}>
+    <div className="rounded-lg border border-line bg-surface" aria-busy="true" aria-label="Loading calendar…">
+      <div className="grid" style={{ gridTemplateColumns: `4rem repeat(${days}, minmax(0, 1fr))`, gridTemplateRows: `2.5rem repeat(${rooms}, 1.5rem)` }}>
         <div />
-        {Array.from({ length: cols }, (_, i) => <div key={i} className="skeleton h-9 rounded-md" style={{ animationDelay: `${i * 80}ms` }} />)}
-      </div>
-      <div className="space-y-1.5">
-        {Array.from({ length: 12 }, (_, r) => (
-          <div key={r} className="grid gap-1.5" style={{ gridTemplateColumns: `3.5rem repeat(${cols}, minmax(0, 1fr))` }}>
-            <div className="skeleton h-9 rounded-md" style={{ animationDelay: `${r * 60}ms` }} />
-            {Array.from({ length: cols }, (_, c) => {
-              const stay = (SKELETON_STAYS[r] ?? []).find(([col]) => col === c);
-              return <div key={c} className={`h-9 rounded-md ${stay ? 'skeleton' : 'bg-surface-2/50'}`} style={stay ? { animationDelay: `${(r + c) * 70}ms` } : undefined} />;
+        {Array.from({ length: days }, (_, i) => <div key={i} className="m-1 skeleton rounded-md" />)}
+        {Array.from({ length: rooms }, (_, r) => (
+          <div key={r} className="contents">
+            <div className="m-0.5 skeleton rounded-md" />
+            {Array.from({ length: days }, (_, c) => {
+              const stay = (SKELETON_STAYS[r] ?? []).find(([col, len]) => c >= col && c < col + len);
+              return <div key={c} className={`m-0.5 rounded-md ${stay ? 'skeleton' : 'bg-surface-2/40'}`} />;
             })}
           </div>
         ))}
@@ -722,20 +760,24 @@ function GridSkeleton() {
   );
 }
 
-// The whole page before it is ready: the toolbar, the tool pane, the calendar and the booking panel as grey blocks.
+// The whole page before it is ready, in the shape of the real one: title row, view row, the tool column, the calendar and the
+// right column (the Today panel on wide screens).
 function PageSkeleton() {
   return (
-    <div className="space-y-3" aria-busy="true" aria-label="Loading calendar…">
+    <div className="space-y-4" aria-busy="true" aria-label="Loading calendar…">
       <div className="flex flex-wrap items-center gap-2">
-        {[10, 14, 20, 28].map((w) => <div key={w} className="h-9 rounded-lg bg-surface-2 skeleton" style={{ width: `${w * 4}px` }} />)}
-        <div className="h-7 w-56 rounded-lg bg-surface-2 skeleton" />
+        {[9, 16, 9, 24].map((w, i) => <div key={i} className="h-9 rounded-lg skeleton" style={{ width: `${w * 4}px` }} />)}
+        <div className="h-8 w-56 rounded-lg skeleton" />
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {[28, 20, 32, 20, 12, 16, 16, 20].map((w, i) => <div key={i} className="h-8 rounded-lg skeleton" style={{ width: `${w * 4}px` }} />)}
       </div>
       <div className="flex gap-4">
-        <div className="hidden h-60 w-16 rounded-lg bg-surface-2 skeleton lg:block" />
+        <div className="hidden h-[26rem] w-[4.5rem] rounded-lg skeleton lg:block" />
         <div className="min-w-0 flex-1">
           <GridSkeleton />
         </div>
-        <div className="hidden h-72 w-[23rem] rounded-lg bg-surface-2 skeleton lg:block" />
+        <div className="hidden h-44 w-11 rounded-lg skeleton lg:block" />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeft, X } from '@phosphor-icons/react';
 import { useLeave } from './useLeave';
 
 // Column templates for a page that has a dock on the right (use as the page's grid classes, from lg up).
@@ -19,7 +19,8 @@ export const DOCK_GRID = {
 */
 // overlay: lie over the right side of the parent (which must be position: relative), as tall as the parent, instead of taking
 // a column, so what is behind it does not move.
-export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, children }) {
+// renderSide(): another slim tab under the folded one (the Today tab). It opens its own panel over the page, so the page never changes size.
+export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, renderSide, children }) {
   // The panel is as tall as the room left below where it starts (the toolbar sits above it), so its own scrolling reaches
   // everything, including the buttons at the bottom of a long form.
   const [leaving, hide] = useLeave(() => onToggle(false), 170); // fades out before the column folds
@@ -49,6 +50,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
       <aside
         ref={box}
         aria-label={label}
+        onKeyDown={(e) => { if (open && e.key === 'Escape' && !e.defaultPrevented && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) hide(); }}
         data-scroll-body
         style={maxH && !overlay ? { maxHeight: maxH } : undefined}
         className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.75rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? `flex flex-col ${leaving ? 'animate-dock-out' : 'animate-dock-in'}` : 'hidden'}`}
@@ -59,26 +61,29 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => hide()}>
-              <CaretRight size={18} aria-hidden="true" />
+              <X size={20} weight="bold" aria-hidden="true" />
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col bg-surface px-5 pt-4">{children}</div>
+        <div className="flex flex-1 flex-col bg-surface px-4 pt-4">{children}</div>
       </aside>
 
       {!open && (
+        <div className="sticky top-[4.75rem] flex flex-col gap-2">
         <button
           type="button"
           aria-label={`Show ${label.toLowerCase()}`}
           aria-expanded="false"
           title={`Show ${label.toLowerCase()}`}
           onClick={() => onToggle(true)}
-          className={`animate-fade sticky top-[4.75rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2`}
+          className={`animate-fade flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2`}
         >
           <CaretLeft size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>
           {tabMark && <span aria-hidden="true" className="size-2 rounded-sm bg-accent" />}
         </button>
+        {renderSide?.()}
+        </div>
       )}
     </>
   );

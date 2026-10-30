@@ -125,7 +125,7 @@ popovers, toasts, the unsaved change card). The header and the phone tab bar are
 
 ## Shapes
 
-One corner everywhere: 6px. No pills and no circles on controls (dots in the occupancy month are data, not controls).
+One corner everywhere: 6px. No pills and no circles on controls, except the two round dots that stretch a booking bar (dots in the occupancy month are data).
 Status is told by shape too: on hold is dashed and hatched.
 
 ## Components

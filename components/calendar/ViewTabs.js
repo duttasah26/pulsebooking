@@ -1,11 +1,12 @@
 import { useMotionBits } from '../../lib/useMotionBits';
 import { VIEWS } from './useCalendarParams';
+import { tabKeys } from '../../lib/tabKeys';
 
 // Month / Timeline / Occupancy / Day. The labels turn into icons when the calendar column is narrow.
 export default function ViewTabs({ view, onChange }) {
   const bits = useMotionBits(); // the sliding highlight; until it loads the chosen tab keeps its plain highlight
   return (
-    <div role="tablist" aria-label="Calendar view" className="seg no-scrollbar max-w-full overflow-x-auto">
+    <div role="tablist" aria-label="Calendar view" onKeyDown={tabKeys} className="seg no-scrollbar max-w-full overflow-x-auto">
       {VIEWS.map((v) => (
         <button
           key={v.key}
@@ -13,6 +14,7 @@ export default function ViewTabs({ view, onChange }) {
           type="button"
           title={v.label}
           aria-selected={view === v.key}
+          tabIndex={view === v.key ? 0 : -1}
           onClick={() => onChange(v.key)}
           className={`seg-item relative shrink-0 ${bits ? '!bg-transparent !shadow-none' : ''}`}
         >

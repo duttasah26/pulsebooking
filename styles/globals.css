@@ -40,6 +40,10 @@
   --tint: rgb(38 31 28 / 0.06);
   --tint-hover: rgb(38 31 28 / 0.1);
   --tint-press: rgb(38 31 28 / 0.15);
+  --btn: rgb(38 31 28 / 0.11);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
+  --btn-hover: rgb(38 31 28 / 0.16);
+  --btn-press: rgb(38 31 28 / 0.22);
+  --danger-btn: #f8e7e3;
 }
 
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
@@ -144,7 +148,7 @@ body {
   .t-display { @apply text-[1.75rem] leading-[2.125rem] font-bold tracking-[-0.015em] text-ink; }
   .t-title { @apply text-xl leading-7 font-bold tracking-[-0.01em] text-ink; }
   .t-headline { @apply text-[1.0625rem] leading-6 font-semibold text-ink; }
-  .t-footnote { @apply text-[0.9375rem] leading-[1.375rem] text-muted; }
+  .t-footnote { @apply text-[0.9375rem] leading-[1.4rem] text-muted; }
   .t-group { @apply text-[0.9375rem] leading-5 font-semibold text-muted; }
 
   /* Fields: white, a visible 1px edge (3.35:1), 44px on touch, 40px with a pointer. */
@@ -192,11 +196,11 @@ body {
   */
   .btn {
     @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-4 text-base font-medium text-ink select-none lg:min-h-9 lg:px-3.5 lg:text-[0.9375rem];
-    background-color: var(--tint);
+    background-color: var(--btn);
     transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out, box-shadow 120ms ease-out;
   }
-  .btn:hover { background-color: var(--tint-hover); }
-  .btn:active { background-color: var(--tint-press); }
+  .btn:hover { background-color: var(--btn-hover); }
+  .btn:active { background-color: var(--btn-press); }
   .btn:disabled { @apply opacity-45; }
   .btn > svg { flex-shrink: 0; }
 
@@ -220,27 +224,27 @@ body {
 
   .btn-danger, .btn-block-danger {
     @apply text-danger;
-    background-color: var(--danger-soft);
+    background-color: var(--danger-btn);
   }
   .btn-danger:hover, .btn-block-danger:hover { background-color: #f2d6cf; }
   .btn-danger:active, .btn-block-danger:active { background-color: #ecc5bc; }
-  .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-soft); }
+  .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-btn); }
 
   .btn-hold, .btn-block-hold {
     @apply border-dashed border-hold-edge text-hold-ink;
     background-color: var(--hold);
   }
-  .btn-hold:hover, .btn-block-hold:hover { background-color: #f0dfa8; }
-  .btn-hold:active, .btn-block-hold:active { background-color: #e9d48f; }
+  .btn-hold:hover, .btn-block-hold:hover { background-color: #efdc9e; }
+  .btn-hold:active, .btn-block-hold:active { background-color: #e7d085; }
 
   .btn-on, .btn-on:hover, .btn-on:active {
     @apply font-semibold text-white;
     background-color: var(--ink);
   }
 
-  .btn-inverse { @apply text-white; background-color: rgb(255 255 255 / 0.14); }
-  .btn-inverse:hover { background-color: rgb(255 255 255 / 0.22); }
-  .btn-inverse:active { background-color: rgb(255 255 255 / 0.3); }
+  .btn-inverse { @apply text-white; background-color: rgb(255 255 255 / 0.18); }
+  .btn-inverse:hover { background-color: rgb(255 255 255 / 0.27); }
+  .btn-inverse:active { background-color: rgb(255 255 255 / 0.36); }
   .btn-inverse.btn-quiet { background-color: transparent; }
   .btn-inverse.btn-quiet:hover { background-color: rgb(255 255 255 / 0.12); }
   .btn-inverse:focus-visible { outline-color: #ffffff; }
@@ -249,6 +253,8 @@ body {
   .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
   .form-area .btn-lg, .form-area .btn-block { @apply min-h-12 lg:min-h-12; }
   .form-area .label { @apply lg:mb-2; }
+  /* Cards inside a side panel or sheet: 16px, so the fields keep their width (the panel itself has 16px at each side). */
+  .form-area .card { @apply p-4; }
   /* A choice that is on (booked via, meals): green edge, green tint, green words. */
   .chip-on {
     @apply border-accent font-semibold text-accent-strong;

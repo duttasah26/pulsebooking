@@ -8,6 +8,9 @@
 // the booking bars themselves (see BookingBar), not here.
 export const NAV_WIDTH = 16;
 
+// Dragging the block scrolls at half the pace of the pointer (the ends, which change the row height, follow it one to one).
+const DRAG_PACE = 0.5;
+
 export default function RoomNavigator({ scrollRef, rooms, first, inView, width, height, minView, maxView, onView, rowPx }) {
   const n = rooms.length;
   const pct = (rows) => `${Math.max(0, Math.min(100, (rows / n) * 100))}%`;
@@ -23,7 +26,7 @@ export default function RoomNavigator({ scrollRef, rooms, first, inView, width, 
     const move = (ev) => {
       const d = (ev.clientY - y0) * perPx;
       if (mode === 'move') {
-        scrollRef.current.scrollTop = Math.max(0, (start.first + d) * rowPx);
+        scrollRef.current.scrollTop = Math.max(0, (start.first + d * DRAG_PACE) * rowPx);
       } else if (mode === 'bottom') {
         onView(clampView(start.inView + d), start.first);
       } else {
@@ -60,7 +63,7 @@ export default function RoomNavigator({ scrollRef, rooms, first, inView, width, 
       <div
         onPointerDown={(e) => drag(e, 'move')}
         title="Drag to scroll through the rooms"
-        className="absolute inset-x-px cursor-grab rounded-full bg-[color-mix(in_srgb,var(--muted)_55%,transparent)] hover:bg-muted active:cursor-grabbing"
+        className="absolute inset-x-px cursor-grab rounded-full bg-muted hover:bg-ink/80 active:cursor-grabbing"
         style={{ top: pct(first), height: pct(inView), minHeight: 28 }}
       >
         <span
@@ -68,14 +71,14 @@ export default function RoomNavigator({ scrollRef, rooms, first, inView, width, 
           title="Drag to change the row height"
           className="absolute inset-x-0 top-0 flex h-3 cursor-ns-resize items-center justify-center"
         >
-          <span className="h-px w-2 rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-white" />
         </span>
         <span
           onPointerDown={(e) => drag(e, 'bottom')}
           title="Drag to change the row height"
           className="absolute inset-x-0 bottom-0 flex h-3 cursor-ns-resize items-center justify-center"
         >
-          <span className="h-px w-2 rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-white" />
         </span>
       </div>
     </div>
