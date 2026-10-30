@@ -68,9 +68,12 @@ export default function Layout({ title, wide = false, children }) {
             ))}
           </nav>
 
-          <div className="hidden min-w-0 flex-1 md:block short:hidden">
-            <GlobalSearch />
-          </div>
+          {/* Bookings and Guests have their own search box, so the header one is left out there. */}
+          {pathname !== '/bookings' && pathname !== '/guests' && (
+            <div className="hidden min-w-0 flex-1 md:block short:hidden">
+              <GlobalSearch />
+            </div>
+          )}
 
           <div className="ml-auto flex shrink-0 items-center gap-1">
             <IndiaClock />
