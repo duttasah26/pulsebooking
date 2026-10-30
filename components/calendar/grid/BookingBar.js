@@ -37,7 +37,7 @@ function MarchingDashes({ color }) {
 // packed into lines like words, and whatever does not fit is left out rather than cut in half.
 // Bars adapt to the width they get (container queries): icons appear from 70px. In the month sheet a narrow bar sets
 // the name level at its top and lets it wrap word by word down its height; text is never turned on its side.
-export default function BookingBar({ b, g, rows, style: placement, active, selectMode, picked, onOpen, onPick, onView, onOpenGroup, onDelete, resizing, movable, onMoveStart, faded = false }) {
+export default function BookingBar({ b, g, rows, style: placement, active, selectMode, picked, onOpen, onPick, onView, onOpenGroup, onDelete, resizing, movable, onMoveStart, faded = false, large = false }) {
   const { settings } = useSettings();
   const c = colorFor(b, settings);
   const hold = b.status === 'on_hold';
@@ -83,7 +83,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
 
-  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-clip rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? 'text-sm' : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
+  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-clip rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? (large ? 'text-base' : 'text-sm') : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
     hold ? 'border-dashed' : ''
   } ${
     g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''

@@ -11,11 +11,13 @@ import { floorLabel, floorOf } from '../components/calendar/floors';
 import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
+import { OVERVIEW_PARTS, useFirstView, useOverviewParts, useRowSize, useShowDone } from '../lib/devicePrefs';
 
 /*
   Settings, in tabs. On a wide screen the tabs are listed on the left; on a phone they are a row of buttons under the header.
   Each tab is its own screen, and the tab you are on is in the address (?tab=account), so it survives a reload:
     Look and feel   the text size of this device, and the colours
+    Calendar        how the calendar opens and looks on this device, and the Overview panel
     Bookings        usual times and automatic check-out
     Calendar        what it opens with
     Rooms           which rooms are on
@@ -33,6 +35,7 @@ const STAY_ROWS = [
 ];
 const TABS = [
   { id: 'look', label: 'Look and feel', Icon: Palette },
+  { id: 'calendar', label: 'Calendar', Icon: CalendarBlank },
   { id: 'bookings', label: 'Bookings', Icon: Clock },
   { id: 'rooms', label: 'Rooms', Icon: Bed },
   { id: 'account', label: 'Account', Icon: UserCircle },
@@ -99,6 +102,10 @@ function Row({ sample, children }) {
 
 export default function Settings() {
   const { settings, save, textSize, setTextSize } = useSettings();
+  const [firstView, setFirstView] = useFirstView();
+  const [rowSize, setRowSize] = useRowSize();
+  const [showDone, setShowDone] = useShowDone();
+  const [overview, setOverview] = useOverviewParts();
   const toast = useToast();
   const rooms = useApi('/api/rooms?all=1');
   const [saved, setSaved] = useState('');
@@ -256,6 +263,48 @@ export default function Settings() {
               </button>
             </Group>
 
+              </>
+            )}
+
+            {tab === 'calendar' && (
+              <>
+                <Group id="calendar" icon={CalendarBlank} title="Calendar" scope="This device only" hint="How the calendar opens and looks on this phone or computer. Other devices keep their own choices.">
+                  <Setting label="First view" hint="What the calendar shows when you open it. It always starts on the current month.">
+                    <Segmented
+                      legend="First view"
+                      legendHidden
+                      options={[['timeline', 'Timeline'], ['month', 'Month']]}
+                      value={firstView}
+                      onChange={(v) => { setFirstView(v); setSaved('First view changed on this device'); }}
+                    />
+                  </Setting>
+                  <Setting label="Row size" hint="Roomy keeps every room row at least 40px tall with larger names, so the rooms may need scrolling.">
+                    <Segmented
+                      legend="Row size"
+                      legendHidden
+                      options={[['standard', 'Standard'], ['roomy', 'Roomy']]}
+                      value={rowSize}
+                      onChange={(v) => { setRowSize(v); setSaved('Row size changed on this device'); }}
+                    />
+                  </Setting>
+                  <Switch
+                    label="Show checked-out stays"
+                    hint="Draw stays that have already checked out. You can also switch this from the calendar toolbar."
+                    checked={showDone}
+                    onChange={(on) => { setShowDone(on); setSaved(on ? 'Checked-out stays are shown' : 'Checked-out stays are hidden'); }}
+                  />
+                </Group>
+
+                <Group id="overview" icon={SlidersHorizontal} title="Overview panel" scope="This device only" hint="What the Overview tab on the calendar shows.">
+                  {OVERVIEW_PARTS.map(([key, label]) => (
+                    <Switch
+                      key={key}
+                      label={label}
+                      checked={overview[key] !== false}
+                      onChange={(on) => { setOverview({ ...overview, [key]: on }); setSaved('Overview panel changed on this device'); }}
+                    />
+                  ))}
+                </Group>
               </>
             )}
 

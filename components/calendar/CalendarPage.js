@@ -28,6 +28,7 @@ import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
 import OverviewPanel from './OverviewPanel';
+import { useShowDone } from '../../lib/devicePrefs';
 import { useBookingData } from './useBookingData';
 import { useHistory } from './useHistory';
 import { useHoldActions } from './useHoldActions';
@@ -75,7 +76,7 @@ export default function CalendarPage() {
   const [todayOpen, setTodayOpen] = useState(false); // the Today panel, lying over the calendar's right edge like the booking panel
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   useEffect(() => { if (formOpen) setTodayOpen(false); }, [formOpen]); // opening the booking panel closes the Today panel
-  const [showDone, setShowDone] = useStoredState('pulse.showCheckedOut', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') }); // show or hide stays that have checked out
+  const [showDone, setShowDone] = useShowDone(); // show or hide stays that have checked out (also a choice in Settings)
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
 
   // Everything date-based is computed on the client only, so server and browser never disagree about "today".

@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { CalendarDots, GridFour, Rows, Sun } from '@phosphor-icons/react';
 import { daysInMonth, isDate, monthStart, today } from '../../lib/dates';
+import { useFirstView } from '../../lib/devicePrefs';
 
 // 'timeline' is the default and comes first: rooms down, dates across, showing the current month. 'month' flips it: rooms across, dates down.
 export const VIEWS = [
@@ -43,8 +44,9 @@ export function useCalendarParams() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady]);
-  // With nothing in the address, the calendar opens on the Timeline view of the current month, always (the Settings choice of a first view is no longer used).
-  const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'timeline';
+  // With nothing in the address, the calendar opens on the first view chosen in Settings for this device (Timeline unless changed), for the current month.
+  const [firstView] = useFirstView();
+  const view = VIEWS.some((v) => v.key === q.view) ? q.view : firstView;
   // With no date in the address the timeline opens on the first day of this month (Today still jumps to today).
   const date = isDate(q.date) ? q.date : view === 'timeline' ? monthStart(today()) : today();
   const spanParam = Number(q.span);

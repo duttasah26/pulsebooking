@@ -3,6 +3,7 @@ import { addDays, diffDays, fmtDayMonth, nightsLabel, today } from '../../lib/da
 import { HEAD, LABEL, barGeometry, cellSize, dayFraction, gridMinWidth, gridTemplate, placeAt } from './grid/gridLayout';
 import { useSettings } from '../SettingsProvider';
 import { useOccupancy } from './grid/useOccupancy';
+import { useRowSize } from '../../lib/devicePrefs';
 import { useGridSelection } from './grid/useGridSelection';
 import { useMarquee } from './grid/useMarquee';
 import { useBarResize } from './grid/useBarResize';
@@ -145,8 +146,11 @@ export default function RoomGrid({
   const [heightScale, setHeightScale] = useState(1);
   const rowAnchor = useRef(null);
   const topRowRef = useRef(0);
-  const fitRow = rows && avail ? Math.min(160, Math.max(MIN_ROW_PX, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
-  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(MIN_ROW_PX, Math.round(fitRow * heightScale))) : baseH;
+  const [rowSize] = useRowSize();
+  const roomy = rowSize === 'roomy'; // Settings: rows at least 40px tall, with larger names, even if the rooms then scroll
+  const minRow = roomy ? 40 : MIN_ROW_PX;
+  const fitRow = rows && avail ? Math.min(160, Math.max(minRow, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
+  const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(minRow, Math.round(fitRow * heightScale))) : baseH;
   const rowPx = cellH * zoom;
   const boxH = Math.max(0, (avail ?? 0) - 2); // the scrolling box, less its border
   const rowsInView = rows && avail ? (boxH / zoom - HEAD) / cellH : rooms.length; // rooms in view, exactly
@@ -466,6 +470,7 @@ export default function RoomGrid({
               style={place(r, g.a, g.len)}
               active={Boolean(activeIds?.has(b.id))}
               faded={Boolean(preview?.replaces?.includes(b.id))}
+              large={roomy}
               selectMode={selecting}
               picked={Boolean(picked?.has(b.id))}
               onOpen={onOpen}
