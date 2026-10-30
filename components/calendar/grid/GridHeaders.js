@@ -28,13 +28,14 @@ export function GridCorner() {
 }
 
 // Column header in the timeline: weekday (or month name) over the day number.
-export function DayHeader({ d, i, isToday, spot = false, onPick, narrow = false }) {
+// taken / total: how many rooms are taken that night, drawn as a thin bar along the foot of the date (full bar: every room is taken).
+export function DayHeader({ d, i, isToday, spot = false, onPick, narrow = false, taken, total }) {
   const Tag = onPick ? 'button' : 'div';
   return (
     <Tag
       type={onPick ? 'button' : undefined}
       onClick={onPick}
-      title={onPick ? 'Highlight this day' : undefined}
+      title={`${onPick ? 'Highlight this day. ' : ''}${total ? `${taken} of ${total} rooms taken` : ''}`.trim() || undefined}
       data-hdr={onPick ? 'day' : undefined}
       tabIndex={onPick ? (i === 0 ? 0 : -1) : undefined}
       onKeyDown={onPick ? arrowNav('day', 'ArrowLeft', 'ArrowRight') : undefined}
@@ -43,6 +44,11 @@ export function DayHeader({ d, i, isToday, spot = false, onPick, narrow = false 
     >
       <span className={narrow ? 'text-xs' : undefined}>{i === 0 || dayOfMonth(d) === 1 ? fmtMonthShort(d) : narrow ? fmtWeekday(d).slice(0, 2) : fmtWeekday(d)}</span>
       <span className="font-mono text-base font-semibold text-ink">{dayOfMonth(d)}</span>
+      {total > 0 && (
+        <span aria-hidden="true" className="absolute inset-x-1 bottom-0.5 h-[3px] rounded-full bg-ink/10">
+          <span className="block h-full rounded-full bg-ink/55" style={{ width: `${Math.min(100, (taken / total) * 100)}%` }} />
+        </span>
+      )}
     </Tag>
   );
 }
