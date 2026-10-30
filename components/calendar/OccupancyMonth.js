@@ -95,9 +95,11 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
   // Three densities, by how tall a cell is.
   const tight = cellH !== null && cellH < 52; // 8px dots need about 52px: the day number, three rows of dots and the padding
   const roomy = cellH === null || cellH >= 100;
-  const dot = tight ? 5 : roomy ? 12 : 9;
   const gapX = tight ? 1.5 : roomy ? 8 : 5;
   const gapY = tight ? 2 : roomy ? 8 : 3;
+  // The dots are sized to what is left in the cell (its height less the padding, the day number line, the gap under it and the gaps
+  // between the three rows, shared by the three rows of dots), so the last row is never cut off.
+  const dot = roomy ? 12 : Math.max(4, Math.min(10, Math.floor(((cellH ?? 62) - (tight ? 8 : 12) - (tight ? 16 : 18) - 2 - 1 - 2 * gapY) / 3)));
 
   return (
     <div className="space-y-3">
@@ -154,7 +156,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                 type="button"
                 onClick={() => onPickDay(d)}
                 aria-label={`${fmtDayMonth(d)}: ${counts[i]} of ${total} rooms taken, ${Math.max(0, total - counts[i])} free`}
-                className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : 'p-1.5 sm:p-2'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
+                className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
               >
                 <span className="flex w-full items-baseline gap-2">
                   <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-semibold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
