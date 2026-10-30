@@ -29,9 +29,11 @@ export const placeAt = (rows, r, i, len = 1) =>
     ? { gridRow: r + 2, gridColumn: len > 1 ? `${i + 2} / span ${len}` : i + 2 }
     : { gridColumn: r + 2, gridRow: len > 1 ? `${i + 2} / span ${len}` : i + 2 };
 
-export function gridTemplate({ rows, n, rooms, cellW, cellH }) {
+// fill: the rooms are shorter than the window (rows are at their tallest, or the view is zoomed out), so the rows share what is left
+// instead of leaving a white gap under the last room. Otherwise the rows are exactly cellH, whatever is inside them.
+export function gridTemplate({ rows, n, rooms, cellW, cellH, fill = false }) {
   return rows
-    ? { gridTemplateColumns: `${LABEL}px repeat(${n}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD}px repeat(${rooms.length}, minmax(${cellH}px, 1fr))` }
+    ? { gridTemplateColumns: `${LABEL}px repeat(${n}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD}px repeat(${rooms.length}, ${fill ? `minmax(${cellH}px, 1fr)` : `${cellH}px`})` }
     : { gridTemplateColumns: `${DATE_LABEL}px repeat(${rooms.length}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${MONTH_HEAD}px repeat(${n}, ${cellH}px)` };
 }
 
