@@ -29,10 +29,10 @@ import { addDays, fmtShort, today } from '../lib/dates';
 // The whole state of the screen lives in the URL, so it survives a reload and can be saved as a named view.
 //   holds '1' = show on-hold bookings too    dir '' = the filter's natural order    room, floor, status: several, separated by commas
 //   sort2/dir2: the second sort    org: organization contains    contact: yes | no    nmin/nmax: nights    rby: stay | check_in | check_out with df, dt
-//   cols: the columns switched OFF, separated by commas    dens: compact (empty = roomy)
+//   cols: the columns switched OFF, separated by commas    (row density, roomy or compact, is one choice for both lists: pulse.density)
 const URL_DEFAULTS = {
   tab: 'upcoming', sort: 'check_in', dir: '', sort2: '', dir2: '', holds: '', room: '', floor: '', status: '',
-  org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '', dens: '',
+  org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '',
 };
 const CLEAR_FILTERS = { room: '', floor: '', status: '', org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', holds: '' };
 
@@ -43,7 +43,7 @@ export default function Bookings() {
 
   // The filter, sort and search live in the URL, so they survive a reload and can be shared.
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
-  const { tab, sort, dir: dirParam, sort2, dir2, holds, room, floor, status, org, contact, nmin, nmax, rby, df, dt, cols, dens } = values;
+  const { tab, sort, dir: dirParam, sort2, dir2, holds, room, floor, status, org, contact, nmin, nmax, rby, df, dt, cols } = values;
   const { q, setQ, search, ready } = useUrlSearch();
   const [dockOpen, setDockOpen] = useStoredState('pulse.filtersOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   const [sheet, setSheet] = useState(null);
@@ -76,7 +76,8 @@ export default function Bookings() {
   add('q', search);
   const list = useApi(ready ? url : null);
   const hidden = csvList(cols);
-  const density = dens === 'compact' ? 'compact' : 'roomy';
+  // Roomy or compact is remembered on this device and shared by Bookings and Guests.
+  const [density, setDensity] = useStoredState('pulse.density', 'roomy', { parse: (raw) => (raw === 'compact' || raw === 'roomy' ? raw : undefined) });
 
   // Saved views: the params that differ from the screen's start (and the search text), kept in the database.
   const { views, loading: viewsLoading, save: saveView, remove: removeView } = useSavedViews('bookings');
@@ -253,7 +254,7 @@ export default function Bookings() {
           hidden={hidden}
           onToggleColumn={(key) => setParams({ cols: toggleCsv(cols, key) })}
           density={density}
-          onDensity={(v) => setParams({ dens: v === 'compact' ? 'compact' : '' })}
+          onDensity={(v) => setDensity(v === 'compact' ? 'compact' : 'roomy')}
         />
       }
       activeCount={activeCount}
