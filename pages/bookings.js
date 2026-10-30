@@ -298,7 +298,7 @@ export default function Bookings() {
             </p>
           ) : (
             <>
-            <p className="t-group px-1 pt-2" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
+            <p className="t-group pt-2" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
               {rows.map((b) => (
                 <BookingRow key={b.id} b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />

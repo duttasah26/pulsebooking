@@ -300,7 +300,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
 
       <div>
         <h2 className="t-title">{ASKS[step].title}</h2>
-        <p className="t-footnote mt-1">{ASKS[step].help}</p>
+        <p className="t-footnote mt-2">{ASKS[step].help}</p>
       </div>
 
       {hint && (guestProblem || stayProblem || extraProblem) ? <p key={hint} className="animate-shake flex items-center gap-2 rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger" role="alert"><WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />{hint}</p> : null}

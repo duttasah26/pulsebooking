@@ -20,7 +20,7 @@ function Moment({ icon: Icon, tone, label, date, time, fallback }) {
         {Icon && <Icon size={20} aria-hidden="true" className={`shrink-0 ${tone ?? 'text-muted'}`} />}
         {label}
       </p>
-      <p className="mt-1 text-xl font-bold leading-tight tabular-nums">{fmtShort(date)}</p>
+      <p className="mt-2 text-xl font-bold leading-tight tabular-nums">{fmtShort(date)}</p>
       <p className="flex flex-wrap items-baseline gap-x-2 text-base tabular-nums">
         <span>{shown ? formatTime(shown) : 'No time set'}</span>
         {!time && shown && <span className="text-sm text-muted">default</span>}
