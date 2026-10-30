@@ -700,24 +700,23 @@ export default function CalendarPage() {
   );
 }
 
-// Loading looks like the calendar it will become (dates down the side, rooms across the top, a few stays drawn in), so
-// nothing jumps when the data arrives. The shimmer sweeps once across all of it.
-const SKELETON_STAYS = { 1: [[0, 3]], 3: [[2, 2]], 4: [[0, 2]], 6: [[1, 3]], 8: [[3, 2]], 9: [[0, 1]], 11: [[2, 3]] };
+// Loading looks like the calendar it will become (the Timeline: rooms down the side, days across the top, a few stays drawn
+// in), so nothing jumps when the data arrives. It is still, with no shimmer.
+const SKELETON_STAYS = { 1: [[3, 5]], 3: [[0, 3]], 5: [[8, 4]], 7: [[2, 6]], 9: [[10, 3]], 11: [[5, 4]], 13: [[1, 3]], 15: [[9, 5]] };
 function GridSkeleton() {
-  const cols = 6;
+  const days = 14;
+  const rooms = 18;
   return (
-    <div className="rounded-lg border border-line bg-surface p-2" aria-busy="true" aria-label="Loading calendar…">
-      <div className="mb-2 grid gap-1.5" style={{ gridTemplateColumns: `3.5rem repeat(${cols}, minmax(0, 1fr))` }}>
+    <div className="rounded-lg border border-line bg-surface" aria-busy="true" aria-label="Loading calendar…">
+      <div className="grid" style={{ gridTemplateColumns: `4rem repeat(${days}, minmax(0, 1fr))`, gridTemplateRows: `2.5rem repeat(${rooms}, 1.5rem)` }}>
         <div />
-        {Array.from({ length: cols }, (_, i) => <div key={i} className="skeleton h-9 rounded-md" style={{ animationDelay: `${i * 80}ms` }} />)}
-      </div>
-      <div className="space-y-1.5">
-        {Array.from({ length: 12 }, (_, r) => (
-          <div key={r} className="grid gap-1.5" style={{ gridTemplateColumns: `3.5rem repeat(${cols}, minmax(0, 1fr))` }}>
-            <div className="skeleton h-9 rounded-md" style={{ animationDelay: `${r * 60}ms` }} />
-            {Array.from({ length: cols }, (_, c) => {
-              const stay = (SKELETON_STAYS[r] ?? []).find(([col]) => col === c);
-              return <div key={c} className={`h-9 rounded-md ${stay ? 'skeleton' : 'bg-surface-2/50'}`} style={stay ? { animationDelay: `${(r + c) * 70}ms` } : undefined} />;
+        {Array.from({ length: days }, (_, i) => <div key={i} className="m-1 skeleton rounded-md" />)}
+        {Array.from({ length: rooms }, (_, r) => (
+          <div key={r} className="contents">
+            <div className="m-0.5 skeleton rounded-md" />
+            {Array.from({ length: days }, (_, c) => {
+              const stay = (SKELETON_STAYS[r] ?? []).find(([col, len]) => c >= col && c < col + len);
+              return <div key={c} className={`m-0.5 rounded-md ${stay ? 'skeleton' : 'bg-surface-2/40'}`} />;
             })}
           </div>
         ))}
@@ -726,20 +725,24 @@ function GridSkeleton() {
   );
 }
 
-// The whole page before it is ready: the toolbar, the tool pane, the calendar and the booking panel as grey blocks.
+// The whole page before it is ready, in the shape of the real one: title row, view row, the tool column, the calendar and the
+// right column (the Today panel on wide screens).
 function PageSkeleton() {
   return (
-    <div className="space-y-3" aria-busy="true" aria-label="Loading calendar…">
+    <div className="space-y-4" aria-busy="true" aria-label="Loading calendar…">
       <div className="flex flex-wrap items-center gap-2">
-        {[10, 14, 20, 28].map((w) => <div key={w} className="h-9 rounded-lg bg-surface-2 skeleton" style={{ width: `${w * 4}px` }} />)}
-        <div className="h-7 w-56 rounded-lg bg-surface-2 skeleton" />
+        {[9, 16, 9, 24].map((w, i) => <div key={i} className="h-9 rounded-lg skeleton" style={{ width: `${w * 4}px` }} />)}
+        <div className="h-8 w-56 rounded-lg skeleton" />
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {[28, 20, 32, 20, 12, 16, 16, 20].map((w, i) => <div key={i} className="h-8 rounded-lg skeleton" style={{ width: `${w * 4}px` }} />)}
       </div>
       <div className="flex gap-4">
-        <div className="hidden h-60 w-16 rounded-lg bg-surface-2 skeleton lg:block" />
+        <div className="hidden h-[26rem] w-[4.5rem] rounded-lg skeleton lg:block" />
         <div className="min-w-0 flex-1">
           <GridSkeleton />
         </div>
-        <div className="hidden h-72 w-[23rem] rounded-lg bg-surface-2 skeleton lg:block" />
+        <div className="hidden h-44 w-11 rounded-lg skeleton lg:block 2xl:h-[26rem] 2xl:w-72" />
       </div>
     </div>
   );
