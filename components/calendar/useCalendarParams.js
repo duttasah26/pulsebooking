@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import { CalendarDots, GridFour, Rows, Sun } from '@phosphor-icons/react';
 import { daysInMonth, isDate, monthStart, today } from '../../lib/dates';
 
-// 'month' is the default and comes first: rooms across, dates down. 'timeline' flips it: rooms down, dates across.
+// 'timeline' is the default and comes first: rooms down, dates across, showing the current month. 'month' flips it: rooms across, dates down.
 export const VIEWS = [
-  { key: 'month', label: 'Month', Icon: GridFour },
   { key: 'timeline', label: 'Timeline', Icon: Rows },
+  { key: 'month', label: 'Month', Icon: GridFour },
   { key: 'calendar', label: 'Occupancy', Icon: CalendarDots },
   { key: 'day', label: 'Day', Icon: Sun },
 ];
@@ -43,8 +43,8 @@ export function useCalendarParams() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady]);
-  // With nothing in the address, the calendar opens on the Month view, always (the Settings choice of a first view is no longer used).
-  const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'month';
+  // With nothing in the address, the calendar opens on the Timeline view of the current month, always (the Settings choice of a first view is no longer used).
+  const view = VIEWS.some((v) => v.key === q.view) ? q.view : 'timeline';
   // With no date in the address the timeline opens on the first day of this month (Today still jumps to today).
   const date = isDate(q.date) ? q.date : view === 'timeline' ? monthStart(today()) : today();
   const spanParam = Number(q.span);
