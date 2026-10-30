@@ -87,10 +87,7 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
       {f.isHoldEdit ? (
         <ConfirmSteps hasGuest={Boolean(f.guestChoice)} onCancel={onCancel} busy={f.busy} />
       ) : (
-        <div>
-          <h2 className="t-title">Edit booking</h2>
-          <p className="t-footnote mt-1">Change what you need, then press Save Changes.</p>
-        </div>
+        <h2 className="t-title">Edit booking</h2>
       )}
       {!f.isHoldEdit && (
         <Card icon={Tag} title="Status">

@@ -143,10 +143,7 @@ export default function Settings() {
     <Layout title="Settings">
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h1 className="t-display">Settings</h1>
-            <p className="t-footnote mt-1">Every change saves by itself. Each group says whether it is for everyone or just this device.</p>
-          </div>
+          <h1 className="t-display">Settings</h1>
           <p role="status" aria-live="polite" className="min-h-6 text-base font-semibold text-accent-text">{saved}</p>
         </div>
 
