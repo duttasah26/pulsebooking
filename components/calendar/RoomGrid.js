@@ -69,7 +69,7 @@ export default function RoomGrid({
       // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
       const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
-      const base = short ? 8 : window.innerWidth < 768 ? 84 : 36;
+      const base = short ? 8 : window.innerWidth < 768 ? 84 : 48; // 48: the page padding under the grid, so the page itself does not scroll
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
       setAvail(Math.max(short ? 130 : window.innerWidth < 768 ? 180 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));

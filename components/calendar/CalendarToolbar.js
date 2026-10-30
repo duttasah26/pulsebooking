@@ -127,7 +127,7 @@ export default function CalendarToolbar({
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {onToggleDone && (view === 'timeline' || view === 'month') && (
           <div role="group" aria-label="Checked out stays" className="seg">
-            <button type="button" onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="seg-item shrink-0">
+            <button type="button" onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="seg-item min-w-[10.5rem] shrink-0 justify-center">
               {showDone ? <EyeSlash size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
               {showDone ? 'Hide checked out' : 'Show checked out'}
             </button>

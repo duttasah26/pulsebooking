@@ -160,7 +160,7 @@ export function useBookingForm({
   const colorTouched = useRef(edit);
   useEffect(() => {
     if (edit || colorTouched.current) return;
-    const preset = companyList.find((c) => c.name.toLowerCase() === organization.trim().toLowerCase())?.color;
+    const preset = companyList.find((c) => c.name.toLowerCase() === organization.trim().replace(/\s+/g, ' ').toLowerCase())?.color;
     if (preset) setColor(preset);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization, companyList.length]);

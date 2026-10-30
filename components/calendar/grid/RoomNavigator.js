@@ -63,7 +63,7 @@ export default function RoomNavigator({ scrollRef, rooms, first, inView, width, 
       <div
         onPointerDown={(e) => drag(e, 'move')}
         title="Drag to scroll through the rooms"
-        className="absolute inset-x-px cursor-grab rounded-full bg-[color-mix(in_srgb,var(--muted)_55%,transparent)] hover:bg-muted active:cursor-grabbing"
+        className="absolute inset-x-px cursor-grab rounded-full bg-muted hover:bg-ink/80 active:cursor-grabbing"
         style={{ top: pct(first), height: pct(inView), minHeight: 28 }}
       >
         <span

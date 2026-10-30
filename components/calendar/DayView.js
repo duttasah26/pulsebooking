@@ -121,7 +121,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                     {...hold(`day-${i}`, () => onDate(addDays(date, Math.sign(i - 3))), () => onDate(d))}
                     aria-current={sel ? 'date' : undefined}
                     aria-label={`${fmtLong(d)}: ${c.arriving.length} arriving, ${c.leaving.length} leaving`}
-                    className={`flex min-h-16 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight select-none transition-[background-color,border-color] duration-150 ease-out ${
+                    className={`flex min-h-20 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight select-none transition-[background-color,border-color] duration-150 ease-out ${
                       sel ? 'border-ink bg-surface shadow-sm' : `border-transparent ${isWeekend(d) ? 'bg-surface-2' : 'bg-surface'} hover:bg-surface-2`
                     } ${d === todayStr ? 'ring-2 ring-accent ring-offset-2' : ''}`}
                   >

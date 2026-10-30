@@ -20,7 +20,7 @@ const MODES = {
     box: 'border-2 border-dashed border-hold-edge bg-hold text-hold-ink',
     iconTone: '',
     touch: 'Tap the first night, then the last night',
-    mouse: 'Drag across free nights, or drag a hold to change it',
+    mouse: 'Tap a free night to hold it, or drag across several. Drag a hold to change it',
   },
   select: {
     icon: CheckSquare,

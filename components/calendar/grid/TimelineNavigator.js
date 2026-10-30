@@ -61,7 +61,7 @@ export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, 
       <div
         onPointerDown={(e) => drag(e, 'move')}
         title="Drag to scroll through the days"
-        className="group/thumb absolute inset-y-px cursor-grab rounded-full bg-[color-mix(in_srgb,var(--muted)_55%,transparent)] hover:bg-muted active:cursor-grabbing"
+        className="group/thumb absolute inset-y-px cursor-grab rounded-full bg-muted hover:bg-ink/80 active:cursor-grabbing"
         style={{ left: pct(first), width: pct(inView), minWidth: 28 }}
       >
         <span

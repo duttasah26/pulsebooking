@@ -120,7 +120,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                     aria-current={sel ? 'date' : undefined}
                     className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'}`}
                   >
-                    <span className={`text-base ${m === monthStart(todayStr) ? 'font-semibold text-accent-text' : ''}`}>{fmtMonthShort(m)}</span>
+                    <span className={`text-base ${m === monthStart(todayStr) ? 'font-semibold text-accent-text' : ''}`}>{fmtMonthShort(m).replace('Sept', 'Sep')}</span>
                     <span className="font-mono text-[0.8125rem] text-muted">{m.slice(0, 4)}</span>
                   </button>
                 </li>
@@ -181,8 +181,8 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
         </div>
 
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1 pt-3 text-[0.9375rem] text-muted" aria-label="What the dots mean">
-          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-ink" aria-hidden="true" /> Room taken</li>
-          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1px var(--ink)' }} aria-hidden="true" /> Room free</li>
+          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-muted" aria-hidden="true" /> Room taken</li>
+          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px var(--muted)' }} aria-hidden="true" /> Room free</li>
           {floors.map(({ floor, shade }) => (
             <li key={floor} className="flex items-center gap-1.5">
               <span className="size-3 rounded-full" style={{ backgroundColor: shade.edge }} aria-hidden="true" /> {FLOOR_NAME[floor] ?? `Floor ${floor}`}
