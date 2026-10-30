@@ -28,6 +28,7 @@ import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
 import OverviewPanel from './OverviewPanel';
+import { useApi } from '../../lib/useApi';
 import { useShowDone } from '../../lib/devicePrefs';
 import { useBookingData } from './useBookingData';
 import { useHistory } from './useHistory';
@@ -76,6 +77,7 @@ export default function CalendarPage() {
   const [todayOpen, setTodayOpen] = useState(false); // the Today panel, lying over the calendar's right edge like the booking panel
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   useEffect(() => { if (formOpen) setTodayOpen(false); }, [formOpen]); // opening the booking panel closes the Today panel
+  useEffect(() => { setTodayOpen(false); }, [view]); // and so does changing the view (it would cover the new one)
   const [showDone, setShowDone] = useShowDone(); // show or hide stays that have checked out (also a choice in Settings)
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
 
@@ -360,6 +362,8 @@ export default function CalendarPage() {
 
   // Arrivals, departures and stays beside the title. They follow what you clicked: nothing is Today; a date is that day; a room is that
   // room over the days on screen; a cell is that room on that day. Counted from the bookings already loaded (cancelled ones left out).
+  // The plain "Today" counts come from their own request (yesterday to tomorrow), so they stay right when the calendar shows another month.
+  const todayRows = useApi(mounted ? `/api/bookings?from=${addDays(today(), -1)}&to=${addDays(today(), 1)}` : null).data;
   const todaySummary = useMemo(() => {
     const room = spot?.roomId != null ? (rooms.data ?? []).find((r) => r.id === spot.roomId) : null;
     let from;
@@ -378,17 +382,19 @@ export default function CalendarPage() {
       to = from;
       label = 'Today';
     }
-    const live = bookingList.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
+    const source = !spot && !room && Array.isArray(todayRows) ? todayRows : bookingList;
+    const live = source.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
+    const stayers = live.filter((b) => b.check_in <= to && b.check_out > from);
     return (
       <TodaySummary
         label={label}
         arriving={live.filter((b) => b.check_in >= from && b.check_in <= to).length}
         leaving={live.filter((b) => b.check_out >= from && b.check_out <= to).length}
-        staying={live.filter((b) => b.check_in <= to && b.check_out > from).length}
+        staying={room ? stayers.length : new Set(stayers.map((b) => b.room_id)).size}
         total={room ? undefined : (rooms.data ?? []).length || undefined}
       />
     );
-  }, [bookingList, spot, rooms.data, shownDate, span, view]);
+  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;
@@ -676,7 +682,12 @@ export default function CalendarPage() {
 
         {wide && todayOpen && !formOpen && (
           <div className="absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full">
-            <OverviewPanel bookings={bookingList} roomCount={roomList.length} day={spot?.d} onOpen={(b) => { setTodayOpen(false); openEdit(b); }} onClose={() => setTodayOpen(false)} />
+            <OverviewPanel bookings={bookingList} roomCount={roomList.length} day={spot?.d} onOpen={(b) => {
+              setTodayOpen(false);
+              // A booking outside the days on screen: take the calendar to it first (the address then opens it, as the header search does).
+              if (bookingList.some((x) => x.id === b.id)) openEdit(b);
+              else set({ view: 'timeline', date: addDays(b.check_in, -3), span: 21, open: b.id });
+            }} onClose={() => setTodayOpen(false)} />
           </div>
         )}
         <BookingPanel
