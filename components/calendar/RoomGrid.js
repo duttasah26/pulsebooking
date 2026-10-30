@@ -227,8 +227,6 @@ export default function RoomGrid({
   );
   const { roomIndex, occupancy } = useOccupancy(rooms, withDraft, days);
   const selection = useGridSelection({ rooms, days, occupancy, onCreate });
-  // How many of the shown rooms are taken each night, for the thin bar under every date (a hold counts: it blocks the room).
-  const takenPerDay = useMemo(() => days.map((_, i) => occupancy.reduce((n, row) => n + (row[i] ? 1 : 0), 0)), [days, occupancy]);
   const { sel, summary, isFree, selected, cornerR, cornerI, roomCount, nightCount } = selection;
   // Timeline: every room is always shown (the page scrolls down), and only the dates scroll sideways. Its scrollbar sits
   // above the date header, kept in step with the grid, so it is always in reach.
@@ -435,7 +433,7 @@ export default function RoomGrid({
           style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), minHeight: rows ? '100%' : undefined, zoom }}
         >
           <GridCorner />
-          {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} taken={takenPerDay[i]} total={rooms.length} isToday={d === todayStr} narrow={cellW * zoom < 36} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />) : heads}
+          {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} isToday={d === todayStr} narrow={cellW * zoom < 36} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />) : heads}
           {rows ? heads : days.map((d, i) => <DayLabel key={d} d={d} i={i} isToday={d === todayStr} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />)}
 
           {rooms.map((room, r) =>
