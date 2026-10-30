@@ -68,14 +68,14 @@ export default function RoomNavigator({ scrollRef, rooms, first, inView, width, 
           title="Drag to change the row height"
           className="absolute inset-x-0 top-0 flex h-3 cursor-ns-resize items-center justify-center"
         >
-          <span className="h-px w-2 rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-white" />
         </span>
         <span
           onPointerDown={(e) => drag(e, 'bottom')}
           title="Drag to change the row height"
           className="absolute inset-x-0 bottom-0 flex h-3 cursor-ns-resize items-center justify-center"
         >
-          <span className="h-px w-2 rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-white" />
         </span>
       </div>
     </div>
