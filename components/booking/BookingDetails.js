@@ -11,11 +11,15 @@ import { fmtBooked, fmtShort, nightsLabel } from '../../lib/dates';
 import { displayName } from '../../lib/staff';
 
 // One end of the stay: the date and the time, in large type. With no time of its own it shows the default time, marked.
-function Moment({ label, date, time, fallback }) {
+// Its title carries the check-in (green) or check-out (brick) symbol, as in the forms.
+function Moment({ icon: Icon, tone, label, date, time, fallback }) {
   const shown = time || fallback;
   return (
     <div className="bg-surface p-4">
-      <p className="t-group">{label}</p>
+      <p className="t-group flex items-center gap-2">
+        {Icon && <Icon size={20} aria-hidden="true" className={`shrink-0 ${tone ?? 'text-muted'}`} />}
+        {label}
+      </p>
       <p className="mt-1 text-xl font-bold leading-tight tabular-nums">{fmtShort(date)}</p>
       <p className="flex flex-wrap items-baseline gap-x-2 text-base tabular-nums">
         <span>{shown ? formatTime(shown) : 'No time set'}</span>
@@ -86,8 +90,8 @@ export default function BookingDetails({
       {/* When: the two moments that matter most, large, with the length of the stay inside the same card. */}
       <section aria-label="Dates" className="overflow-hidden rounded-lg border border-line bg-surface">
         <div className="grid grid-cols-2 divide-x divide-line">
-          <Moment icon={SignIn} label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
-          <Moment icon={SignOut} label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
+          <Moment icon={SignIn} tone="text-accent-text" label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
+          <Moment icon={SignOut} tone="text-danger" label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
         </div>
         <p className="border-t border-line px-4 py-2.5 text-center text-[0.9375rem] font-semibold text-muted">{nightsLabel(b.nights)}</p>
       </section>
