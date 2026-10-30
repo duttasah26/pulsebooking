@@ -19,7 +19,13 @@ export default function GlobalSearch() {
   const enough = term.length >= 2;
   const bookings = useApi(enough ? `/api/bookings?when=all&q=${encodeURIComponent(term)}` : null).data;
   const guests = useApi(enough ? `/api/guests?q=${encodeURIComponent(term)}` : null).data;
-  const stays = (Array.isArray(bookings) ? bookings : []).slice(0, 5);
+  // A booking in several rooms is one result with all its rooms, not one row per room.
+  const stays = [...(Array.isArray(bookings) ? bookings : []).reduce((map, b) => {
+    const key = b.group_id ?? `b${b.id}`;
+    const hit = map.get(key) ?? { ...b, rooms: [] };
+    hit.rooms.push(b.room_number);
+    return map.set(key, hit);
+  }, new Map()).values()].slice(0, 5);
   const people = (Array.isArray(guests) ? guests : []).slice(0, 4);
 
   useEffect(() => {
@@ -87,13 +93,13 @@ export default function GlobalSearch() {
             <>
               <p className="t-group px-2 pt-1">Bookings</p>
               {stays.map((b) => (
-                <button key={b.id} type="button" role="option" className={row} onClick={() => toStay(b)}>
+                <button key={b.group_id ?? b.id} type="button" role="option" className={row} onClick={() => toStay(b)}>
                   <Bed size={18} aria-hidden="true" className="shrink-0 text-muted" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-base font-semibold">{b.name || 'On hold'}</span>
                     <span className="block text-[0.9375rem] text-muted">{fmtShort(b.check_in)} to {fmtShort(b.check_out)}</span>
                   </span>
-                  <span className="shrink-0 font-mono text-[0.9375rem] font-semibold">{b.room_number}</span>
+                  <span className="max-w-28 shrink-0 truncate font-mono text-[0.9375rem] font-semibold">{[...new Set(b.rooms)].sort().join(', ')}</span>
                 </button>
               ))}
             </>
