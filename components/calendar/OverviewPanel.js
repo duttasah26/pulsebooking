@@ -48,12 +48,12 @@ function Section({ icon: Icon, tone, title, count, rows, onOpen, detail }) {
           const note = detail?.(r.first);
           return (
             <li key={r.key}>
-              <button type="button" onClick={() => onOpen(r.first)} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-2 lg:py-1.5">
-                <span className="min-w-0 flex-1">
+              <button type="button" onClick={() => onOpen(r.first)} className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-md px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-2 lg:py-1.5">
+                <span className="min-w-40 flex-1">
                   <span className="block truncate text-base font-semibold">{r.first.name || 'On hold'}</span>
                   {note && <span className="block text-[0.9375rem] text-muted">{note}</span>}
                 </span>
-                <span className="flex shrink-0 flex-wrap justify-end gap-1">
+                <span className="flex flex-wrap gap-1">
                   {r.rooms.map((n) => {
                     const shade = roomShade({ number: n }, settings);
                     return <span key={n} className="rounded-md px-1.5 font-mono text-[0.9375rem] font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>;
@@ -64,6 +64,7 @@ function Section({ icon: Icon, tone, title, count, rows, onOpen, detail }) {
           );
         })}
       </ul>
+      {typeof count === 'number' && count > rows.length && <p className="t-footnote px-0">+ {count - rows.length} more</p>}
     </section>
   );
 }
@@ -77,7 +78,8 @@ export default function OverviewPanel({ bookings, roomCount, day, onOpen, onClos
   const monthFrom = monthStart(t);
   const monthDays = daysInMonth(monthFrom);
   const monthTo = addDays(monthFrom, monthDays);
-  const soon = useApi(`/api/bookings?from=${t}&to=${addDays(t, 60)}&sort=check_in&dir=asc`).data;
+  // From yesterday, so a guest who arrived before today and leaves today is in the list too.
+  const soon = useApi(`/api/bookings?from=${addDays(t, -1)}&to=${addDays(t, 60)}&sort=check_in&dir=asc`).data;
   const holds = useApi('/api/bookings?when=upcoming&status=on_hold&sort=check_in&dir=asc').data;
   const month = useApi(`/api/bookings?from=${monthFrom}&to=${monthTo}`).data;
 
@@ -101,7 +103,7 @@ export default function OverviewPanel({ bookings, roomCount, day, onOpen, onClos
   // Top to bottom, most urgent first: the figures, what is happening on the day, holds that need an answer, then what is coming.
   // Each block is separated by a hairline and has the same shape: a heading with its count, then rows.
   return (
-    <aside aria-label="Overview" className="no-scrollbar h-full animate-dock-in overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface shadow-lg">
+    <aside aria-label="Overview" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }} className="no-scrollbar h-full animate-dock-in overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface shadow-lg">
       <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-2 border-b border-line bg-surface py-1.5 pl-4 pr-2">
         <h2 className="t-title min-w-0 truncate">Overview</h2>
         <button type="button" className="btn btn-icon shrink-0" aria-label="Hide overview" title="Hide overview" onClick={onClose}>
