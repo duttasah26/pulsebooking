@@ -524,7 +524,7 @@ export default function RoomGrid({
         />
       )}
       {rows && fitW > 0 && !touchUi && (
-        <div className="mt-1.5 flex items-center gap-2 text-sm text-muted">
+        <div className="-mt-px flex items-center gap-2 text-sm text-muted">
           <div className="min-w-0 flex-1">
             <LiveTimelineNavigator
               bus={scrollBus.current}
