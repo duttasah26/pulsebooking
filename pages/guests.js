@@ -19,6 +19,7 @@ import MergeSheet from '../components/guests/MergeSheet';
 import { useApi } from '../lib/useApi';
 import { useMediaQuery } from '../lib/useMediaQuery';
 import { useQueryParams } from '../lib/useQueryState';
+import { tabKeys } from '../lib/tabKeys';
 import { useStoredState } from '../lib/useStoredState';
 import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
@@ -184,9 +185,9 @@ export default function Guests() {
             </button>
           </div>
 
-          <div role="tablist" aria-label="Guests or companies" className="seg">
+          <div role="tablist" aria-label="Guests or companies" onKeyDown={tabKeys} className="seg">
             {TABS.map(([key, label]) => (
-              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
+              <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
             ))}
           </div>
           <Swap id={tab} className="space-y-4">

@@ -11,6 +11,7 @@ import { floorLabel, floorOf } from '../components/calendar/floors';
 import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
+import { tabKeys } from '../lib/tabKeys';
 import { OVERVIEW_PARTS, useFirstView, useOverviewParts, useRowSize, useShowDone } from '../lib/devicePrefs';
 
 /*
@@ -159,6 +160,7 @@ export default function Settings() {
             ref={tabStrip}
             role="tablist"
             aria-label="Settings"
+            onKeyDown={tabKeys}
             className="no-scrollbar sticky top-14 z-20 -mx-4 mb-4 flex gap-1 overflow-x-auto bg-canvas px-4 py-2 lg:top-20 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:px-0 lg:py-0"
           >
             {TABS.map(({ id, label, Icon }) => {
@@ -170,6 +172,7 @@ export default function Settings() {
                   role="tab"
                   id={`tab-${id}`}
                   aria-selected={on}
+                  tabIndex={on ? 0 : -1}
                   aria-controls="settings-panel"
                   onClick={() => { setTab(id); setSaved(''); }}
                   className={`btn shrink-0 justify-start gap-3 px-3 lg:min-h-9 ${on ? 'btn-on' : 'btn-quiet'}`}
