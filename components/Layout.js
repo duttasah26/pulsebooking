@@ -62,7 +62,7 @@ export default function Layout({ title, wide = false, children }) {
                   here === href ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'
                 }`}
               >
-                <Icon size={18} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block" />
+                <Icon size={18} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block short:block" />
                 <span className="short:sr-only">{label}</span>
               </Link>
             ))}
@@ -85,7 +85,7 @@ export default function Layout({ title, wide = false, children }) {
                 aria-label={label}
                 title={label}
                 aria-current={here === href ? 'page' : undefined}
-                className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-accent-text' : 'text-muted'}`}
+                className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-ink' : 'text-muted'}`}
               >
                 <Icon size={22} weight={here === href ? 'fill' : 'bold'} />
               </Link>
