@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Trash, X } from '@phosphor-icons/react';
+import { Clock, Sun, Trash, X } from '@phosphor-icons/react';
 import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
@@ -17,8 +17,7 @@ import HelpGuide from './HelpGuide';
 // The calendar always leaves a slim column on the right (the width of the folded tab). Open, the booking panel lies over that
 // column and the calendar's right side (see Dock overlay); folded, its tab sits in the column. Either way the calendar never
 // changes size when the panel opens or closes.
-// From 2xl up the right column is wider and holds the Today panel while the booking panel is folded.
-const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem] 2xl:grid-cols-[4.5rem_minmax(0,1fr)_18rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem] 2xl:grid-cols-[4.5rem_minmax(0,1fr)_18rem]' };
+const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]' };
 import { useToast } from '../Toast';
 import Head from 'next/head';
 import Presence from '../Presence';
@@ -73,7 +72,9 @@ export default function CalendarPage() {
   const [editSelection, setEditSelection] = useState(false); // the selected bookings' names as editable cells
   const [viewPicked, setViewPicked] = useState(false); // show the details of everything picked, side by side
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
+  const [todayOpen, setTodayOpen] = useState(false); // the Today panel, lying over the calendar's right edge like the booking panel
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
+  useEffect(() => { if (formOpen) setTodayOpen(false); }, [formOpen]); // opening the booking panel closes the Today panel
   const [showDone, setShowDone] = useStoredState('pulse.showCheckedOut', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') }); // show or hide stays that have checked out
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
 
@@ -659,8 +660,18 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        {wide && todayOpen && !formOpen && (
+          <div className="absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full">
+            <TodayPanel bookings={bookingList} day={spot?.d} onOpen={(b) => { setTodayOpen(false); openEdit(b); }} onClose={() => setTodayOpen(false)} />
+          </div>
+        )}
         <BookingPanel
-          renderSide={({ show, label, mark }) => <TodayPanel bookings={bookingList} day={spot?.d} onOpen={openEdit} formLabel={label} formMark={mark} onShowForm={show} />}
+          renderSide={() => (
+            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Today: who arrives, leaves and stays" className="animate-fade flex h-28 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
+              <Sun size={18} aria-hidden="true" />
+              <span className="[writing-mode:vertical-rl]">Today</span>
+            </button>
+          )}
           wide={wide}
           formOpen={formOpen}
           onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change
@@ -742,7 +753,7 @@ function PageSkeleton() {
         <div className="min-w-0 flex-1">
           <GridSkeleton />
         </div>
-        <div className="hidden h-44 w-11 rounded-lg skeleton lg:block 2xl:h-[26rem] 2xl:w-72" />
+        <div className="hidden h-44 w-11 rounded-lg skeleton lg:block" />
       </div>
     </div>
   );

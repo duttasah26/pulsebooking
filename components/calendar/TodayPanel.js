@@ -1,11 +1,11 @@
-import { Bed, CaretLeft, SignIn, SignOut } from '@phosphor-icons/react';
+import { Bed, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
 import { roomShade } from '../../lib/colors';
 import { fmtShort, today } from '../../lib/dates';
 import { useSettings } from '../SettingsProvider';
 import { formatTime } from '../TimeSelect';
 
-// The right-hand column on wide screens, where the folded booking tab used to be: who arrives, who leaves and who is staying on one
-// day (today, or the day clicked on the calendar). A booking in several rooms is one row with its rooms. A row opens the booking.
+// The Today panel, which lies over the calendar's right edge (like the booking panel, so the calendar never changes size): who arrives,
+// who leaves and who is staying on one day (today, or the day clicked on the calendar). A booking in several rooms is one row with its rooms. A row opens the booking.
 // Counted from the bookings already loaded (cancelled ones left out); a stay that checks in and out the same day counts only once.
 function groupRows(list) {
   const map = new Map();
@@ -54,7 +54,7 @@ function Section({ icon: Icon, tone, title, rows, onOpen, time }) {
   );
 }
 
-export default function TodayPanel({ bookings, day, onOpen, formLabel, formMark, onShowForm }) {
+export default function TodayPanel({ bookings, day, onOpen, onClose }) {
   const d = day ?? today();
   const isToday = d === today();
   const live = bookings.filter((b) => b.status !== 'cancelled');
@@ -63,16 +63,12 @@ export default function TodayPanel({ bookings, day, onOpen, formLabel, formMark,
   const staying = groupRows(live.filter((b) => b.check_in < d && b.check_out > d));
   const quiet = !arriving.length && !leaving.length && !staying.length;
   return (
-    <aside aria-label={isToday ? 'Today' : fmtShort(d)} className="no-scrollbar sticky top-[4.75rem] max-h-[calc(100dvh-6rem)] space-y-4 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-4">
+    <aside aria-label={isToday ? 'Today' : fmtShort(d)} className="no-scrollbar h-full animate-dock-in space-y-4 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-4 shadow-lg">
       <div className="flex items-center justify-between gap-2">
         <h2 className="t-title min-w-0 truncate">{isToday ? 'Today' : fmtShort(d)}</h2>
-        {onShowForm && (
-          <button type="button" className="btn btn-sm shrink-0" onClick={onShowForm} title={`Show ${formLabel}`}>
-            <CaretLeft size={16} aria-hidden="true" />
-            <span className="max-w-28 truncate">{formLabel}</span>
-            {formMark && <span aria-hidden="true" className="size-2 rounded-sm bg-accent" />}
-          </button>
-        )}
+        <button type="button" className="btn btn-icon shrink-0" aria-label="Hide today" title="Hide today" onClick={onClose}>
+          <CaretRight size={18} aria-hidden="true" />
+        </button>
       </div>
       {quiet && <p className="t-footnote">Nobody arriving, leaving or staying.</p>}
       <Section icon={SignIn} tone="text-accent-text" title="Arriving" rows={arriving} onOpen={onOpen} time={(b) => b.check_in_time} />
