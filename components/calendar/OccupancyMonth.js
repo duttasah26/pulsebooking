@@ -116,9 +116,9 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                     type="button"
                     {...hold(`month-${i}`, () => onDate(addMonths(first, Math.sign(i - 2))), () => onDate(m))}
                     aria-current={sel ? 'date' : undefined}
-                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold shadow-sm' : 'border-transparent hover:bg-surface-2'} ${m === monthStart(todayStr) ? 'ring-2 ring-accent ring-offset-2' : ''}`}
+                    className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'}`}
                   >
-                    <span className="text-base">{fmtMonthShort(m)}</span>
+                    <span className={`text-base ${m === monthStart(todayStr) ? 'font-semibold text-accent-text' : ''}`}>{fmtMonthShort(m)}</span>
                     <span className="font-mono text-[0.8125rem] text-muted">{m.slice(0, 4)}</span>
                   </button>
                 </li>
