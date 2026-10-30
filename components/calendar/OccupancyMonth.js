@@ -95,9 +95,9 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
   // Three densities, by how tall a cell is.
   const tight = cellH !== null && cellH < 52; // 8px dots need about 52px: the day number, three rows of dots and the padding
   const roomy = cellH === null || cellH >= 100;
-  const dot = tight ? 4 : roomy ? 12 : 8;
+  const dot = tight ? 5 : roomy ? 12 : 9;
   const gapX = tight ? 1.5 : roomy ? 8 : 5;
-  const gapY = tight ? 2 : roomy ? 8 : 4;
+  const gapY = tight ? 2 : roomy ? 8 : 3;
 
   return (
     <div className="space-y-3">
@@ -167,7 +167,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                         <span
                           key={r.id}
                           className="block shrink-0 rounded-full"
-                          style={{ width: dot, height: dot, ...(taken[i].has(r.id) ? { backgroundColor: shade.edge } : { boxShadow: `inset 0 0 0 1px ${shade.edge}` }) }}
+                          style={{ width: dot, height: dot, ...(taken[i].has(r.id) ? { backgroundColor: shade.edge } : { boxShadow: `inset 0 0 0 1.5px ${shade.edge}` }) }}
                         />
                       ))}
                     </span>
