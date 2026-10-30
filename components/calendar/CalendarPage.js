@@ -338,6 +338,18 @@ export default function CalendarPage() {
     setPanel({ booking, editing: false });
     setFormOpen(true);
   };
+  // Coming from the header search (/?open=<booking id>): once that booking is loaded, open it in the panel. Its bar lights up on the
+  // calendar like any open booking, and the address goes back to plain.
+  useEffect(() => {
+    const id = Number(router.query.open);
+    if (!router.isReady || !id) return;
+    const found = bookingList.find((b) => b.id === id);
+    if (!found) return;
+    openEdit(found);
+    const { open: _open, ...rest } = router.query;
+    router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.open, bookingList]);
   const reload = (message, entry) => {
     bookings.reload();
     if (entry) history.push(entry); // a save from the form is undoable too

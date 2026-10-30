@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Bed, MagnifyingGlass, User } from '@phosphor-icons/react';
 import { useApi, useDebounced } from '../lib/useApi';
-import { fmtShort } from '../lib/dates';
+import { addDays, fmtShort } from '../lib/dates';
 
 // One search box in the header, on every page: type a guest, a company or a phone number and jump to their bookings or their
 // guest record. "/" or Ctrl+K puts the cursor here from anywhere. Results are the first few bookings and guests; Enter takes the
@@ -46,8 +46,11 @@ export default function GlobalSearch() {
     router.push(path);
   };
   const toBookings = (text) => go(`/bookings?tab=all&q=${encodeURIComponent(text)}`);
+  // A booking opens on the calendar: the timeline starts a few days before its check-in, and the booking opens in the side panel
+  // (so its bar is lit on the grid).
+  const toStay = (b) => go(`/?view=timeline&date=${addDays(b.check_in, -3)}&span=21&open=${b.id}`);
   const first = () => {
-    if (stays[0]) return toBookings(stays[0].name);
+    if (stays[0]) return toStay(stays[0]);
     if (people[0]) return go(`/guests?q=${encodeURIComponent(people[0].name)}`);
     if (q.trim()) return toBookings(q.trim());
   };
@@ -84,7 +87,7 @@ export default function GlobalSearch() {
             <>
               <p className="t-group px-2 pt-1">Bookings</p>
               {stays.map((b) => (
-                <button key={b.id} type="button" role="option" className={row} onClick={() => toBookings(b.name)}>
+                <button key={b.id} type="button" role="option" className={row} onClick={() => toStay(b)}>
                   <Bed size={18} aria-hidden="true" className="shrink-0 text-muted" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-base font-semibold">{b.name || 'On hold'}</span>
