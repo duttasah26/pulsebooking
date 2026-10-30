@@ -1,4 +1,4 @@
-import { Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple } from '@phosphor-icons/react';
+import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
@@ -64,7 +64,10 @@ export default function BookingDetails({
           <StatusBadge status={b.status} />
           {b.status === 'on_hold' && <span className="text-[0.9375rem]">Not confirmed yet</span>}
         </div>
-        <p className="t-title mt-3 min-w-0 break-words">{b.name}</p>
+        <p className="t-title mt-3 flex min-w-0 items-center gap-2 break-words">
+          <User size={20} aria-hidden="true" className="shrink-0 text-muted" />
+          {b.name}
+        </p>
         <ul className="mt-2 space-y-1.5 text-base">
           {b.phone && <Line icon={Phone}><a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a></Line>}
           {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
@@ -72,6 +75,7 @@ export default function BookingDetails({
           {!b.guest_id && <li>No guest name yet</li>}
         </ul>
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-4">
+          <Bed size={20} aria-hidden="true" className="shrink-0 text-muted" />
           <span className="sr-only">{targets.length > 1 ? 'Rooms' : 'Room'}</span>
           {[...new Set(targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number])].sort().map((n) => {
             const shade = roomShade({ number: n }, settings);
