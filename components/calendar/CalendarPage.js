@@ -345,7 +345,8 @@ export default function CalendarPage() {
     if (!router.isReady || !id) return;
     const found = bookingList.find((b) => b.id === id);
     if (!found) return;
-    openEdit(found);
+    if (found.group_id && bookingList.some((b) => b.id !== found.id && b.group_id === found.group_id)) openGroup(found); // every room of the party lights up
+    else openEdit(found);
     const { open: _open, ...rest } = router.query;
     router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
