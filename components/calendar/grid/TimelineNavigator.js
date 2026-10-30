@@ -65,14 +65,14 @@ export default function TimelineNavigator({ scrollRef, n, dayPx, first, inView, 
           title="Drag to change the day width"
           className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize items-center justify-center"
         >
-          <span className="h-2 w-px rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-ink" />
         </span>
         <span
           onPointerDown={(e) => drag(e, 'right')}
           title="Drag to change the day width"
           className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize items-center justify-center"
         >
-          <span className="h-2 w-px rounded-full bg-white/80" />
+          <span className="size-1.5 rounded-full bg-ink" />
         </span>
       </div>
     </div>
