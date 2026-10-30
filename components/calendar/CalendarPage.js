@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Gauge, Trash, X } from '@phosphor-icons/react';
+import { Clock, Trash, X } from '@phosphor-icons/react';
 import BookingSheet from '../booking/BookingSheet';
 import HoldButton from '../HoldButton';
 import { useRouter } from 'next/router';
@@ -681,8 +681,7 @@ export default function CalendarPage() {
         )}
         <BookingPanel
           renderSide={() => (
-            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Overview: rooms in use, coming up, holds and today" className="animate-fade flex h-32 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
-              <Gauge size={18} aria-hidden="true" />
+            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Overview: rooms in use, coming up, holds and today" className="animate-fade flex h-32 w-11 flex-col items-center rounded-lg border border-line bg-surface py-4 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
               <span className="[writing-mode:vertical-rl]">Overview</span>
             </button>
           )}

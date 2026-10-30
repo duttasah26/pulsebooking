@@ -1,7 +1,8 @@
-import { Bed, SignIn, SignOut, X } from '@phosphor-icons/react';
+import { Bed, CalendarBlank, Clock, SignIn, SignOut, X } from '@phosphor-icons/react';
 import { roomShade } from '../../lib/colors';
 import { addDays, daysInMonth, diffDays, fmtMonth, fmtShort, monthStart, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
+import { useOverviewParts } from '../../lib/devicePrefs';
 import { useSettings } from '../SettingsProvider';
 import { formatTime } from '../TimeSelect';
 
@@ -94,30 +95,50 @@ export default function OverviewPanel({ bookings, roomCount, day, onOpen, onClos
   const ready = Array.isArray(soon) && Array.isArray(month);
   const quiet = !arriving.length && !leaving.length && !staying.length;
 
+  const [parts] = useOverviewParts();
+  const show = (key) => parts[key] !== false;
+
+  // Top to bottom, most urgent first: the figures, what is happening on the day, holds that need an answer, then what is coming.
+  // Each block is separated by a hairline and has the same shape: a heading with its count, then rows.
   return (
-    <aside aria-label="Overview" className="no-scrollbar h-full animate-dock-in space-y-5 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-4 shadow-lg">
-      <div className="flex items-center justify-between gap-2">
+    <aside aria-label="Overview" className="no-scrollbar h-full animate-dock-in overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface shadow-lg">
+      <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-2 border-b border-line bg-surface py-1.5 pl-4 pr-2">
         <h2 className="t-title min-w-0 truncate">Overview</h2>
         <button type="button" className="btn btn-icon shrink-0" aria-label="Hide overview" title="Hide overview" onClick={onClose}>
           <X size={20} weight="bold" aria-hidden="true" />
         </button>
       </div>
 
-      <dl className="space-y-1.5" aria-busy={!ready}>
-        <Figure label={isToday ? 'Rooms in use tonight' : `Rooms in use, ${fmtShort(d)}`}>{ready || !isToday ? `${inUse} of ${roomCount}` : '…'}</Figure>
-        <Figure label="Arriving, next 7 days">{ready ? arrivals7 : '…'}</Figure>
-        <Figure label={`Nights booked, ${fmtMonth(monthFrom).split(' ')[0]}`}>{ready ? `${nights} of ${roomCount * monthDays}` : '…'}</Figure>
-      </dl>
+      <div className="divide-y divide-line">
+        {show('figures') && (
+          <dl className="space-y-2 p-4" aria-busy={!ready}>
+            <Figure label={isToday ? 'Rooms in use tonight' : `Rooms in use, ${fmtShort(d)}`}>{ready || !isToday ? `${inUse} of ${roomCount}` : '…'}</Figure>
+            <Figure label="Arriving, next 7 days">{ready ? arrivals7 : '…'}</Figure>
+            <Figure label={`Nights booked in ${fmtMonth(monthFrom).split(' ')[0]}`}>{ready ? `${nights} of ${roomCount * monthDays}` : '…'}</Figure>
+          </dl>
+        )}
 
-      <Section icon={SignIn} tone="text-accent-text" title="Coming up" rows={coming.slice(0, 5)} count={coming.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)}${b.check_in_time ? `, ${atTime(b.check_in_time)}` : ''}`} />
-      <Section title="On hold" rows={holdRows.slice(0, 4)} count={holdRows.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}`} />
+        {show('today') && (
+          <div className="space-y-4 p-4">
+            <h3 className="t-headline">{isToday ? 'Today' : fmtShort(d)}</h3>
+            {quiet && ready && <p className="t-footnote">Nobody arriving, leaving or staying.</p>}
+            <Section icon={SignIn} tone="text-accent-text" title="Arriving" rows={arriving} onOpen={onOpen} detail={(b) => atTime(b.check_in_time)} />
+            <Section icon={SignOut} tone="text-danger" title="Leaving" rows={leaving} onOpen={onOpen} detail={(b) => atTime(b.check_out_time)} />
+            <Section icon={Bed} tone="text-muted" title="Staying" rows={staying} onOpen={onOpen} />
+          </div>
+        )}
 
-      <div className="space-y-3 border-t border-line pt-4">
-        <h3 className="t-group">{isToday ? 'Today' : fmtShort(d)}</h3>
-        {quiet && ready && <p className="t-footnote">Nobody arriving, leaving or staying.</p>}
-        <Section icon={SignIn} tone="text-accent-text" title="Arriving" rows={arriving} onOpen={onOpen} detail={(b) => atTime(b.check_in_time)} />
-        <Section icon={SignOut} tone="text-danger" title="Leaving" rows={leaving} onOpen={onOpen} detail={(b) => atTime(b.check_out_time)} />
-        <Section icon={Bed} tone="text-muted" title="Staying" rows={staying} onOpen={onOpen} />
+        {show('holds') && holdRows.length > 0 && (
+          <div className="p-4">
+            <Section icon={Clock} tone="text-hold-ink" title="On hold" rows={holdRows.slice(0, 4)} count={holdRows.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}`} />
+          </div>
+        )}
+
+        {show('coming') && coming.length > 0 && (
+          <div className="p-4">
+            <Section icon={CalendarBlank} tone="text-muted" title="Coming up" rows={coming.slice(0, 5)} count={coming.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)}${b.check_in_time ? `, ${atTime(b.check_in_time)}` : ''}`} />
+          </div>
+        )}
       </div>
     </aside>
   );
