@@ -471,11 +471,11 @@ export default function CalendarPage() {
           </button>
         )}
         {wide && formOpen ? null : pickedHasBookings ? (
-          <HoldButton className="btn btn-danger shrink-0 max-sm:px-2.5" onConfirm={deletePicked}>
+          <HoldButton className="btn btn-inverse btn-danger shrink-0 max-sm:px-2.5" onConfirm={deletePicked}>
             <Trash size={16} /> <span>Hold to Delete<span className="max-sm:hidden"> {pickedBookings.length}</span></span>
           </HoldButton>
         ) : (
-          <button type="button" className="btn btn-danger shrink-0 max-sm:px-2.5" disabled={pickedBookings.length === 0} onClick={deletePicked}>
+          <button type="button" className="btn btn-inverse btn-danger shrink-0 max-sm:px-2.5" disabled={pickedBookings.length === 0} onClick={deletePicked}>
             <Trash size={16} /> <span>Delete{pickedBookings.length > 0 ? <span className="max-sm:hidden"> {pickedBookings.length}</span> : null}</span>
           </button>
         )}

@@ -40,6 +40,10 @@
   --tint: rgb(38 31 28 / 0.06);
   --tint-hover: rgb(38 31 28 / 0.1);
   --tint-press: rgb(38 31 28 / 0.15);
+  --btn: rgb(38 31 28 / 0.11);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
+  --btn-hover: rgb(38 31 28 / 0.16);
+  --btn-press: rgb(38 31 28 / 0.22);
+  --danger-btn: #f4d8d2;
 }
 
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
@@ -192,11 +196,11 @@ body {
   */
   .btn {
     @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-4 text-base font-medium text-ink select-none lg:min-h-9 lg:px-3.5 lg:text-[0.9375rem];
-    background-color: var(--tint);
+    background-color: var(--btn);
     transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out, box-shadow 120ms ease-out;
   }
-  .btn:hover { background-color: var(--tint-hover); }
-  .btn:active { background-color: var(--tint-press); }
+  .btn:hover { background-color: var(--btn-hover); }
+  .btn:active { background-color: var(--btn-press); }
   .btn:disabled { @apply opacity-45; }
   .btn > svg { flex-shrink: 0; }
 
@@ -220,30 +224,35 @@ body {
 
   .btn-danger, .btn-block-danger {
     @apply text-danger;
-    background-color: var(--danger-soft);
+    background-color: var(--danger-btn);
   }
-  .btn-danger:hover, .btn-block-danger:hover { background-color: #f2d6cf; }
-  .btn-danger:active, .btn-block-danger:active { background-color: #ecc5bc; }
-  .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-soft); }
+  .btn-danger:hover, .btn-block-danger:hover { background-color: #eec6bd; }
+  .btn-danger:active, .btn-block-danger:active { background-color: #e7b4a9; }
+  .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-btn); }
 
   .btn-hold, .btn-block-hold {
     @apply border-dashed border-hold-edge text-hold-ink;
     background-color: var(--hold);
   }
-  .btn-hold:hover, .btn-block-hold:hover { background-color: #f0dfa8; }
-  .btn-hold:active, .btn-block-hold:active { background-color: #e9d48f; }
+  .btn-hold:hover, .btn-block-hold:hover { background-color: #efdc9e; }
+  .btn-hold:active, .btn-block-hold:active { background-color: #e7d085; }
 
   .btn-on, .btn-on:hover, .btn-on:active {
     @apply font-semibold text-white;
     background-color: var(--ink);
   }
 
-  .btn-inverse { @apply text-white; background-color: rgb(255 255 255 / 0.14); }
-  .btn-inverse:hover { background-color: rgb(255 255 255 / 0.22); }
-  .btn-inverse:active { background-color: rgb(255 255 255 / 0.3); }
+  .btn-inverse { @apply text-white; background-color: rgb(255 255 255 / 0.18); }
+  .btn-inverse:hover { background-color: rgb(255 255 255 / 0.27); }
+  .btn-inverse:active { background-color: rgb(255 255 255 / 0.36); }
   .btn-inverse.btn-quiet { background-color: transparent; }
   .btn-inverse.btn-quiet:hover { background-color: rgb(255 255 255 / 0.12); }
   .btn-inverse:focus-visible { outline-color: #ffffff; }
+  /* Delete on an ink bar: solid brick with white words, so it sits with the white-tint buttons beside it and still reads as leaving. */
+  .btn-inverse.btn-danger { @apply font-semibold text-white; background-color: #b5382a; }
+  .btn-inverse.btn-danger:hover { background-color: #c4432f; }
+  .btn-inverse.btn-danger:active { background-color: #a03022; }
+  .btn-inverse.btn-danger:disabled { background-color: rgb(255 255 255 / 0.18); }
 
   /* Forms keep 44px targets and 16px type on every screen. */
   .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
