@@ -214,7 +214,7 @@ export default function Guests() {
             </p>
           ) : (
             <>
-              <p className="t-group pt-2" role="status" aria-live="polite">{guests.length} {guests.length === 1 ? 'guest' : 'guests'}{guests.length === 100 ? ' (the first 100: narrow the search to see others)' : ''}</p>
+              <p className={search || activeCount || guests.length === 100 ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{guests.length} {guests.length === 1 ? 'guest' : 'guests'}{guests.length === 100 ? ' (the first 100: narrow the search to see others)' : ''}</p>
               <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
                 {guests.map((g) => {
                   const partner = partnerOf(g);

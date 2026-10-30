@@ -312,7 +312,8 @@ export default function Bookings() {
             </p>
           ) : (
             <>
-            <p className="t-group pt-2" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
+            {/* The count is shown only when a search or filter narrowed the list (it says how many matched); otherwise screen readers still hear it. */}
+            <p className={search || activeCount ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
               {rows.map((b, i) => {
                 const group = sort === 'check_in' && !sort2 ? arrivalGroup(b.check_in) : null;
