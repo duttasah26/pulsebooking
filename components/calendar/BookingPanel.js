@@ -110,7 +110,7 @@ export default function BookingPanel({
       renderSide={renderSide}
       open={formOpen}
       onToggle={onToggle}
-      label="Booking form"
+      label={panel ? 'Booking details' : 'Booking form'}
       title={title}
       actions={actions}
       tab={panel ? (panelBooking.status === 'on_hold' ? 'Hold open' : panelBooking.name) : 'New Booking'}

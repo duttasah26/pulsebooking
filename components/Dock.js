@@ -50,6 +50,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
       <aside
         ref={box}
         aria-label={label}
+        onKeyDown={(e) => { if (open && e.key === 'Escape' && !e.defaultPrevented && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) hide(); }}
         data-scroll-body
         style={maxH && !overlay ? { maxHeight: maxH } : undefined}
         className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.75rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? `flex flex-col ${leaving ? 'animate-dock-out' : 'animate-dock-in'}` : 'hidden'}`}
