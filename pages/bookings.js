@@ -307,7 +307,12 @@ export default function Bookings() {
           ) : rows.length === 0 ? (
             <p className="rounded-lg border border-line bg-surface px-6 py-12 text-center text-base text-muted">
               {search
-                ? `Nothing matches “${search}” here.`
+                ? (
+                  <>
+                    Nothing matches “{search}” here.
+                    {tab !== 'all' && <span className="mt-3 block"><button type="button" className="btn btn-sm" onClick={() => setParams({ tab: 'all' })}>Search All Bookings</button></span>}
+                  </>
+                )
                 : `${active.empty}${activeCount ? ' Some filters are on: clear them to see more.' : ''}${holdsFilterable && !showHolds ? ' On-hold bookings are hidden: turn on Show On Hold to see them.' : ''}`}
             </p>
           ) : (
@@ -320,7 +325,7 @@ export default function Bookings() {
                 const heading = group && group !== (i > 0 ? arrivalGroup(rows[i - 1].check_in) : null);
                 return (
                   <Fragment key={b.id}>
-                    {heading && <li role="presentation" className="t-group bg-surface-2 px-4 py-1.5 md:px-5">{group}</li>}
+                    {heading && <li className="bg-surface-2 px-4 py-1.5 md:px-5"><h3 className="t-group">{group}</h3></li>}
                     <BookingRow b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
                   </Fragment>
                 );
