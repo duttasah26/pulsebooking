@@ -31,7 +31,7 @@ export const placeAt = (rows, r, i, len = 1) =>
 
 export function gridTemplate({ rows, n, rooms, cellW, cellH }) {
   return rows
-    ? { gridTemplateColumns: `${LABEL}px repeat(${n}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD}px repeat(${rooms.length}, ${cellH}px)` }
+    ? { gridTemplateColumns: `${LABEL}px repeat(${n}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${HEAD}px repeat(${rooms.length}, minmax(${cellH}px, 1fr))` }
     : { gridTemplateColumns: `${DATE_LABEL}px repeat(${rooms.length}, minmax(${cellW}px, 1fr))`, gridTemplateRows: `${MONTH_HEAD}px repeat(${n}, ${cellH}px)` };
 }
 
