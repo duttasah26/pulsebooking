@@ -368,6 +368,7 @@ export default function CalendarPage() {
         arriving={live.filter((b) => b.check_in >= from && b.check_in <= to).length}
         leaving={live.filter((b) => b.check_out >= from && b.check_out <= to).length}
         staying={live.filter((b) => b.check_in <= to && b.check_out > from).length}
+        total={room ? undefined : (rooms.data ?? []).length || undefined}
       />
     );
   }, [bookingList, spot, rooms.data, shownDate, span, view]);
