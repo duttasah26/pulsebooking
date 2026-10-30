@@ -1,4 +1,4 @@
-import { MagnifyingGlassMinus, MagnifyingGlassPlus, Question } from '@phosphor-icons/react';
+import { Minus, Plus, Question } from '@phosphor-icons/react';
 import { MousePill, PencilPill } from './InlineIcons';
 
 const MIN = 0.6;
@@ -38,40 +38,29 @@ function HoldSteps() {
   );
 }
 
-// The zoom control, in the top toolbar beside the month: minus, a slider (wide screens), plus, and the percentage, which
-// is also the way back to 100%. Smaller shows more of the calendar; larger makes the cells easier to hit.
+// The zoom control, in the top toolbar beside the month: one segmented control, minus, the percentage and plus, as in map and
+// design tools. The percentage is a button too: it is the way back to 100% (quiet at 100%, green when zoomed). Smaller shows more
+// of the calendar; larger makes the cells easier to hit. Steps are 10%, the limits 60% and 160%.
 export function ZoomControl({ zoom, onChange }) {
   const pct = Math.round(zoom * 100);
-  const fill = ((zoom - MIN) / (MAX - MIN)) * 100;
+  const step = 'seg-item shrink-0 disabled:pointer-events-none disabled:opacity-40';
   return (
-    <div role="group" aria-label="Zoom" className="flex shrink-0 items-center gap-1">
-      <button type="button" className="btn btn-icon" aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
-        <MagnifyingGlassMinus size={20} aria-hidden="true" />
-      </button>
-      <input
-        type="range"
-        name="zoom"
-        min={MIN}
-        max={MAX}
-        step="0.05"
-        value={zoom}
-        onChange={(e) => onChange(clampZoom(Number(e.target.value)))}
-        aria-label="Calendar zoom"
-        aria-valuetext={`${pct} percent`}
-        className="zoom-range mx-1 hidden w-28 lg:block"
-        style={{ '--fill': `${fill}%` }}
-      />
-      <button type="button" className="btn btn-icon" aria-label="Zoom in, make bigger" title="Zoom in: make bigger" disabled={zoom >= MAX} onClick={() => onChange(clampZoom(zoom + 0.1))}>
-        <MagnifyingGlassPlus size={20} aria-hidden="true" />
+    <div role="group" aria-label="Zoom" className="seg">
+      <button type="button" className={`${step} min-w-10 px-2`} aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
+        <Minus size={16} weight="bold" aria-hidden="true" />
       </button>
       <button
         type="button"
-        className={`btn btn-quiet min-w-16 px-2 font-mono text-[0.9375rem] font-semibold ${pct === 100 ? 'text-muted' : 'text-accent-text'}`}
+        className={`seg-item min-w-[4.25rem] shrink-0 justify-center px-2 font-mono font-semibold tabular-nums ${pct === 100 ? 'text-muted' : 'text-accent-text'}`}
         onClick={() => onChange(1)}
-        aria-label={`Zoom is ${pct} percent. Press to go back to 100 percent`}
-        title="Back to 100%"
+        disabled={pct === 100}
+        aria-label={`Zoom is ${pct} percent${pct === 100 ? '' : '. Press to go back to 100 percent'}`}
+        title={pct === 100 ? 'Normal size' : 'Back to 100%'}
       >
         {pct}%
+      </button>
+      <button type="button" className={`${step} min-w-10 px-2`} aria-label="Zoom in, make bigger" title="Zoom in: make bigger" disabled={zoom >= MAX} onClick={() => onChange(clampZoom(zoom + 0.1))}>
+        <Plus size={16} weight="bold" aria-hidden="true" />
       </button>
     </div>
   );
