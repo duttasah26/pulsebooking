@@ -17,7 +17,7 @@ import EditButton from '../booking/EditButton';
 export default function BookingPanel({
   wide, formOpen, onToggle, panel, setPanel, panelBooking, group, rooms, isBusy, blank, onSaved, onRemove, onConfirm, onPutOnHold, closePanel, groupCount, onShowGroup,
   selection, onOpenFromSelection, onConfirmAll, onDeleteAll, onCloseSelection,
-  pending, onSavePending, onCancelPending, editSelection, onEditSelection, onSaveNames, onUnpick, onEditMany, onHoldAll, onPreview,
+  pending, onSavePending, onCancelPending, editSelection, onEditSelection, onSaveNames, onUnpick, onEditMany, onHoldAll, onPreview, renderSide,
 }) {
   const setEditing = (editing) => setPanel((p) => (p ? { ...p, editing } : p));
   const title = panel ? panelBooking.name : 'New Booking';
@@ -57,6 +57,7 @@ export default function BookingPanel({
     return (
       <Dock
         overlay
+        renderSide={renderSide}
         open={formOpen}
         onToggle={onToggle}
         label="Selected bookings"
@@ -106,6 +107,7 @@ export default function BookingPanel({
   return (
     <Dock
       overlay
+      renderSide={renderSide}
       open={formOpen}
       onToggle={onToggle}
       label="Booking form"

@@ -19,7 +19,8 @@ export const DOCK_GRID = {
 */
 // overlay: lie over the right side of the parent (which must be position: relative), as tall as the parent, instead of taking
 // a column, so what is behind it does not move.
-export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, children }) {
+// renderSide({ show, label }): on very wide screens (2xl) what fills the folded column instead of the slim tab (the Today panel); show() unfolds the dock.
+export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, renderSide, children }) {
   // The panel is as tall as the room left below where it starts (the toolbar sits above it), so its own scrolling reaches
   // everything, including the buttons at the bottom of a long form.
   const [leaving, hide] = useLeave(() => onToggle(false), 170); // fades out before the column folds
@@ -66,6 +67,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
         <div className="flex flex-1 flex-col bg-surface px-4 pt-4">{children}</div>
       </aside>
 
+      {!open && renderSide && <div className="hidden 2xl:block">{renderSide({ show: () => onToggle(true), label: tab, mark: tabMark })}</div>}
       {!open && (
         <button
           type="button"
@@ -73,7 +75,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           aria-expanded="false"
           title={`Show ${label.toLowerCase()}`}
           onClick={() => onToggle(true)}
-          className={`animate-fade sticky top-[4.75rem] flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2`}
+          className={`animate-fade sticky top-[4.75rem] flex h-44 w-11 ${renderSide ? '2xl:hidden' : ''} flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2`}
         >
           <CaretLeft size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>

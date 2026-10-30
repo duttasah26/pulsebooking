@@ -17,7 +17,8 @@ import HelpGuide from './HelpGuide';
 // The calendar always leaves a slim column on the right (the width of the folded tab). Open, the booking panel lies over that
 // column and the calendar's right side (see Dock overlay); folded, its tab sits in the column. Either way the calendar never
 // changes size when the panel opens or closes.
-const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]' };
+// From 2xl up the right column is wider and holds the Today panel while the booking panel is folded.
+const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem] 2xl:grid-cols-[4.5rem_minmax(0,1fr)_18rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem] 2xl:grid-cols-[4.5rem_minmax(0,1fr)_18rem]' };
 import { useToast } from '../Toast';
 import Head from 'next/head';
 import Presence from '../Presence';
@@ -27,6 +28,7 @@ import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
+import TodayPanel from './TodayPanel';
 import { useBookingData } from './useBookingData';
 import { useHistory } from './useHistory';
 import { useHoldActions } from './useHoldActions';
@@ -658,6 +660,7 @@ export default function CalendarPage() {
         </div>
 
         <BookingPanel
+          renderSide={({ show, label, mark }) => <TodayPanel bookings={bookingList} day={spot?.d} onOpen={openEdit} formLabel={label} formMark={mark} onShowForm={show} />}
           wide={wide}
           formOpen={formOpen}
           onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change

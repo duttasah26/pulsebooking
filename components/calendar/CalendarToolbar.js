@@ -118,7 +118,7 @@ export default function CalendarToolbar({
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
           </div>
         </div>
-        {summary && <div className="hidden shrink-0 pr-1 md:block short:hidden">{summary}</div>}
+        {summary && <div className="hidden shrink-0 pr-1 md:block 2xl:hidden short:hidden">{summary}</div>}
       </div>
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
