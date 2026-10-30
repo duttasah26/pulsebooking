@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeft, X } from '@phosphor-icons/react';
 import { useLeave } from './useLeave';
 
 // Column templates for a page that has a dock on the right (use as the page's grid classes, from lg up).
@@ -60,7 +60,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => hide()}>
-              <CaretRight size={18} aria-hidden="true" />
+              <X size={20} weight="bold" aria-hidden="true" />
             </button>
           </div>
         </div>

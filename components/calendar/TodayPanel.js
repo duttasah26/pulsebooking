@@ -1,4 +1,4 @@
-import { Bed, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
+import { Bed, SignIn, SignOut, X } from '@phosphor-icons/react';
 import { roomShade } from '../../lib/colors';
 import { fmtShort, today } from '../../lib/dates';
 import { useSettings } from '../SettingsProvider';
@@ -67,7 +67,7 @@ export default function TodayPanel({ bookings, day, onOpen, onClose }) {
       <div className="flex items-center justify-between gap-2">
         <h2 className="t-title min-w-0 truncate">{isToday ? 'Today' : fmtShort(d)}</h2>
         <button type="button" className="btn btn-icon shrink-0" aria-label="Hide today" title="Hide today" onClick={onClose}>
-          <CaretRight size={18} aria-hidden="true" />
+          <X size={20} weight="bold" aria-hidden="true" />
         </button>
       </div>
       {quiet && <p className="t-footnote">Nobody arriving, leaving or staying.</p>}
