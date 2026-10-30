@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
@@ -24,12 +24,26 @@ import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
 import { useSettings } from '../components/SettingsProvider';
 import { colorFor, roomShade, stayColor } from '../lib/colors';
-import { addDays, fmtShort, today } from '../lib/dates';
+import { addDays, diffDays, fmtMonth, fmtShort, today } from '../lib/dates';
 
 // The whole state of the screen lives in the URL, so it survives a reload and can be saved as a named view.
 //   holds '1' = show on-hold bookings too    dir '' = the filter's natural order    room, floor, status: several, separated by commas
 //   sort2/dir2: the second sort    org: organization contains    contact: yes | no    nmin/nmax: nights    rby: stay | check_in | check_out with df, dt
 //   cols: the columns switched OFF, separated by commas    (row density, roomy or compact, is one choice for both lists: pulse.density)
+// With the list in arrival order, a heading starts each stretch: Today, Tomorrow, this week, next week, then by month (and Last week
+// or the month for what has gone). The week runs Monday to Sunday.
+function arrivalGroup(checkIn) {
+  const t = today();
+  if (checkIn === t) return 'Today';
+  if (checkIn === addDays(t, 1)) return 'Tomorrow';
+  const dow = (new Date(`${t}T00:00:00`).getDay() + 6) % 7; // Monday = 0
+  const weeks = Math.floor((diffDays(addDays(t, -dow), checkIn)) / 7);
+  if (weeks === 0) return 'This week';
+  if (weeks === 1) return 'Next week';
+  if (weeks === -1) return 'Last week';
+  return fmtMonth(checkIn);
+}
+
 const URL_DEFAULTS = {
   tab: 'upcoming', sort: 'check_in', dir: '', sort2: '', dir2: '', holds: '', room: '', floor: '', status: '',
   org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '',
@@ -300,9 +314,16 @@ export default function Bookings() {
             <>
             <p className="t-group pt-2" role="status" aria-live="polite">{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
-              {rows.map((b) => (
-                <BookingRow key={b.id} b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
-              ))}
+              {rows.map((b, i) => {
+                const group = sort === 'check_in' && !sort2 ? arrivalGroup(b.check_in) : null;
+                const heading = group && group !== (i > 0 ? arrivalGroup(rows[i - 1].check_in) : null);
+                return (
+                  <Fragment key={b.id}>
+                    {heading && <li role="presentation" className="t-group bg-surface-2 px-4 py-1.5 md:px-5">{group}</li>}
+                    <BookingRow b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
+                  </Fragment>
+                );
+              })}
             </ul>
             </>
           )}
