@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Eye, EyeSlash, ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
+import Switch from '../Switch';
+import { ArrowUUpLeft, Eye, EyeSlash, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import { useMotionBits } from '../../lib/useMotionBits';
@@ -126,12 +127,10 @@ export default function CalendarToolbar({
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {onToggleDone && (view === 'timeline' || view === 'month') && (
-          <div role="group" aria-label="Checked out stays" className="seg">
-            <button type="button" onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="seg-item min-w-44 shrink-0 justify-center">
-              {showDone ? <EyeSlash size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-              {showDone ? 'Hide checked out' : 'Show checked out'}
-            </button>
-          </div>
+          <label title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 px-1 text-base font-medium text-ink lg:min-h-10 lg:text-[0.9375rem]">
+            <Switch size="sm" icons OnIcon={Eye} OffIcon={EyeSlash} checked={showDone} onChange={() => onToggleDone()} />
+            Checked out
+          </label>
         )}
         {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
         {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}

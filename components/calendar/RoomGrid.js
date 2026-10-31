@@ -69,7 +69,7 @@ export default function RoomGrid({
       // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
       const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
-      const base = short ? 8 : window.innerWidth < 768 ? 84 : 48; // 48: the page padding under the grid, so the page itself does not scroll
+      const base = short ? 8 : window.innerWidth < 768 ? 84 : 36; // 36: the page padding under the grid (16) and the day bar being a little taller than counted, so the page itself does not scroll
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
       setAvail(Math.max(short ? 130 : window.innerWidth < 768 ? 180 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
@@ -152,6 +152,10 @@ export default function RoomGrid({
   const fitRow = rows && avail ? Math.min(160, Math.max(minRow, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
   const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(minRow, Math.round(fitRow * heightScale))) : baseH;
   const rowPx = cellH * zoom;
+  // Rows are whole pixels, so up to a row's worth of height can be left over under the last room. Rather than stretch the rows (the
+  // calendar would change size), the window ends where the last room ends. If the rooms do not fit, or fill takes the rest, it is `avail`.
+  const fillRows = Boolean(rows && avail && (HEAD + rooms.length * cellH) * zoom < avail - 2 - rooms.length);
+  const winH = rows && avail && !fillRows ? Math.min(avail, Math.ceil((HEAD + rooms.length * cellH) * zoom) + 2) : avail;
   const boxH = Math.max(0, (avail ?? 0) - 2); // the scrolling box, less its border
   const rowsInView = rows && avail ? (boxH / zoom - HEAD) / cellH : rooms.length; // rooms in view, exactly
   const changeRowView = (view, anchorRow) => {
@@ -453,7 +457,7 @@ export default function RoomGrid({
         className={`scroll-area rounded-lg border border-line bg-surface ${
           rows ? 'no-scrollbar overflow-auto overscroll-contain' : 'min-h-64 overflow-auto overscroll-contain'
         } ${navW ? 'min-w-0 flex-1' : ''} [touch-action:pan-x_pan-y] ${pan ? (panning ? 'cursor-panning' : 'cursor-pan') : ''} ${avail ? '' : 'max-h-[calc(100dvh-17rem)]'}`}
-        style={avail ? { height: avail } : undefined} // a fixed window: zooming changes what is inside it, never its size
+        style={avail ? { height: winH } : undefined} // a fixed window: zooming changes what is inside it, never its size
         onPointerMove={placing ? selection.onPointerMove : undefined}
         onPointerDown={(e) => { panStart(e); marquee.onPointerDown(e); }}
         onClickCapture={marquee.onClickCapture}
@@ -463,7 +467,7 @@ export default function RoomGrid({
           ref={gridRef}
           role="grid"
           aria-label="Room availability"
-          style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH, fill: Boolean(rows && avail && (HEAD + rooms.length * cellH) * zoom < avail - 2) }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), minHeight: rows && avail ? Math.max(0, (avail - 2) / zoom) : undefined, zoom }}
+          style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH, fill: fillRows }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), minHeight: rows && avail ? Math.max(0, (winH - 2) / zoom) : undefined, zoom }}
         >
           <GridCorner />
           {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} isToday={d === todayStr} narrow={cellW * zoom < 36} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />) : heads}
@@ -529,7 +533,7 @@ export default function RoomGrid({
           rooms={rooms}
           inView={rowsInView}
           width={navW}
-          height={avail}
+          height={winH}
           minView={(boxH / zoom - HEAD) / MAX_ROW_PX}
           maxView={(boxH / zoom - HEAD) / fitRow}
           onView={changeRowView}

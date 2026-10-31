@@ -1,4 +1,5 @@
 import { Bed, SignIn, SignOut } from '@phosphor-icons/react';
+import CountTo from '../CountTo';
 
 // Arrivals, departures and stays at a glance, as one plain line (nothing to press, so nothing that looks like a button).
 // It says what it counts (Today, a day you clicked, a room you clicked, or both), then how many rooms are in use out of all of
@@ -14,9 +15,9 @@ export default function TodaySummary({ label, arriving, leaving, staying, total 
   return (
     <p className="flex flex-wrap items-center justify-start gap-x-4 gap-y-1 text-[0.9375rem] text-muted md:justify-end">
       <span className="font-semibold text-ink">{label}</span>
-      {part(Bed, 'text-muted', total ? <><span className="font-mono text-base font-semibold text-ink">{staying}</span> of {total} rooms in use</> : <><span className="font-mono text-base font-semibold text-ink">{staying}</span> staying</>)}
-      {arriving > 0 && part(SignIn, 'text-accent-text', <><span className="font-mono text-base font-semibold text-ink">{arriving}</span> arriving</>)}
-      {leaving > 0 && part(SignOut, 'text-danger', <><span className="font-mono text-base font-semibold text-ink">{leaving}</span> leaving</>)}
+      {part(Bed, 'text-muted', total ? <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> of {total} rooms in use</> : <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> staying</>)}
+      {arriving > 0 && part(SignIn, 'text-accent-text', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={arriving} /></span> arriving</>)}
+      {leaving > 0 && part(SignOut, 'text-danger', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={leaving} /></span> leaving</>)}
     </p>
   );
 }
