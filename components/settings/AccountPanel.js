@@ -46,18 +46,18 @@ export default function AccountPanel() {
   const initial = (name ?? '?').trim().charAt(0).toUpperCase() || '?';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       {/* Who you are, and the way out: Sign Out is the big button, not a small icon in a corner. */}
-      <section className="space-y-5 rounded-lg border border-line bg-surface p-5 sm:p-6" aria-label="Who is signed in">
+      <section className="space-y-6 rounded-lg border border-line bg-surface p-6" aria-label="Who is signed in">
         <div className="flex items-center gap-4">
           <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-lg bg-surface-2 text-3xl font-semibold text-ink/80">{me.loading ? '' : initial}</span>
           <div className="min-w-0 flex-1">
             <p className="text-base text-muted">Signed in as</p>
-            <p className="break-words text-2xl font-bold leading-tight">{me.loading ? '…' : name ? displayName(name) : 'Nobody'}</p>
+            <p className="break-words text-2xl font-semibold leading-tight">{me.loading ? '…' : name ? displayName(name) : 'Nobody'}</p>
             {!me.loading && !name && <p className="text-base text-muted">Sign in is off on this computer.</p>}
           </div>
         </div>
-        <p className="rounded-lg bg-surface-2 p-3 text-base leading-relaxed">
+        <p className="rounded-lg bg-surface-2 p-4 text-base leading-relaxed">
           <UserCircle size={18} aria-hidden="true" className="mr-1.5 inline align-text-bottom" />
           Your name is saved on every booking you make or change, so the history shows who did what.
         </p>
@@ -69,7 +69,7 @@ export default function AccountPanel() {
       </section>
 
       {name ? (
-        <div className="rounded-lg border border-line bg-surface px-4 sm:px-5">
+        <div className="rounded-lg border border-line bg-surface px-6">
         <FoldSection id="account-password" title="Change your password" icon={LockKey}>
           <form onSubmit={submit} className="space-y-3">
             <div>
@@ -84,7 +84,7 @@ export default function AccountPanel() {
             <div>
               <FieldLabel icon={LockKey} htmlFor="acc-again">New password again</FieldLabel>
               <input id="acc-again" name="new-password-again" type="password" className="field" value={again} onChange={(e) => setAgain(e.target.value)} autoComplete="new-password" aria-invalid={Boolean(mismatch)} />
-              {mismatch && <p className="mt-1 text-sm text-danger">These two are not the same yet.</p>}
+              {mismatch && <p className="mt-1 text-[0.9375rem] text-danger">These two are not the same yet.</p>}
             </div>
             {error && (
               <p role="alert" className="flex items-start gap-2 rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">
@@ -103,7 +103,7 @@ export default function AccountPanel() {
         </FoldSection>
         </div>
       ) : (
-        !me.loading && <p className="rounded-lg border border-line bg-surface p-5 text-base">Passwords are only used when sign in is on. It is off on this computer.</p>
+        !me.loading && <p className="rounded-lg border border-line bg-surface p-6 text-base">Passwords are only used when sign in is on. It is off on this computer.</p>
       )}
     </div>
   );

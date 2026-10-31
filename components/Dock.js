@@ -56,7 +56,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
         className={`no-scrollbar ${overlay ? 'absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full shadow-lg' : 'sticky top-[4.75rem]'} overflow-y-auto overscroll-contain scroll-pb-24 rounded-lg border border-line bg-surface ${maxH ? '' : 'max-h-[calc(100dvh-12rem)]'} ${open ? `flex flex-col ${leaving ? 'animate-dock-out' : 'animate-dock-in'}` : 'hidden'}`}
       >
         {/* Docked at the top of the panel however far its contents are scrolled: the name, Edit and Hide stay in reach. */}
-        <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-2 border-b border-line bg-surface py-1.5 pl-5 pr-2">
+        <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-2 border-b border-line bg-surface py-2 pl-5 pr-2">
           <h2 className="t-title min-w-0 truncate">{title}</h2>
           <div className="flex shrink-0 items-center gap-1">
             {actions}

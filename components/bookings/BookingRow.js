@@ -36,7 +36,7 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
         onClick={() => onOpen(b)}
         style={{ '--cols': cols }}
         className={`grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 px-4 text-left transition-colors duration-150 enabled:hover:bg-surface-2 md:[grid-template-columns:var(--cols)] md:px-5 ${
-          roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1.5'
+          roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'
         } ${finished ? 'text-ink/75' : ''}`}
       >
         <span className="min-w-0">
@@ -45,7 +45,7 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
             <span className={`truncate text-[1.0625rem] font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
           </span>
           {showLine2 && (
-            <span className="mt-0.5 flex min-w-0 items-center gap-3 pl-5 text-[0.9375rem] text-muted">
+            <span className="mt-1 flex min-w-0 items-center gap-4 pl-5 text-[0.9375rem] text-muted">
               {show('organization') && b.organization && (
                 <span className="flex min-w-0 items-center gap-1">
                   <Buildings size={14} aria-hidden="true" className="shrink-0" />
@@ -64,7 +64,7 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
         {show('room') && (
           <span className="flex items-center" title={`Room ${b.room_number}`}>
             <span className="sr-only">Room </span>
-            <span className="rounded-md px-2 py-0.5 font-mono text-base font-semibold" style={{ backgroundColor: roomShade({ number: b.room_number }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: b.room_number }, settings).edge}` }}>{b.room_number}</span>
+            <span className="rounded-md px-2 py-1 font-mono text-base font-semibold" style={{ backgroundColor: roomShade({ number: b.room_number }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: b.room_number }, settings).edge}` }}>{b.room_number}</span>
           </span>
         )}
         {show('dates') && (

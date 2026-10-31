@@ -1,4 +1,4 @@
-import { Bed, CalendarBlank, Clock, SignIn, SignOut, X } from '@phosphor-icons/react';
+import { SignIn, SignOut, X } from '@phosphor-icons/react';
 import { roomShade } from '../../lib/colors';
 import { addDays, daysInMonth, diffDays, fmtMonth, fmtShort, monthStart, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
@@ -29,7 +29,7 @@ function Figure({ label, children }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt className="text-[0.9375rem] text-muted">{label}</dt>
-      <dd className="font-mono text-base font-semibold">{children}</dd>
+      <dd className="font-mono text-base font-semibold tabular-nums">{children}</dd>
     </div>
   );
 }
@@ -48,7 +48,7 @@ function Section({ icon: Icon, tone, title, count, rows, onOpen, detail }) {
           const note = detail?.(r.first);
           return (
             <li key={r.key}>
-              <button type="button" onClick={() => onOpen(r.first)} className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-md px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-2 lg:py-1.5">
+              <button type="button" onClick={() => onOpen(r.first)} className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-md px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-2">
                 <span className="min-w-40 flex-1">
                   <span className="block truncate text-base font-semibold">{r.first.name || 'On hold'}</span>
                   {note && <span className="block text-[0.9375rem] text-muted">{note}</span>}
@@ -56,7 +56,7 @@ function Section({ icon: Icon, tone, title, count, rows, onOpen, detail }) {
                 <span className="flex flex-wrap gap-1">
                   {r.rooms.map((n) => {
                     const shade = roomShade({ number: n }, settings);
-                    return <span key={n} className="rounded-md px-1.5 font-mono text-[0.9375rem] font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>;
+                    return <span key={n} className="rounded-md px-2 font-mono text-[0.9375rem] font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>;
                   })}
                 </span>
               </button>
@@ -126,19 +126,19 @@ export default function OverviewPanel({ bookings, roomCount, day, onOpen, onClos
             {quiet && ready && <p className="t-footnote">Nobody arriving, leaving or staying.</p>}
             <Section icon={SignIn} tone="text-accent-text" title="Arriving" rows={arriving} onOpen={onOpen} detail={(b) => atTime(b.check_in_time)} />
             <Section icon={SignOut} tone="text-danger" title="Leaving" rows={leaving} onOpen={onOpen} detail={(b) => atTime(b.check_out_time)} />
-            <Section icon={Bed} tone="text-muted" title="Staying" rows={staying} onOpen={onOpen} />
+            <Section title="Staying" rows={staying} onOpen={onOpen} />
           </div>
         )}
 
         {show('holds') && holdRows.length > 0 && (
           <div className="p-4">
-            <Section icon={Clock} tone="text-hold-ink" title="On hold" rows={holdRows.slice(0, 4)} count={holdRows.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}`} />
+            <Section title="On hold" rows={holdRows.slice(0, 4)} count={holdRows.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}`} />
           </div>
         )}
 
         {show('coming') && coming.length > 0 && (
           <div className="p-4">
-            <Section icon={CalendarBlank} tone="text-muted" title="Coming up" rows={coming.slice(0, 5)} count={coming.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)}${b.check_in_time ? `, ${atTime(b.check_in_time)}` : ''}`} />
+            <Section title="Coming up" rows={coming.slice(0, 5)} count={coming.length} onOpen={onOpen} detail={(b) => `${fmtShort(b.check_in)}${b.check_in_time ? `, ${atTime(b.check_in_time)}` : ''}`} />
           </div>
         )}
       </div>

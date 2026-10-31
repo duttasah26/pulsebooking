@@ -76,7 +76,7 @@ export default function CalendarToolbar({
     set(n === 1 ? { date: d } : { date: d, span: n, view: 'timeline' }); // one day just jumps; more opens the timeline for those days
   };
   return (
-    <div className="space-y-4 short:flex short:items-center short:gap-1.5 short:space-y-0">
+    <div className="space-y-4 short:flex short:items-center short:gap-2 short:space-y-0">
       {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
       <div
         className="flex flex-wrap items-center gap-2 short:shrink-0 short:flex-nowrap"
@@ -118,7 +118,7 @@ export default function CalendarToolbar({
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
           </div>
         </div>
-        {summary && <div className="hidden shrink-0 pr-1 md:block short:hidden">{summary}</div>}
+        {summary && <div className="hidden shrink-0 md:block short:hidden">{summary}</div>}
       </div>
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
@@ -127,7 +127,7 @@ export default function CalendarToolbar({
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {onToggleDone && (view === 'timeline' || view === 'month') && (
           <div role="group" aria-label="Checked out stays" className="seg">
-            <button type="button" onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="seg-item min-w-[10.5rem] shrink-0 justify-center">
+            <button type="button" onClick={onToggleDone} title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="seg-item min-w-44 shrink-0 justify-center">
               {showDone ? <EyeSlash size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
               {showDone ? 'Hide checked out' : 'Show checked out'}
             </button>
@@ -140,7 +140,7 @@ export default function CalendarToolbar({
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that
           scrolls sideways when it is wider than the screen. */}
       {!wide && !phone && (
-        <div className="no-scrollbar flex items-center gap-3 overflow-x-auto">
+        <div className="no-scrollbar flex items-center gap-4 overflow-x-auto">
           {onNew && (
             <Strip label="New">
               <ToolButton icon={Plus} tone="green" label="New Booking" title="New Booking: draw the stay on the calendar, or type the dates" on={drawing} onClick={onNew} />

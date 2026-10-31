@@ -45,9 +45,9 @@ export function MomentPair({ children }) {
 export function Stepper({ label, value, onChange, min = 0 }) {
   const n = Number(value) || 0;
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <p className={TITLE}>{label}</p>
-      <div className="flex items-center justify-between gap-1">
+      <div className="flex items-center justify-between gap-2">
         <button type="button" className="btn btn-lg btn-icon" onClick={() => onChange(Math.max(min, n - 1))} disabled={n <= min} aria-label={`One fewer ${label.toLowerCase()}`}>
           <Minus size={20} aria-hidden="true" />
         </button>

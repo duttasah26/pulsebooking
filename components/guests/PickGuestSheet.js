@@ -9,7 +9,7 @@ import { useApi, useDebounced } from '../../lib/useApi';
 function Option({ g, onPick }) {
   return (
     <li>
-      <button type="button" onClick={() => onPick(g.id)} className="flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-surface-2">
+      <button type="button" onClick={() => onPick(g.id)} className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-surface-2">
         <UserCircle size={28} aria-hidden="true" className="shrink-0 text-muted" />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold">{g.name}</span>

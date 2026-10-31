@@ -51,7 +51,7 @@ export function ZoomControl({ zoom, onChange }) {
       </button>
       <button
         type="button"
-        className={`seg-item min-w-[4.25rem] shrink-0 justify-center px-2 font-mono font-semibold tabular-nums ${pct === 100 ? 'text-muted' : 'text-accent-text'}`}
+        className={`seg-item min-w-16 shrink-0 justify-center px-2 font-mono font-semibold tabular-nums ${pct === 100 ? 'text-muted' : 'text-accent-text'}`}
         onClick={() => onChange(1)}
         disabled={pct === 100}
         aria-label={`Zoom is ${pct} percent${pct === 100 ? '' : '. Press to go back to 100 percent'}`}

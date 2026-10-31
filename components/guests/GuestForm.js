@@ -91,7 +91,7 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
             <FieldLabel icon={User} htmlFor="g-name">Name</FieldLabel>
             <input id="g-name" name="name" className="field" value={form.name} onChange={set('name')} autoComplete="off" />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <FieldLabel icon={Phone} htmlFor="g-phone">Phone (optional)</FieldLabel>
               <input id="g-phone" name="phone" type="tel" inputMode="tel" className="field" value={form.phone} onChange={set('phone')} autoComplete="off" placeholder="+91 98450 12345" />
@@ -122,8 +122,8 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
           {!isNew && onMerge && (
             <div className="card">
               <p className="t-headline">Listed twice?</p>
-              <p className="t-footnote mb-3">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
-              <button type="button" className="btn px-3" onClick={onMerge}>
+              <p className="t-footnote mb-4 mt-1">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
+              <button type="button" className="btn" onClick={onMerge}>
                 Merge with Another Guest
               </button>
             </div>
@@ -131,12 +131,12 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
           {!isNew && (
             <div className="card">
               <p className="t-headline">Delete this guest</p>
-              <p className="t-footnote mb-3">
+              <p className="t-footnote mb-4 mt-1">
                 {liveStays > 0
                   ? `${guest.name} has ${liveStays} ${liveStays === 1 ? 'stay' : 'stays'} on the calendar. Delete those first, or merge this guest into another.`
                   : 'Removes the guest for good. This cannot be undone.'}
               </p>
-              <HoldButton className="btn btn-danger px-3" title="Press and hold to delete this guest" reminder="Hold the button to delete the guest" onConfirm={remove} disabled={busy || liveStays > 0}>
+              <HoldButton className="btn btn-danger" title="Press and hold to delete this guest" reminder="Hold the button to delete the guest" onConfirm={remove} disabled={busy || liveStays > 0}>
                 <Trash size={18} aria-hidden="true" /> Hold to Delete Guest
               </HoldButton>
             </div>

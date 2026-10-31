@@ -325,7 +325,7 @@ export default function Bookings() {
                 const heading = group && group !== (i > 0 ? arrivalGroup(rows[i - 1].check_in) : null);
                 return (
                   <Fragment key={b.id}>
-                    {heading && <li className="bg-surface-2 px-4 py-1.5 md:px-5"><h3 className="t-group">{group}</h3></li>}
+                    {heading && <li className="bg-surface-2 px-4 py-2 md:px-5"><h3 className="t-group">{group}</h3></li>}
                     <BookingRow b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
                   </Fragment>
                 );

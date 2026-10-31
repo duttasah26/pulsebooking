@@ -50,8 +50,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
               {f.label}
             </button>
           ))}
-          {(views.length > 0 || loading) && <span aria-hidden="true" className="mx-1 h-6 w-px shrink-0 bg-line" />}
-          {loading && <span className="skeleton h-10 w-24 shrink-0 rounded-lg lg:h-8" aria-hidden="true" />}
+          {(views.length > 0 || loading) && <span aria-hidden="true" className="h-6 w-px shrink-0 bg-line" />}
+          {loading && <span className="skeleton h-11 w-24 shrink-0 rounded-lg lg:h-9" aria-hidden="true" />}
           {views.map((v) => (
             <span key={v.id} className="inline-flex shrink-0 items-stretch">
               <button

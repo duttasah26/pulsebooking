@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useHoldStep, useSlide } from './useDaySlide';
-import { Bed, CaretLeft, CaretRight, Clock, Door, SignIn, SignOut } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, Clock, SignIn, SignOut } from '@phosphor-icons/react';
 import { useSettings } from '../SettingsProvider';
 import { formatTime } from '../TimeSelect';
 import { roomShade } from '../../lib/colors';
@@ -59,7 +59,7 @@ function Section({ title, count, icon: Icon, tone = '', empty, children }) {
   return (
     <section className="overflow-hidden rounded-lg border border-line bg-surface">
       <h3 className="t-headline flex items-center gap-2 border-b border-line px-4 py-3">
-        <Icon size={20} aria-hidden="true" className={tone} /> {title} <span className="ml-auto font-mono text-base text-muted">{count}</span>
+        {Icon && <Icon size={20} aria-hidden="true" className={tone} />} {title} <span className="ml-auto font-mono text-base text-muted">{count}</span>
       </h3>
       {count === 0 ? <p className="px-4 py-4 text-base text-muted">{empty}</p> : <ul className="divide-y divide-line">{children}</ul>}
     </section>
@@ -103,7 +103,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
   const hold = useHoldStep();
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {onDate && (
         <nav aria-label="Days" className="flex items-stretch gap-2">
           <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
@@ -121,13 +121,13 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                     {...hold(`day-${i}`, () => onDate(addDays(date, Math.sign(i - 3))), () => onDate(d))}
                     aria-current={sel ? 'date' : undefined}
                     aria-label={`${fmtLong(d)}: ${c.arriving.length} arriving, ${c.leaving.length} leaving`}
-                    className={`flex min-h-20 w-full flex-col items-center justify-center rounded-lg border-2 px-0.5 py-1 leading-tight select-none transition-[background-color,border-color] duration-150 ease-out ${
+                    className={`flex min-h-20 w-full flex-col items-center justify-center rounded-lg border-2 px-1 py-1 leading-tight select-none transition-[background-color,border-color] duration-150 ease-out ${
                       sel ? 'border-ink bg-surface shadow-sm' : `border-transparent ${isWeekend(d) ? 'bg-surface-2' : 'bg-surface'} hover:bg-surface-2`
                     } ${d === todayStr ? 'ring-2 ring-accent ring-offset-2' : ''}`}
                   >
                     <span className="text-sm text-muted">{fmtWeekday(d)}</span>
                     <span className="font-mono text-lg font-semibold">{dayOfMonth(d)}</span>
-                    <span aria-hidden="true" className="flex gap-1.5 text-sm font-semibold max-sm:hidden">
+                    <span aria-hidden="true" className="flex gap-2 text-sm font-semibold max-sm:hidden">
                       <span className="text-accent-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
                       <span className="text-danger">{c.leaving.length ? `-${c.leaving.length}` : ''}</span>
                     </span>
@@ -143,7 +143,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
         </nav>
       )}
 
-      <div ref={bodyRef} className="space-y-3">
+      <div ref={bodyRef} className="space-y-4">
         <p className="sr-only" role="status" aria-live="polite">{fmtLong(date)}</p>
       <p className="px-1 text-base text-muted">
         <span className="font-semibold text-accent-text">{day.arriving.length} arriving</span>,{' '}
@@ -161,12 +161,12 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
             <Row key={b.id} b={b} tone="leaving" onOpen={onOpen} what={TIME(b.check_out_time, settings.checkOutTime) ? `by ${TIME(b.check_out_time, settings.checkOutTime)}` : 'Leaving'} detail={`Arrived ${fmtDayMonth(b.check_in)}, ${nightsLabel(b.nights)}`} />
           ))}
         </Section>
-        <Section title="Staying tonight" count={day.staying.length} icon={Bed} tone="text-muted" empty="Nobody is staying tonight.">
+        <Section title="Staying tonight" count={day.staying.length} empty="Nobody is staying tonight.">
           {day.staying.map((b) => (
             <Row key={b.id} b={b} tone="staying" onOpen={onOpen} what={b.check_out === addDays(date, 1) ? 'Leaves tomorrow' : `Until ${fmtDayMonth(b.check_out)}`} detail={`${fmtDayMonth(b.check_in)} to ${fmtDayMonth(b.check_out)}`} />
           ))}
         </Section>
-        <Section title="Free rooms" count={freeRooms.length} icon={Door} tone="text-muted" empty="Every room is taken.">
+        <Section title="Free rooms" count={freeRooms.length} empty="Every room is taken.">
           <li className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4">
             {freeRooms.map((r) => {
               const shade = roomShade(r, settings);
@@ -175,7 +175,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                   key={r.id}
                   type="button"
                   onClick={() => onCreate({ roomIds: [r.id], checkIn: date, checkOut: addDays(date, 1) })}
-                  className="btn h-auto min-h-16 flex-col gap-1.5 px-1 py-2 lg:min-h-16"
+                  className="btn h-auto min-h-16 flex-col gap-1 px-1 py-2"
                   aria-label={`Room ${r.number} is free. Hold it for tonight`}
                   title="Hold this room for tonight"
                 >

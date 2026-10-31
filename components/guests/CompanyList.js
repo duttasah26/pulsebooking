@@ -50,7 +50,7 @@ export default function CompanyList({ onSearchGuests }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[1.0625rem] font-semibold">{c.name}</span>
-                    <span className="mt-0.5 flex items-center gap-1 text-[0.9375rem] text-muted">
+                    <span className="mt-1 flex items-center gap-1 text-[0.9375rem] text-muted">
                       <Users size={14} aria-hidden="true" /> {c.guests} {c.guests === 1 ? 'guest' : 'guests'}, {c.stays} {c.stays === 1 ? 'booking' : 'bookings'}
                     </span>
                   </span>

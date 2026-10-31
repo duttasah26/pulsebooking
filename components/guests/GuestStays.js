@@ -23,13 +23,13 @@ export default function GuestStays({ guest, rooms, onBookAgain }) {
       ) : (
         <ul className="divide-y divide-line rounded-lg border border-line">
           {stays.map((b) => (
-            <li key={b.id} className="flex min-h-12 items-center justify-between gap-3 px-4 py-2.5 text-[0.9375rem]">
+            <li key={b.id} className="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-[0.9375rem]">
               <span className={`min-w-0 ${b.deleted_at ? 'line-through' : ''}`}>
-                <span className="flex items-center gap-1.5 font-semibold">
+                <span className="flex items-center gap-2 font-semibold">
                   <CalendarBlank size={14} aria-hidden="true" className="shrink-0 text-muted" />
                   {fmtShort(b.check_in)} to {fmtShort(b.check_out)}
                 </span>
-                <span className="flex items-center gap-1.5 text-muted">
+                <span className="flex items-center gap-2 text-muted">
                   <Bed size={14} aria-hidden="true" className="shrink-0" />
                   Room {b.room_number}, {nightsLabel(b.nights)}
                 </span>

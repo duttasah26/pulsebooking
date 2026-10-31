@@ -100,7 +100,7 @@ export default function GlobalSearch() {
         placeholder="Search guests and bookings"
         autoComplete="off"
         spellCheck={false}
-        className="field min-h-9 pl-9 pr-9 text-[0.9375rem]"
+        className="field min-h-11 pl-9 pr-9 lg:min-h-9 text-[0.9375rem]"
         value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}

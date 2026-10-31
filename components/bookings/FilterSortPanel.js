@@ -45,7 +45,7 @@ export default function FilterSortPanel({
       {filters && (
         <fieldset>
           <FieldLabel icon={Funnel} as="legend">Show</FieldLabel>
-          <div className="grid gap-0.5">
+          <div className="grid gap-1">
             {filters.map(({ key, label, Icon }) => (
               <button
                 key={key}

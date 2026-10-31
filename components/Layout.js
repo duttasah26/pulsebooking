@@ -58,11 +58,11 @@ export default function Layout({ title, wide = false, children }) {
                 href={href}
                 aria-current={here === href ? 'page' : undefined}
                 title={label}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-md px-3 lg:min-h-9 text-[0.9375rem] transition-colors duration-150 short:px-2.5 ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-[0.9375rem] lg:min-h-9 transition-colors duration-150 short:px-2.5 ${
                   here === href ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'
                 }`}
               >
-                <Icon size={18} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block short:block" />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block short:block" />
                 <span className="short:sr-only">{label}</span>
               </Link>
             ))}
@@ -75,9 +75,10 @@ export default function Layout({ title, wide = false, children }) {
             </div>
           )}
 
-          <div className="ml-auto flex shrink-0 items-center gap-1">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <IndiaClock />
-            <span aria-hidden="true" className="mx-2 hidden h-6 w-px bg-line lg:block" />
+            <span aria-hidden="true" className="hidden h-6 w-px bg-line lg:block" />
+            <div className="flex items-center gap-1">
             {UTILITY.map(({ href, label, Icon }) => (
               <Link
                 key={href}
@@ -87,13 +88,14 @@ export default function Layout({ title, wide = false, children }) {
                 aria-current={here === href ? 'page' : undefined}
                 className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-ink' : 'text-muted'}`}
               >
-                <Icon size={22} weight={here === href ? 'fill' : 'bold'} />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} />
               </Link>
             ))}
             {/* Below the desktop width the assistant opens from here, not from a button floating over the page. */}
             <button type="button" className="btn btn-quiet btn-icon text-muted lg:hidden" onClick={() => window.dispatchEvent(new Event(OPEN_ASSISTANT))} aria-label="Ask the assistant" title="Ask about rooms and bookings">
-              <ChatCircleDots size={22} />
+              <ChatCircleDots size={20} weight="bold" />
             </button>
+            </div>
           </div>
         </div>
       </header>
