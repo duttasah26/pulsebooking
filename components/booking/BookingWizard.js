@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Plus, X } from '@phosphor-icons/react';
+import { ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Plus, X, Megaphone, Note, Receipt } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import DateRangePicker from '../DateRangePicker';
@@ -20,9 +20,9 @@ const STEPS = ['Guest', 'Room', 'Confirm'];
 
 // What each step asks, as a plain question with one line of help.
 const ASKS = [
-  { title: 'Who is staying?', help: 'Pick a past guest or add a new one.' },
-  { title: 'Which room, and which days?', help: 'Tap a room, then the arrival and leaving days.' },
-  { title: 'Check and confirm', help: 'Check it, then press the green button.' },
+  { title: 'Who is staying?', help: '' },
+  { title: 'Which room, and which days?', help: '' },
+  { title: 'Check and confirm', help: '' },
 ];
 
 // One room of the booking, then its check-in, its check-out (red) and the nights. Words are plain; only the check-out
@@ -45,22 +45,24 @@ function StayLine({ room, checkIn, checkOut, inTime, outTime }) {
     );
   }
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-line bg-surface px-3 py-2.5 text-base">
-      {chip}
-      <span><span className="text-muted">Check-in</span> <strong className="font-semibold">{fmtShort(checkIn)}</strong>{inTime && <span className="text-muted">, {formatTime(inTime)}</span>}</span>
-      <span><span className="text-muted">Check-out</span> <strong className="font-semibold text-danger">{fmtShort(checkOut)}</strong>{outTime && <span className="text-muted">, {formatTime(outTime)}</span>}</span>
-      <span className="text-muted">{nightsLabel(diffDays(checkIn, checkOut))}</span>
+    <li className="rounded-lg border border-line bg-surface p-3 text-base">
+      <div className="flex items-center justify-between gap-3">
+        {chip}
+        <span className="font-semibold">{nightsLabel(diffDays(checkIn, checkOut))}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3 border-t border-line pt-3">
+        <div className="min-w-0">
+          <p className="text-[0.9375rem] text-muted">Check-in</p>
+          <p className="font-semibold">{fmtShort(checkIn)}</p>
+          {inTime && <p className="font-mono text-[0.9375rem] text-muted">{formatTime(inTime)}</p>}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[0.9375rem] text-muted">Check-out</p>
+          <p className="font-semibold text-danger">{fmtShort(checkOut)}</p>
+          {outTime && <p className="font-mono text-[0.9375rem] text-muted">{formatTime(outTime)}</p>}
+        </div>
+      </div>
     </li>
-  );
-}
-
-// One fact in the confirmation card: a small label over the value in plain type.
-function Fact({ label, children }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-[0.9375rem] text-muted">{label}</dt>
-      <dd className="break-words font-semibold">{children}</dd>
-    </div>
   );
 }
 
@@ -300,7 +302,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
 
       <div>
         <h2 className="t-title">{ASKS[step].title}</h2>
-        <p className="t-footnote mt-2">{ASKS[step].help}</p>
+        {ASKS[step].help && <p className="t-footnote mt-2">{ASKS[step].help}</p>}
       </div>
 
       {hint && (guestProblem || stayProblem || extraProblem) ? <p key={hint} className="animate-shake flex items-center gap-2 rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger" role="alert"><WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />{hint}</p> : null}
@@ -423,7 +425,6 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           </div>
 
           <div>
-            <h4 className="mb-2 text-[1.0625rem] font-semibold">Rooms and days</h4>
             <ul className="space-y-2">
               {allIds.map((id) => rooms.find((r) => r.id === id)?.number).filter(Boolean).sort().map((number) => {
                 const own = f.extraStays.find((x) => x.roomIds[0] === rooms.find((r) => r.number === number)?.id);
@@ -442,16 +443,14 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             {f.away && <p className="mt-1.5 text-base">Away from <strong className="font-semibold">{fmtShort(f.away.from)}</strong>, back on <strong className="font-semibold">{fmtShort(f.away.to)}</strong> (saved as two stays)</p>}
           </div>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-black/10 pt-3 text-base">
-            <Fact label="Guests">
-              {f.adults} {Number(f.adults) === 1 ? 'adult' : 'adults'}
-              {Number(f.children) > 0 && <>, {f.children} {Number(f.children) === 1 ? 'child' : 'children'}</>}
-            </Fact>
-            <Fact label="Booked via">{f.channel}</Fact>
-            <Fact label="Rate plan">{ratePlan}</Fact>
-            {f.organization.trim() && <Fact label="Company or group">{f.organization.trim()}</Fact>}
-            {f.notes.trim() && <div className="col-span-2"><Fact label="Notes">{f.notes.trim()}</Fact></div>}
-          </dl>
+          {/* The rest, as one short line each, with the same small icons used elsewhere. */}
+          <ul className="space-y-1.5 border-t border-black/10 pt-3 text-base">
+            <li className="flex items-center gap-2"><Users size={18} aria-hidden="true" className="shrink-0 text-muted" />{f.adults} {Number(f.adults) === 1 ? 'adult' : 'adults'}{Number(f.children) > 0 && <>, {f.children} {Number(f.children) === 1 ? 'child' : 'children'}</>}</li>
+            <li className="flex items-center gap-2"><Megaphone size={18} aria-hidden="true" className="shrink-0 text-muted" />Booked via {f.channel}</li>
+            <li className="flex items-center gap-2"><Receipt size={18} aria-hidden="true" className="shrink-0 text-muted" />{ratePlan}</li>
+            {f.organization.trim() && <li className="flex items-center gap-2"><Buildings size={18} aria-hidden="true" className="shrink-0 text-muted" /><span className="min-w-0 break-words">{f.organization.trim()}</span></li>}
+            {f.notes.trim() && <li className="flex items-start gap-2"><Note size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" /><span className="min-w-0 break-words">{f.notes.trim()}</span></li>}
+          </ul>
         </section>
 
         <MoreOptions f={f} hideParty hideStatus hideColor />

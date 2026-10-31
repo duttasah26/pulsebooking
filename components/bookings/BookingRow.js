@@ -1,4 +1,5 @@
-import { Buildings, Check, Phone, X } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Buildings, CaretDown, Check, Phone, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
@@ -15,12 +16,15 @@ export const BOOKING_COLUMNS = [
 
 // One booking in the list: its colour as a small square before the name, guest and contact, room, dates and status (each can be switched off in a view).
 // A deleted booking offers Restore; a hold offers Confirm and Cancel in one click. Checked-out and cancelled stays are faded.
-export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy' }) {
+export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy' }) {
   const { settings } = useSettings();
   const isDeleted = Boolean(b.deleted_at);
   const finished = !isDeleted && (b.status === 'checked_out' || b.status === 'cancelled');
   const contact = b.guest_id ? b.phone || b.email : null;
   const show = (key) => !hidden.includes(key);
+  const rooms = [...new Set(b.rooms ?? [b.room_number])].sort();
+  const members = b.members?.length > 1 ? b.members : null; // the rooms of one stay, gathered on this row
+  const [open, setOpen] = useState(false);
   const roomy = density !== 'compact';
   // Columns on a wide screen: the guest, then whichever of room, dates and status are on.
   // minmax(0, ...) lets the wide columns shrink and wrap their text instead of running into the next column; room and status
@@ -29,14 +33,15 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
   const showLine2 = (show('organization') && b.organization) || show('contact');
   return (
     // content-visibility keeps long lists cheap: rows far off screen are not painted
-    <li className={`flex items-stretch [content-visibility:auto] ${roomy ? '[contain-intrinsic-size:auto_4rem]' : '[contain-intrinsic-size:auto_2.5rem]'}`}>
+    <li style={{ '--i': index }} className={`row-in [content-visibility:auto] ${roomy ? '[contain-intrinsic-size:auto_4rem]' : '[contain-intrinsic-size:auto_2.5rem]'}`}>
+      <div className={`flex items-stretch transition-colors duration-150 ${isDeleted ? '' : 'hover:bg-surface-2'}`}>
       <button
         type="button"
         disabled={isDeleted}
-        onClick={() => onOpen(b)}
+        onClick={() => onOpen(b, members)}
         style={{ '--cols': cols }}
-        className={`grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 px-4 text-left transition-colors duration-150 enabled:hover:bg-surface-2 md:[grid-template-columns:var(--cols)] md:px-5 ${
-          roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1.5'
+        className={`grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 px-4 text-left transition-colors duration-150 md:[grid-template-columns:var(--cols)] md:px-5 ${
+          roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'
         } ${finished ? 'text-ink/75' : ''}`}
       >
         <span className="min-w-0">
@@ -45,7 +50,7 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
             <span className={`truncate text-[1.0625rem] font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
           </span>
           {showLine2 && (
-            <span className="mt-0.5 flex min-w-0 items-center gap-3 pl-5 text-[0.9375rem] text-muted">
+            <span className="mt-1 flex min-w-0 items-center gap-4 pl-5 text-[0.9375rem] text-muted">
               {show('organization') && b.organization && (
                 <span className="flex min-w-0 items-center gap-1">
                   <Buildings size={14} aria-hidden="true" className="shrink-0" />
@@ -62,10 +67,28 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
           )}
         </span>
         {show('room') && (
-          <span className="flex items-center" title={`Room ${b.room_number}`}>
-            <span className="sr-only">Room </span>
-            <span className="rounded-md px-2 py-0.5 font-mono text-base font-semibold" style={{ backgroundColor: roomShade({ number: b.room_number }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: b.room_number }, settings).edge}` }}>{b.room_number}</span>
-          </span>
+          members ? (
+            // A stay in several rooms: how many, and how many on each floor in the floor's colour. The rooms themselves open below.
+            <span className="flex w-52 items-center gap-3" title={`Rooms ${rooms.join(', ')}`}>
+              <span className="text-base font-semibold">{rooms.length} rooms</span>
+              <span className="flex items-center gap-2" aria-hidden="true">
+                {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => {
+                  const shade = roomShade({ number: `${f}01` }, settings);
+                  return (
+                    <span key={f} className="flex items-center gap-1">
+                      <span className="size-3 rounded-sm" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }} />
+                      <span className="font-mono text-[0.9375rem] text-muted">{count}</span>
+                    </span>
+                  );
+                })}
+              </span>
+            </span>
+          ) : (
+            <span className="flex w-52 items-center" title={`Room ${rooms[0]}`}>
+              <span className="sr-only">Room </span>
+              <span className="rounded-md px-2 py-1 font-mono text-base font-semibold" style={{ backgroundColor: roomShade({ number: rooms[0] }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: rooms[0] }, settings).edge}` }}>{rooms[0]}</span>
+            </span>
+          )
         )}
         {show('dates') && (
           <span className="col-span-2 flex min-w-0 items-start pl-5 text-[0.9375rem] md:col-span-1 md:pl-0">
@@ -96,10 +119,31 @@ export default function BookingRow({ b, onOpen, onRestore, onConfirm, onCancelHo
           </button>
         </div>
       )}
+      {members && !isDeleted && (
+        <button type="button" className="btn btn-icon btn-quiet m-3 shrink-0 self-center" aria-expanded={open} aria-label={`${open ? 'Hide' : 'Show'} the ${members.length} rooms of ${b.name}`} onClick={() => setOpen((v) => !v)}>
+          <CaretDown size={18} aria-hidden="true" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        </button>
+      )}
+      {!members && !isDeleted && b.status !== 'on_hold' && b.members && <span aria-hidden="true" className="w-16 shrink-0" />}
       {isDeleted && (
         <button type="button" className="btn btn-sm m-3 self-center" onClick={() => onRestore(b)}>
           Restore
         </button>
+      )}
+      </div>
+      {members && open && (
+        <ul aria-label={`Rooms of ${b.name}`} className="tray-in flex flex-wrap gap-2 bg-surface-2/60 px-4 py-3 pl-9 md:px-5 md:pl-10">
+          {[...members].sort((x, y) => String(x.room_number).localeCompare(String(y.room_number))).map((m, mi) => {
+            const shade = roomShade({ number: m.room_number }, settings);
+            return (
+              <li key={m.id} className="chip-in" style={{ '--i': mi }}>
+                <button type="button" className="rounded-md px-3 py-1 font-mono text-base font-semibold transition-[filter] duration-150 hover:brightness-95" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }} onClick={() => onOpen(m, members)}>
+                  <span className="sr-only">Room </span>{m.room_number}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </li>
   );

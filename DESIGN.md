@@ -24,12 +24,12 @@ typography:
   display:
     fontFamily: "Atkinson Hyperlegible Next"
     fontSize: "28px"
-    fontWeight: 700
+    fontWeight: 600
     lineHeight: 1.2
   title:
     fontFamily: "Atkinson Hyperlegible Next"
     fontSize: "20px"
-    fontWeight: 700
+    fontWeight: 600
   headline:
     fontFamily: "Atkinson Hyperlegible Next"
     fontSize: "17px"
@@ -57,7 +57,7 @@ components:
     backgroundColor: "{colors.tint}"
     textColor: "{colors.ink}"
     rounded: "{rounded.md}"
-    height: "44px touch, 36px pointer"
+    height: "44px touch, 40px pointer"
   button-primary:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.accent-ink}"
@@ -98,8 +98,8 @@ something: room numbers, dates in the grid, times, counts, the clock. Words besi
 
 | Style | Size | Weight | Use |
 |---|---|---|---|
-| display (`t-display`) | 28px | 700 | page titles, the calendar heading |
-| title (`t-title`) | 20px | 700 | sheet, panel and section titles |
+| display (`t-display`) | 28px | 600 | page titles, the calendar heading |
+| title (`t-title`) | 20px | 600 | sheet, panel and section titles |
 | headline (`t-headline`) | 17px | 600 | names in lists, card titles, setting names |
 | body | 16px | 400 | anything you read or press on a phone |
 | footnote (`t-footnote`) | 15px | 400, muted | help under a field or a title |

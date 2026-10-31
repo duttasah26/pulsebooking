@@ -6,6 +6,7 @@ import BookingSheet from '../booking/BookingSheet';
 import FieldLabel from '../FieldLabel';
 import ColorPicker from '../booking/ColorPicker';
 import GuestStays from './GuestStays';
+import SaveToast from '../SaveToast';
 import { api } from '../../lib/useApi';
 
 // A guest's details (name is required; phone, email and organization are optional) and, for an existing guest,
@@ -18,6 +19,12 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [booking, setBooking] = useState(null);
+  const [saved, setSaved] = useState(false); // the save pill says Saved for a moment
+  const start = {
+    name: guest?.name ?? '', phone: guest?.phone ?? '', email: guest?.email ?? '',
+    organization: guest?.organization ?? '', notes: guest?.notes ?? '', color: guest?.color ?? null,
+  };
+  const dirty = JSON.stringify(form) !== JSON.stringify(start);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   // Stays still on the calendar block deleting; deleted stays go with the guest.
   const liveStays = (guest?.bookings ?? []).filter((b) => !b.deleted_at).length;
@@ -68,6 +75,8 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
       onChanged();
       if (isNew) onClose();
       setBusy(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -80,9 +89,15 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
         title={isNew ? 'New Guest' : guest.name}
         onClose={onClose}
         footer={
-          <button type="submit" form="guest-form" className="btn btn-primary btn-block" disabled={busy}>
-            {busy ? 'Saving…' : isNew ? 'Add Guest' : 'Save Changes'}
-          </button>
+          <SaveToast
+            state={saved ? 'success' : busy ? 'loading' : 'initial'}
+            text={isNew ? 'New guest' : dirty ? 'Unsaved changes' : 'No changes'}
+            resetText="Reset"
+            onReset={dirty ? () => setForm(start) : undefined}
+            saveText={isNew ? 'Add guest' : 'Save'}
+            saveType="submit"
+            form="guest-form"
+          />
         }
       >
         <form id="guest-form" onSubmit={save} className="form-area space-y-4">
@@ -91,7 +106,7 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
             <FieldLabel icon={User} htmlFor="g-name">Name</FieldLabel>
             <input id="g-name" name="name" className="field" value={form.name} onChange={set('name')} autoComplete="off" />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <FieldLabel icon={Phone} htmlFor="g-phone">Phone (optional)</FieldLabel>
               <input id="g-phone" name="phone" type="tel" inputMode="tel" className="field" value={form.phone} onChange={set('phone')} autoComplete="off" placeholder="+91 98450 12345" />
@@ -122,8 +137,8 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
           {!isNew && onMerge && (
             <div className="card">
               <p className="t-headline">Listed twice?</p>
-              <p className="t-footnote mb-3">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
-              <button type="button" className="btn px-3" onClick={onMerge}>
+              <p className="t-footnote mb-4 mt-1">If this guest also appears under another spelling, you can combine them. You choose, and you see what happens first.</p>
+              <button type="button" className="btn" onClick={onMerge}>
                 Merge with Another Guest
               </button>
             </div>
@@ -131,12 +146,12 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
           {!isNew && (
             <div className="card">
               <p className="t-headline">Delete this guest</p>
-              <p className="t-footnote mb-3">
+              <p className="t-footnote mb-4 mt-1">
                 {liveStays > 0
                   ? `${guest.name} has ${liveStays} ${liveStays === 1 ? 'stay' : 'stays'} on the calendar. Delete those first, or merge this guest into another.`
                   : 'Removes the guest for good. This cannot be undone.'}
               </p>
-              <HoldButton className="btn btn-danger px-3" title="Press and hold to delete this guest" reminder="Hold the button to delete the guest" onConfirm={remove} disabled={busy || liveStays > 0}>
+              <HoldButton className="btn btn-danger" title="Press and hold to delete this guest" reminder="Hold the button to delete the guest" onConfirm={remove} disabled={busy || liveStays > 0}>
                 <Trash size={18} aria-hidden="true" /> Hold to Delete Guest
               </HoldButton>
             </div>

@@ -41,7 +41,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
     setGlide(wasOn.current);
     wasOn.current = true;
     setOn(true);
-    setTip({ label: b.dataset.tip, key: b.dataset.key, tone: b.dataset.tone, y: r.top + r.height / 2, x: nav.current.getBoundingClientRect().right + 10 });
+    setTip({ label: b.dataset.tip, key: b.dataset.key, tone: b.dataset.tone, y: r.top + r.height / 2, x: nav.current.getBoundingClientRect().right + 8 });
   };
   return (
     <>
@@ -61,7 +61,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
             on={quickHold}
             onClick={onToggleHold}
           />
-          <hr className="mx-2 my-1 border-line" />
+          <hr className="mx-2 my-2 border-line" />
           {/* Look: open, pick, or move around. */}
           <ToolButton
             {...v}
@@ -74,7 +74,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
           />
           <ToolButton {...v} icon={CheckSquare} label="Select" title={touch ? 'Select: tap bookings to pick several, then delete them together' : 'Select: click bookings to pick several, no Ctrl needed. Move them, stretch them or delete them together'} on={touchSelect} onClick={onToggleSelect} />
           <ToolButton {...v} icon={Hand} label="Hand" title="Hand: drag the calendar to move around it" on={hand} onClick={onToggleHand} />
-          <hr className="mx-2 my-1 border-line" />
+          <hr className="mx-2 my-2 border-line" />
         </>
       )}
       {/* Fix: undo and redo. */}
@@ -94,7 +94,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
         disabled={!history.canRedo}
         onClick={history.redo}
       />
-      <hr className="mx-2 my-1 border-line" />
+      <hr className="mx-2 my-2 border-line" />
       {onHelp && <ToolButton {...v} icon={Question} label="Help" title="How to use the calendar" onClick={onHelp} />}
       {!touch && (
         <ToolButton
@@ -124,7 +124,7 @@ export default function ToolRail({ canTool, quickHold, drawing, hand, touch, tou
             transform: on ? 'none' : 'translateX(-8px)',
             transition: 'opacity 180ms ease-out, transform 220ms cubic-bezier(0.32, 0.72, 0, 1), background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out',
           }}
-          className={`flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-1.5 text-[0.9375rem] font-semibold shadow-lg ${TIP[tip?.tone] ?? TIP.ink}`}
+          className={`flex items-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 text-[0.9375rem] font-semibold shadow-lg ${TIP[tip?.tone] ?? TIP.ink}`}
         >
           {tip?.label}
           {tip?.key && <kbd className="rounded border border-current/40 px-1.5 font-mono text-sm leading-5">{tip.key}</kbd>}

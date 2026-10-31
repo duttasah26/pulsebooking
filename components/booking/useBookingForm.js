@@ -79,6 +79,7 @@ export function useBookingForm({
   const [extraStays, setExtraStays] = useState([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false); // an edit went through: the save pill says so for a moment before the form closes
   const orgTouched = useRef(edit);
   const timesTouched = useRef(edit);
   const adultsTouched = useRef(edit);
@@ -229,13 +230,17 @@ export function useBookingForm({
           room_id: t.room_id, ...(t.guest_id && guestId ? { guest_id: t.guest_id } : {}),
         }));
         const send = (list) => Promise.all(targets.map((t, i) => api(`/api/bookings/${t.id}`, { method: 'PATCH', body: list[i] })));
-        await send(bodies);
-        const entry = {
-          label: 'Booking edited',
-          undo: async () => { await send(before); onSaved(); },
-          redo: async () => { await send(bodies); onSaved(); },
-        };
-        onSaved(booking.status === 'on_hold' && finalStatus !== 'on_hold' ? 'Booking confirmed' : isHoldEdit ? 'Hold updated' : 'Booking updated', entry);
+        // Pressing Save with nothing changed saves nothing, so "last edited" does not move.
+        const unchanged = !guestChoice?.newGuest && bodies.every((body, i) => Object.keys(body).every((k) => String(body[k] ?? '') === String(before[i][k] ?? '')));
+        if (!unchanged) {
+          await send(bodies);
+          const entry = {
+            label: 'Booking edited',
+            undo: async () => { await send(before); onSaved(); },
+            redo: async () => { await send(bodies); onSaved(); },
+          };
+          onSaved(booking.status === 'on_hold' && finalStatus !== 'on_hold' ? 'Booking confirmed' : isHoldEdit ? 'Hold updated' : 'Booking updated', entry);
+        }
       } else {
         const guestPart = guestChoice?.guestId
           ? { guest_id: guestChoice.guestId }
@@ -293,6 +298,10 @@ export function useBookingForm({
         onSaved(away ? 'Booking created in two parts' : finalStatus === 'on_hold' ? 'Hold placed' : extraBodies.length ? `${made.length} bookings created` : roomIds.length > 1 ? `${roomIds.length} rooms booked` : 'Booking created', entry);
       }
       if (!edit) clearBookingDraft();
+      if (edit) {
+        setSaved(true);
+        await new Promise((resolve) => { setTimeout(resolve, 900); });
+      }
       onDone();
     } catch (err) {
       setError(err.message);
@@ -301,7 +310,7 @@ export function useBookingForm({
   };
 
   return {
-    edit, booking, targets, unconfirmed, isHold, isHoldEdit, initialGuest, error: error || removeError, busy: busy || removing,
+    edit, saved, booking, targets, unconfirmed, isHold, isHoldEdit, initialGuest, error: error || removeError, busy: busy || removing,
     roomIds, setRoomIds, toggleRoom, roomTaken, nightBusy,
     checkIn, checkOut, nights, setDates: (a, b) => { setCheckIn(a); setCheckOut(b); },
     setAdults: (v) => { adultsTouched.current = true; setAdults(v); },

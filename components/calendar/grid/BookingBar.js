@@ -55,6 +55,13 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     }, 500);
   };
   const pressEnd = () => clearTimeout(press.current.timer);
+  // A click makes the bar squash and spring back (the class is taken off and put on again so every click plays it).
+  const boing = (el) => {
+    if (!el) return;
+    el.classList.remove('animate-boing');
+    void el.offsetWidth;
+    el.classList.add('animate-boing');
+  };
   const pressProps = {
     onPointerDown: (e) => (movable ? onMoveStart(e, b, 'move') : pressStart(e)),
     onPointerUp: pressEnd,
@@ -150,7 +157,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         type="button"
         data-bid={b.id}
         data-movable={movable ? '' : undefined}
-        onClick={(e) => (selectMode || e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b))}
+        onClick={(e) => { boing(e.currentTarget); return selectMode || e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b); }}
         onDoubleClick={() => onOpenGroup?.(b)}
         aria-pressed={selectMode ? Boolean(picked) : undefined}
         title={label}
@@ -169,7 +176,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     <div ref={rootRef} role="group" data-bid={b.id} data-movable={movable ? '' : undefined} aria-label={`${label}, on hold`} className={`${shape} pl-1.5 pr-0.5 @min-[70px]:pl-2`} style={style}>
       <button
         type="button"
-        onClick={(e) => (e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b))}
+        onClick={(e) => { boing(rootRef.current); return e.ctrlKey || e.shiftKey || e.metaKey ? onPick(b) : onOpen(b); }}
         onDoubleClick={() => onOpenGroup?.(b)}
         {...pressProps}
         title={label}

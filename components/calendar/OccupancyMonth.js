@@ -102,9 +102,9 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
   const dot = roomy ? 12 : Math.max(4, Math.min(10, Math.floor(((cellH ?? 62) - (tight ? 8 : 12) - (tight ? 16 : 18) - 2 - 1 - 2 * gapY) / 3)));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {onDate && (
-        <nav aria-label="Months" className="flex items-stretch gap-1.5">
+        <nav aria-label="Months" className="flex items-stretch gap-2">
           <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Month before" {...hold('prev', () => onDate(addMonths(first, -1)))}>
             <CaretLeft size={22} aria-hidden="true" />
           </button>
@@ -121,7 +121,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                     className={`flex min-h-11 w-full select-none flex-col items-center justify-center rounded-lg border-2 px-0.5 leading-tight transition-colors duration-150 ${sel ? 'border-ink bg-surface font-semibold' : 'border-transparent hover:bg-surface-2'}`}
                   >
                     <span className={`text-base ${m === monthStart(todayStr) ? 'font-semibold text-accent-text' : ''}`}>{fmtMonthShort(m).replace('Sept', 'Sep')}</span>
-                    <span className="font-mono text-[0.8125rem] text-muted">{m.slice(0, 4)}</span>
+                    <span className="font-mono text-sm text-muted">{m.slice(0, 4)}</span>
                   </button>
                 </li>
               );
@@ -134,7 +134,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
         </nav>
       )}
 
-      <div ref={bodyRef} className="space-y-3">
+      <div ref={bodyRef} className="space-y-4">
         <p className="sr-only" role="status" aria-live="polite">{fmtMonth(first)}</p>
       <p className="px-1 text-base">
         <span className="text-muted">
@@ -154,9 +154,10 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
               <button
                 key={d}
                 type="button"
+                style={{ '--i': i }}
                 onClick={() => onPickDay(d)}
                 aria-label={`${fmtDayMonth(d)}: ${counts[i]} of ${total} rooms taken, ${Math.max(0, total - counts[i])} free`}
-                className={`cell flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
+                className={`cell cell-in flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
               >
                 <span className="flex w-full items-baseline gap-2">
                   <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-semibold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
@@ -181,10 +182,10 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
         </div>
 
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1 pt-3 text-[0.9375rem] text-muted" aria-label="What the dots mean">
-          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full bg-muted" aria-hidden="true" /> Room taken</li>
-          <li className="flex items-center gap-1.5"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px var(--muted)' }} aria-hidden="true" /> Room free</li>
+          <li className="flex items-center gap-2"><span className="size-3 rounded-full bg-muted" aria-hidden="true" /> Room taken</li>
+          <li className="flex items-center gap-2"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px var(--muted)' }} aria-hidden="true" /> Room free</li>
           {floors.map(({ floor, shade }) => (
-            <li key={floor} className="flex items-center gap-1.5">
+            <li key={floor} className="flex items-center gap-2">
               <span className="size-3 rounded-full" style={{ backgroundColor: shade.edge }} aria-hidden="true" /> {FLOOR_NAME[floor] ?? `Floor ${floor}`}
             </li>
           ))}

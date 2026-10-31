@@ -25,18 +25,18 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
       <button
         type="button"
         onClick={() => onOpen(g.id)}
-        className={`flex min-w-0 flex-1 items-center gap-4 px-4 text-left transition-colors duration-150 hover:bg-surface-2 md:px-5 ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1.5'}`}
+        className={`flex min-w-0 flex-1 items-center gap-4 px-4 text-left transition-colors duration-150 hover:bg-surface-2 md:px-5 ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'}`}
       >
         <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-md bg-surface-2 font-semibold text-muted ${roomy ? 'size-10 text-base' : 'size-7 text-sm'}`}>{initials(g.name)}</span>
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 items-center gap-2">
             <span className="truncate text-[1.0625rem] font-semibold">{g.name}</span>
             {duplicate && (
-              <span className="shrink-0 rounded bg-ink px-1.5 text-sm font-semibold text-white">Same person?</span>
+              <span className="shrink-0 rounded-md bg-ink px-2 text-sm font-semibold text-white">Same person?</span>
             )}
           </span>
           {anyLine && (
-            <span className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-4 text-[0.9375rem] text-muted">
+            <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 text-[0.9375rem] text-muted">
               {show('phone') && g.phone && <span className="flex items-center gap-1 whitespace-nowrap"><Phone size={14} aria-hidden="true" />{g.phone}</span>}
               {show('email') && g.email && <span className="flex min-w-0 items-center gap-1"><Envelope size={14} aria-hidden="true" className="shrink-0" /><span className="truncate">{g.email}</span></span>}
               {show('organization') && g.organization && <span className="flex min-w-0 items-center gap-1"><Buildings size={14} aria-hidden="true" className="shrink-0" /><span className="truncate">{g.organization}</span></span>}

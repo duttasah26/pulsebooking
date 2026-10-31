@@ -24,7 +24,7 @@ function Card({ guest, keep, onKeep }) {
         <span className="font-semibold">{keep ? 'Keep this guest' : 'Merge into the other'}</span>
       </span>
       <span className="mt-2 flex items-center gap-2 text-lg font-semibold"><UserCircle size={24} aria-hidden="true" className="shrink-0 text-muted" /><span className="min-w-0 break-words">{guest.name}</span></span>
-      <dl className="mt-1 space-y-0.5 text-base text-muted">
+      <dl className="mt-1 space-y-1 text-base text-muted">
         <div className="flex items-center gap-2"><Phone size={16} aria-hidden="true" className="shrink-0 text-muted" /><dt className="sr-only">Phone</dt><dd>{guest.phone || <span className="text-muted">No phone</span>}</dd></div>
         <div className="flex items-center gap-2"><Envelope size={16} aria-hidden="true" className="shrink-0 text-muted" /><dt className="sr-only">Email</dt><dd className="min-w-0 break-words">{guest.email || <span className="text-muted">No email</span>}</dd></div>
         <div className="flex items-center gap-2"><Buildings size={16} aria-hidden="true" className="shrink-0 text-muted" /><dt className="sr-only">Organization</dt><dd>{guest.organization || <span className="text-muted">No organization</span>}</dd></div>

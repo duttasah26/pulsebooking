@@ -19,7 +19,7 @@ import { STATUS_LABEL } from '../../lib/status';
 function ConfirmSteps({ hasGuest, onCancel, busy }) {
   const num = 'grid size-7 shrink-0 place-items-center rounded-md font-mono text-base font-semibold';
   return (
-    <section aria-label="How to confirm this hold" className="animate-fade rounded-lg bg-accent-soft p-5">
+    <section aria-label="How to confirm this hold" className="animate-fade rounded-lg bg-accent-soft p-4">
       <div className="flex items-start justify-between gap-2">
         <h2 className="t-title">To confirm this booking</h2>
         {onCancel && (
@@ -29,13 +29,13 @@ function ConfirmSteps({ hasGuest, onCancel, busy }) {
         )}
       </div>
       <ol className="mt-2 space-y-2 text-base">
-        <li className="flex items-center gap-2.5">
+        <li className="flex items-center gap-3">
           <span className={`${num} ${hasGuest ? 'bg-accent text-accent-ink' : 'bg-surface text-accent-strong ring-1 ring-accent'}`}>
             {hasGuest ? <Check size={16} weight="bold" aria-label="Done" /> : 1}
           </span>
           Type the guest’s name
         </li>
-        <li className="flex items-center gap-2.5">
+        <li className="flex items-center gap-3">
           <span className={`${num} bg-surface text-accent-strong ring-1 ring-accent`}>2</span>
           Press <strong>Confirm Booking</strong>
         </li>

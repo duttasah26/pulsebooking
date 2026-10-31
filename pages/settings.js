@@ -8,6 +8,7 @@ import AccountPanel from '../components/settings/AccountPanel';
 import { useSettings } from '../components/SettingsProvider';
 import { useToast } from '../components/Toast';
 import { floorLabel, floorOf } from '../components/calendar/floors';
+import Switch from '../components/Switch';
 import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
@@ -45,10 +46,10 @@ const TABS = [
 // One group of settings: a clear heading, who it applies to, and the settings under it.
 function Group({ id, icon: Icon, title, scope, hint, children }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-5 sm:p-6">
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-6">
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h2 id={`${id}-title`} className="t-title">{title}</h2>
+          <h2 id={`${id}-title`} className="t-title font-semibold">{title}</h2>
           {scope && <span className="badge">{scope}</span>}
         </div>
         {hint && <p className="t-footnote">{hint}</p>}
@@ -61,7 +62,7 @@ function Group({ id, icon: Icon, title, scope, hint, children }) {
 // One setting: its name and what it does, with the control below.
 function Setting({ label, hint, children }) {
   return (
-    <div className="space-y-3 border-t border-line pt-5 first:border-t-0 first:pt-0">
+    <div className="space-y-3 border-t border-line pt-6 first:border-t-0 first:pt-0">
       <div>
         <p className="t-headline">{label}</p>
         {hint && <p className="t-footnote">{hint}</p>}
@@ -72,20 +73,14 @@ function Setting({ label, hint, children }) {
 }
 
 // An on or off switch, large enough to hit with a thumb.
-function Switch({ label, hint, checked, onChange }) {
+function SwitchRow({ label, hint, checked, onChange }) {
   return (
-    <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-line pt-5 first:border-t-0 first:pt-0">
+    <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-line pt-6 first:border-t-0 first:pt-0">
       <span className="min-w-0 flex-1">
         <span className="t-headline block">{label}</span>
         {hint && <span className="t-footnote block">{hint}</span>}
       </span>
-      <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span
-        aria-hidden="true"
-        className="relative h-9 w-16 shrink-0 rounded-lg border border-field-line bg-surface-2 transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-checked:[&>span]:translate-x-7"
-      >
-        <span className="absolute left-[3px] top-[3px] size-7 rounded-md bg-surface shadow-md transition-transform duration-200" />
-      </span>
+      <Switch icons checked={checked} onChange={onChange} />
       <span className="w-9 shrink-0 text-base font-semibold" aria-hidden="true">{checked ? 'On' : 'Off'}</span>
     </label>
   );
@@ -175,7 +170,7 @@ export default function Settings() {
                   tabIndex={on ? 0 : -1}
                   aria-controls="settings-panel"
                   onClick={() => { setTab(id); setSaved(''); }}
-                  className={`btn shrink-0 justify-start gap-3 px-3 lg:min-h-9 ${on ? 'btn-on' : 'btn-quiet'}`}
+                  className={`btn shrink-0 justify-start gap-3 px-3 ${on ? 'btn-on' : 'btn-quiet'}`}
                 >
                   <Icon size={18} weight={on ? 'fill' : 'bold'} aria-hidden="true" className="shrink-0" />
                   {label}
@@ -195,21 +190,21 @@ export default function Settings() {
                 value={textSize}
                 onChange={(v) => { setTextSize(v); setSaved('Text size changed on this device'); }}
               />
-              <p className="rounded-lg bg-surface-2 p-3 text-base leading-relaxed">
+              <p className="rounded-lg bg-surface-2 p-4 text-base leading-relaxed">
                 Room 101 is free from Sat 10 Oct to Sun 11 Oct. Tap a day to see who is arriving and leaving.
               </p>
             </Group>
 
             <Group id="colours" icon={Palette} title="Colours" scope="Everyone" hint="The colours used on the calendar and in the lists. Each one shows a sample of how it will look.">
               <Setting label="Floors" hint="Each floor's room numbers share one colour. The first digit of a room number is its floor.">
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {floors.map((f) => {
                     const tone = roomShade({ number: f }, settings);
                     return (
                       <Row
                         key={f}
                         sample={
-                          <span className="inline-flex min-h-9 min-w-24 items-center justify-center rounded-lg border px-3 font-mono text-sm font-semibold" style={{ backgroundColor: tone.fill, borderColor: tone.edge }}>
+                          <span className="inline-flex min-h-9 min-w-24 items-center justify-center rounded-lg border px-3 font-mono text-[0.9375rem] font-semibold" style={{ backgroundColor: tone.fill, borderColor: tone.edge }}>
                             {f}01
                           </span>
                         }
@@ -222,14 +217,14 @@ export default function Settings() {
               </Setting>
 
               <Setting label="Bookings" hint="Used for bookings that have no colour of their own and whose guest has none.">
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {STATUSES.map(({ key, label }) => {
                     const tone = statusColor(key, settings);
                     return (
                       <Row
                         key={key}
                         sample={
-                          <span className={`inline-flex min-h-9 min-w-24 items-center justify-center rounded-lg border px-3 text-sm font-medium ${key === 'on_hold' ? 'border-dashed' : ''}`} style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
+                          <span className={`inline-flex min-h-9 min-w-24 items-center justify-center rounded-lg border px-3 text-[0.9375rem] font-medium ${key === 'on_hold' ? 'border-dashed' : ''}`} style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
                             {key === 'on_hold' ? 'On hold' : 'Confirmed'}
                           </span>
                         }
@@ -242,14 +237,14 @@ export default function Settings() {
               </Setting>
 
               <Setting label="First and last day of a stay" hint="Shown in the date picker of the booking form, and in the Arriving and Leaving filters.">
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {STAY_ROWS.map(({ key, label, sample }) => {
                     const tone = stayColor(key, settings);
                     return (
                       <Row
                         key={key}
                         sample={
-                          <span className="inline-flex min-h-9 min-w-24 items-center justify-center rounded-lg border-2 px-3 text-sm font-semibold" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
+                          <span className="inline-flex min-h-9 min-w-24 items-center justify-center rounded-lg border-2 px-3 text-[0.9375rem] font-semibold" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
                             {sample}
                           </span>
                         }
@@ -261,7 +256,7 @@ export default function Settings() {
                 </div>
               </Setting>
 
-              <button type="button" className="btn gap-2 px-3" onClick={resetColours}>
+              <button type="button" className="btn" onClick={resetColours}>
                 Reset All Colours
               </button>
             </Group>
@@ -290,7 +285,7 @@ export default function Settings() {
                       onChange={(v) => { setRowSize(v); setSaved('Row size changed on this device'); }}
                     />
                   </Setting>
-                  <Switch
+                  <SwitchRow
                     label="Show checked-out stays"
                     hint="Draw stays that have already checked out. You can also switch this from the calendar toolbar."
                     checked={showDone}
@@ -300,7 +295,7 @@ export default function Settings() {
 
                 <Group id="overview" icon={SlidersHorizontal} title="Overview panel" scope="This device only" hint="What the Overview tab on the calendar shows.">
                   {OVERVIEW_PARTS.map(([key, label]) => (
-                    <Switch
+                    <SwitchRow
                       key={key}
                       label={label}
                       checked={overview[key] !== false}
@@ -319,7 +314,7 @@ export default function Settings() {
                   <TimeSelect id="s-out-time" icon={SignOut} label="Check-out time" value={settings.checkOutTime} onChange={(v) => apply({ checkOutTime: v })} />
                 </div>
               </Setting>
-              <Switch
+              <SwitchRow
                 label="Check guests out automatically"
                 hint="Once the leaving day and time have passed, a stay changes to Checked out by itself. Switch off if you prefer to do it by hand. Checking in is always by hand."
                 checked={settings.autoCheckout !== false}
@@ -337,10 +332,10 @@ export default function Settings() {
                   return (
                     <li key={r.id}>
                       <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
-                        <input type="checkbox" name={`room-${r.number}`} className="size-5 accent-[var(--accent)]" checked={r.active} onChange={(e) => setActive(r, e.target.checked)} />
+                        <Switch size="sm" icons={false} name={`room-${r.number}`} checked={r.active} onChange={(on) => setActive(r, on)} />
                         <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-black/20" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
-                        {!r.active && <span className="text-sm text-muted">off</span>}
+                        {!r.active && <span className="text-[0.9375rem] text-muted">off</span>}
                       </label>
                     </li>
                   );
