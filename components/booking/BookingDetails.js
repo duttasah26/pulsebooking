@@ -10,7 +10,7 @@ import { colorFor, roomShade } from '../../lib/colors';
 import { fmtBooked, fmtShort, nightsLabel } from '../../lib/dates';
 import { displayName } from '../../lib/staff';
 
-// One end of the stay: the date and the time, in large type. With no time of its own it shows the default time, marked.
+// One end of the stay: the date and the time, in large type. With no time of its own it shows the default time.
 // Its title carries the check-in (green) or check-out (brick) symbol, as in the forms.
 function Moment({ icon: Icon, tone, label, date, time, fallback }) {
   const shown = time || fallback;
@@ -21,10 +21,7 @@ function Moment({ icon: Icon, tone, label, date, time, fallback }) {
         {label}
       </p>
       <p className="mt-2 text-xl font-semibold leading-tight tabular-nums">{fmtShort(date)}</p>
-      <p className="flex flex-wrap items-baseline gap-x-2 font-mono text-base tabular-nums">
-        <span>{shown ? formatTime(shown) : 'No time set'}</span>
-        {!time && shown && <span className="text-sm text-muted">default</span>}
-      </p>
+      <p className="font-mono text-base tabular-nums">{shown ? formatTime(shown) : 'No time set'}</p>
     </div>
   );
 }
@@ -73,6 +70,7 @@ export default function BookingDetails({
           {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
           {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
           {!b.guest_id && <li>No guest name yet</li>}
+          <Line icon={Users}>{partyText(partyOf(targets))}</Line>
         </ul>
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-3">
           <Bed size={20} aria-hidden="true" className="shrink-0 text-muted" />
@@ -101,7 +99,6 @@ export default function BookingDetails({
       </section>
 
       <ul className="space-y-2 px-1 text-base">
-        <Line icon={Users}>{partyText(partyOf(targets))}</Line>
         <Line icon={Megaphone}>Booked via {b.channel}</Line>
         <Line icon={Receipt}>{b.rate_plan}</Line>
         {b.notes && <Line icon={Note}>{b.notes}</Line>}

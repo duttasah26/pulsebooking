@@ -1,10 +1,24 @@
 import { Clock } from '@phosphor-icons/react';
+import SaveToast from '../SaveToast';
 
 // The buttons pinned to the bottom of the form. One filled green button says what happens next; leaving is a quiet word.
 // Deleting is done from the details (hold the button there), not from the form.
 export default function FormFooter({ f, onCancel }) {
   const { edit, busy, unconfirmed, roomIds, isHoldEdit } = f;
   const saving = busy || unconfirmed;
+  // Editing a booking, or confirming a hold: the save pill (components/SaveToast.js). A new booking keeps the plain buttons.
+  if (edit) {
+    const state = f.saved ? 'success' : saving ? 'loading' : 'initial';
+    return (
+      <div className="sticky bottom-0 -mx-4 mt-auto flex justify-center border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
+        {isHoldEdit ? (
+          <SaveToast state={state} text="On hold" successText="Confirmed" resetText="Keep on hold" onReset={() => f.submit(true)} saveText="Confirm" onSave={() => f.submit(false, 'confirmed')} />
+        ) : (
+          <SaveToast state={state} text="Editing" resetText="Cancel" onReset={onCancel} saveText="Save" saveType="submit" />
+        )}
+      </div>
+    );
+  }
   return (
     <div className="sticky bottom-0 -mx-4 mt-auto flex gap-3 border-t border-line bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 lg:pb-3">
       {onCancel && (

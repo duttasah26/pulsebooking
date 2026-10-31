@@ -6,6 +6,7 @@ import BookingSheet from '../booking/BookingSheet';
 import FieldLabel from '../FieldLabel';
 import ColorPicker from '../booking/ColorPicker';
 import GuestStays from './GuestStays';
+import SaveToast from '../SaveToast';
 import { api } from '../../lib/useApi';
 
 // A guest's details (name is required; phone, email and organization are optional) and, for an existing guest,
@@ -18,6 +19,12 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [booking, setBooking] = useState(null);
+  const [saved, setSaved] = useState(false); // the save pill says Saved for a moment
+  const start = {
+    name: guest?.name ?? '', phone: guest?.phone ?? '', email: guest?.email ?? '',
+    organization: guest?.organization ?? '', notes: guest?.notes ?? '', color: guest?.color ?? null,
+  };
+  const dirty = JSON.stringify(form) !== JSON.stringify(start);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   // Stays still on the calendar block deleting; deleted stays go with the guest.
   const liveStays = (guest?.bookings ?? []).filter((b) => !b.deleted_at).length;
@@ -68,6 +75,8 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
       onChanged();
       if (isNew) onClose();
       setBusy(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -80,9 +89,15 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
         title={isNew ? 'New Guest' : guest.name}
         onClose={onClose}
         footer={
-          <button type="submit" form="guest-form" className="btn btn-primary btn-block" disabled={busy}>
-            {busy ? 'Saving…' : isNew ? 'Add Guest' : 'Save Changes'}
-          </button>
+          <SaveToast
+            state={saved ? 'success' : busy ? 'loading' : 'initial'}
+            text={isNew ? 'New guest' : dirty ? 'Unsaved changes' : 'No changes'}
+            resetText="Reset"
+            onReset={dirty ? () => setForm(start) : undefined}
+            saveText={isNew ? 'Add guest' : 'Save'}
+            saveType="submit"
+            form="guest-form"
+          />
         }
       >
         <form id="guest-form" onSubmit={save} className="form-area space-y-4">

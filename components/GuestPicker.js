@@ -22,7 +22,8 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
 
   const debounced = useDebounced(query.trim());
   const search = useApi(!selected && !adding && debounced.length >= 2 ? `/api/guests?q=${encodeURIComponent(debounced)}` : null);
-  const matches = (search.data ?? []).slice(0, 6);
+  const found = search.data ?? [];
+  const matches = found.slice(0, 30); // the list scrolls; the server sends at most 100, so a name shared by hundreds still needs a few more letters
 
   // Lets a hold use whatever was typed here as its label, even if no guest was picked.
   useEffect(() => {
@@ -115,30 +116,36 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
         />
       </div>
       {debounced.length >= 2 && (
-        <ul className="mt-2 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
-          {matches.map((g) => (
-            <li key={g.id}>
-              <button type="button" className="flex min-h-14 w-full flex-col items-start justify-center px-4 py-2.5 text-left hover:bg-surface-2" onClick={() => setSelected(g)}>
-                <span className="font-semibold">{g.name}</span>
-                <span className="text-[0.9375rem] text-muted">
-                  {contact(g) || 'No phone or email'}
-                  {g.organization ? `, ${g.organization}` : ''}
-                  {Number(g.stays) > 0 && `, ${g.stays} stay${Number(g.stays) === 1 ? '' : 's'}, last ${fmtDayMonthYear(g.last_check_in)}`}
-                </span>
-              </button>
-            </li>
-          ))}
-          {search.loading && matches.length === 0 && <li className="px-4 py-3 text-[0.9375rem] text-muted">Searching…</li>}
-          <li>
-            <button
-              type="button"
-              className="flex min-h-12 w-full items-center gap-2 px-4 py-2 text-left font-semibold text-accent-text hover:bg-surface-2"
-              onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '', color: null }); }}
-            >
-              <Plus size={18} aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest
-            </button>
-          </li>
-        </ul>
+        <div className="mt-2 space-y-2">
+          {(matches.length > 0 || search.loading) && (
+            <ul className="max-h-72 divide-y divide-line overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface">
+              {matches.map((g) => (
+                <li key={g.id}>
+                  <button type="button" className="flex min-h-14 w-full flex-col items-start justify-center px-4 py-2.5 text-left hover:bg-surface-2" onClick={() => setSelected(g)}>
+                    <span className="font-semibold">{g.name}</span>
+                    <span className="text-[0.9375rem] text-muted">
+                      {contact(g) || 'No phone or email'}
+                      {g.organization ? `, ${g.organization}` : ''}
+                      {Number(g.stays) > 0 && `, ${g.stays} stay${Number(g.stays) === 1 ? '' : 's'}, last ${fmtDayMonthYear(g.last_check_in)}`}
+                    </span>
+                  </button>
+                </li>
+              ))}
+              {search.loading && matches.length === 0 && <li className="px-4 py-3 text-[0.9375rem] text-muted">Searching…</li>}
+            </ul>
+          )}
+          {found.length > matches.length && <p className="px-1 text-[0.9375rem] text-muted">Showing {matches.length} of {found.length}{found.length >= 100 ? '+' : ''}. Type more to narrow it down.</p>}
+          {/* Stays in view at the bottom of the panel while the list is on screen, never at the end of a long scroll. */}
+          <div className="sticky bottom-[4.75rem] z-10 bg-surface pb-1 pt-1">
+          <button
+            type="button"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-accent-soft px-4 py-2 font-semibold text-accent-strong transition-colors duration-150 hover:bg-accent-soft/60 active:bg-accent-soft/40"
+            onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '', color: null }); }}
+          >
+            <Plus size={18} weight="bold" aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest
+          </button>
+          </div>
+        </div>
       )}
     </div>
   );

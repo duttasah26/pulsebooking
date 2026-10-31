@@ -1,4 +1,6 @@
-import { ArrowRight, Check, WarningCircle } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { ArrowRight } from '@phosphor-icons/react';
+import SaveToast from '../SaveToast';
 import { fmtDayMonth, nightsLabel, diffDays } from '../../lib/dates';
 
 // A change made with the pencil that is not saved yet, shown at the top of the booking details (or the selection), where
@@ -70,22 +72,22 @@ function Change({ item: i, rooms, showName }) {
 
 export default function PendingBanner({ items, rooms, onSave, onCancel }) {
   const several = items.length > 1;
+  const [state, setState] = useState('initial');
+  const save = async () => {
+    setState('loading');
+    try {
+      await onSave?.();
+      setState('success');
+    } catch (err) {
+      setState('initial');
+    }
+  };
   return (
     <div role="group" aria-label="Unsaved change" className="space-y-3 rounded-lg border border-line bg-surface p-4 shadow-md">
-      <p className="t-headline flex items-center gap-2">
-        <WarningCircle size={20} weight="fill" aria-hidden="true" className="shrink-0" /> Unsaved change
-      </p>
       <ul className="space-y-3">
         {items.map((i) => <Change key={i.original.id} item={i} rooms={rooms} showName={several} />)}
       </ul>
-      <div className="flex gap-2">
-        <button type="button" className="btn flex-1" onClick={onCancel}>
-          Cancel
-        </button>
-        <button type="button" className="btn btn-primary flex-1" onClick={onSave}>
-          Save
-        </button>
-      </div>
+      <SaveToast state={state} text="Unsaved change" resetText="Cancel" onReset={onCancel} saveText="Save" onSave={save} className="flex" />
     </div>
   );
 }
