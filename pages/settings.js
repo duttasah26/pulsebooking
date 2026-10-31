@@ -8,6 +8,7 @@ import AccountPanel from '../components/settings/AccountPanel';
 import { useSettings } from '../components/SettingsProvider';
 import { useToast } from '../components/Toast';
 import { floorLabel, floorOf } from '../components/calendar/floors';
+import Switch from '../components/Switch';
 import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/colors';
 import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
@@ -72,20 +73,14 @@ function Setting({ label, hint, children }) {
 }
 
 // An on or off switch, large enough to hit with a thumb.
-function Switch({ label, hint, checked, onChange }) {
+function SwitchRow({ label, hint, checked, onChange }) {
   return (
     <label className="flex min-h-14 cursor-pointer items-center gap-4 border-t border-line pt-6 first:border-t-0 first:pt-0">
       <span className="min-w-0 flex-1">
         <span className="t-headline block">{label}</span>
         {hint && <span className="t-footnote block">{hint}</span>}
       </span>
-      <input type="checkbox" role="switch" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span
-        aria-hidden="true"
-        className="relative h-9 w-16 shrink-0 rounded-lg border border-field-line bg-surface-2 transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-checked:[&>span]:translate-x-7"
-      >
-        <span className="absolute left-[3px] top-[3px] size-7 rounded-[3px] bg-surface shadow-md transition-transform duration-200" />
-      </span>
+      <Switch icons checked={checked} onChange={onChange} />
       <span className="w-9 shrink-0 text-base font-semibold" aria-hidden="true">{checked ? 'On' : 'Off'}</span>
     </label>
   );
@@ -290,7 +285,7 @@ export default function Settings() {
                       onChange={(v) => { setRowSize(v); setSaved('Row size changed on this device'); }}
                     />
                   </Setting>
-                  <Switch
+                  <SwitchRow
                     label="Show checked-out stays"
                     hint="Draw stays that have already checked out. You can also switch this from the calendar toolbar."
                     checked={showDone}
@@ -300,7 +295,7 @@ export default function Settings() {
 
                 <Group id="overview" icon={SlidersHorizontal} title="Overview panel" scope="This device only" hint="What the Overview tab on the calendar shows.">
                   {OVERVIEW_PARTS.map(([key, label]) => (
-                    <Switch
+                    <SwitchRow
                       key={key}
                       label={label}
                       checked={overview[key] !== false}
@@ -319,7 +314,7 @@ export default function Settings() {
                   <TimeSelect id="s-out-time" icon={SignOut} label="Check-out time" value={settings.checkOutTime} onChange={(v) => apply({ checkOutTime: v })} />
                 </div>
               </Setting>
-              <Switch
+              <SwitchRow
                 label="Check guests out automatically"
                 hint="Once the leaving day and time have passed, a stay changes to Checked out by itself. Switch off if you prefer to do it by hand. Checking in is always by hand."
                 checked={settings.autoCheckout !== false}
@@ -337,7 +332,7 @@ export default function Settings() {
                   return (
                     <li key={r.id}>
                       <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
-                        <input type="checkbox" name={`room-${r.number}`} className="size-5 accent-[var(--accent)]" checked={r.active} onChange={(e) => setActive(r, e.target.checked)} />
+                        <Switch size="sm" icons={false} name={`room-${r.number}`} checked={r.active} onChange={(on) => setActive(r, on)} />
                         <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-black/20" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
                         {!r.active && <span className="text-[0.9375rem] text-muted">off</span>}
