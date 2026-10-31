@@ -14,7 +14,7 @@ import SearchBox from '../components/SearchBox';
 import { DOCK_GRID } from '../components/Dock';
 import { SORTS, TABS } from '../components/bookings/bookingTabs';
 import { useToast } from '../components/Toast';
-import { STATUS_OPTIONS } from '../lib/status';
+import { STATUS_LABEL, STATUS_OPTIONS } from '../lib/status';
 import { api, useApi } from '../lib/useApi';
 import { NeedGuestError, confirmHolds } from '../lib/holds';
 import { useMediaQuery } from '../lib/useMediaQuery';
@@ -29,6 +29,8 @@ import { addDays, diffDays, fmtMonth, fmtShort, today } from '../lib/dates';
 // The whole state of the screen lives in the URL, so it survives a reload and can be saved as a named view.
 //   holds '1' = show on-hold bookings too    dir '' = the filter's natural order    room, floor, status: several, separated by commas
 //   sort2/dir2: the second sort    org: organization contains    contact: yes | no    nmin/nmax: nights    rby: stay | check_in | check_out with df, dt
+//   group: '' = a heading for each arrival stretch when the list is in arrival order, none, guest, org, status (rows are gathered under their heading)
+//   apart '1' = a stay's rooms stay on separate rows (otherwise the rooms of one stay share a row)
 //   cols: the columns switched OFF, separated by commas    (row density, roomy or compact, is one choice for both lists: pulse.density)
 // With the list in arrival order, a heading starts each stretch: Today, Tomorrow, this week, next week, then by month (and Last week
 // or the month for what has gone). The week runs Monday to Sunday.
@@ -46,7 +48,7 @@ function arrivalGroup(checkIn) {
 
 const URL_DEFAULTS = {
   tab: 'upcoming', sort: 'check_in', dir: '', sort2: '', dir2: '', holds: '', room: '', floor: '', status: '',
-  org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '',
+  org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', cols: '', group: '', apart: '',
 };
 const CLEAR_FILTERS = { room: '', floor: '', status: '', org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', holds: '' };
 
@@ -57,7 +59,7 @@ export default function Bookings() {
 
   // The filter, sort and search live in the URL, so they survive a reload and can be shared.
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
-  const { tab, sort, dir: dirParam, sort2, dir2, holds, room, floor, status, org, contact, nmin, nmax, rby, df, dt, cols } = values;
+  const { tab, sort, dir: dirParam, sort2, dir2, holds, room, floor, status, org, contact, nmin, nmax, rby, df, dt, cols, group: groupBy, apart } = values;
   const { q, setQ, search, ready } = useUrlSearch();
   const [dockOpen, setDockOpen] = useStoredState('pulse.filtersOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
   const [sheet, setSheet] = useState(null);
@@ -101,7 +103,48 @@ export default function Bookings() {
     setQ(view.params.q ?? '');
   };
   const resetView = () => { setParams(URL_DEFAULTS); setQ(''); };
-  const rows = list.data ?? [];
+  // The rooms of one stay (same booking group, dates and status) share a row, unless asked to stay apart.
+  const rows = (() => {
+    const all = list.data ?? [];
+    if (apart === '1') return all;
+    const out = [];
+    const at = new Map();
+    all.forEach((b) => {
+      const key = b.group_id ? `${b.group_id}|${b.check_in}|${b.check_out}|${b.status}|${b.deleted_at ? 'd' : ''}` : null;
+      if (key && at.has(key)) {
+        out[at.get(key)].rooms.push(b.room_number);
+        out[at.get(key)].members.push(b);
+      } else {
+        if (key) at.set(key, out.length);
+        out.push({ ...b, rooms: [b.room_number], members: [b] });
+      }
+    });
+    return out;
+  })();
+  // The rows under their headings. Arrival headings follow the list's own order; the others gather a guest, a company or a status
+  // together (headings in the order they first appear, rows keep the chosen sort inside each).
+  const groupLabel = {
+    guest: (b) => b.name || 'On hold',
+    org: (b) => b.organization || 'No company',
+    status: (b) => STATUS_LABEL[b.status] ?? b.status,
+    arrival: (b) => arrivalGroup(b.check_in),
+  };
+  const groupMode = groupBy === 'none' ? null : groupBy || (sort === 'check_in' && !sort2 ? 'arrival' : null);
+  const sections = (() => {
+    if (!groupMode) return [{ label: null, items: rows }];
+    const out = [];
+    const seen = new Map();
+    rows.forEach((b) => {
+      const label = groupLabel[groupMode](b);
+      const at = groupMode === 'arrival' ? out.length - 1 : seen.get(label) ?? -1;
+      if (at >= 0 && out[at].label === label) out[at].items.push(b);
+      else {
+        out.push({ label, items: [b] });
+        seen.set(label, out.length - 1);
+      }
+    });
+    return out;
+  })();
 
   const restore = async (b) => {
     try {
@@ -267,6 +310,10 @@ export default function Bookings() {
           columns={BOOKING_COLUMNS}
           hidden={hidden}
           onToggleColumn={(key) => setParams({ cols: toggleCsv(cols, key) })}
+          group={groupBy}
+          onGroup={(v) => setParams({ group: v })}
+          apart={apart}
+          onApart={(v) => setParams({ apart: v })}
           density={density}
           onDensity={(v) => setDensity(v === 'compact' ? 'compact' : 'roomy')}
         />
@@ -320,16 +367,19 @@ export default function Bookings() {
             {/* The count is shown only when a search or filter narrowed the list (it says how many matched); otherwise screen readers still hear it. */}
             <p className={search || activeCount ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
-              {rows.map((b, i) => {
-                const group = sort === 'check_in' && !sort2 ? arrivalGroup(b.check_in) : null;
-                const heading = group && group !== (i > 0 ? arrivalGroup(rows[i - 1].check_in) : null);
-                return (
-                  <Fragment key={b.id}>
-                    {heading && <li className="bg-surface-2 px-4 py-2 md:px-5"><h3 className="t-group">{group}</h3></li>}
-                    <BookingRow b={b} hidden={hidden} density={density} onOpen={(row) => setSheet({ mode: 'edit', booking: row })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
-                  </Fragment>
-                );
-              })}
+              {sections.map((sec, si) => (
+                <Fragment key={`${si}-${sec.label}`}>
+                  {sec.label && (
+                    <li className="flex items-baseline justify-between gap-3 bg-surface-2 px-4 py-2 md:px-5">
+                      <h3 className="t-group">{sec.label}</h3>
+                      {groupMode !== 'arrival' && <span className="font-mono text-[0.9375rem] text-muted">{sec.items.length}</span>}
+                    </li>
+                  )}
+                  {sec.items.map((b, bi) => (
+                    <BookingRow key={b.id} b={b} index={bi} hidden={hidden} density={density} onOpen={(row, members) => setSheet({ mode: 'edit', booking: row, group: members?.length > 1 ? members : undefined })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
+                  ))}
+                </Fragment>
+              ))}
             </ul>
             </>
           )}

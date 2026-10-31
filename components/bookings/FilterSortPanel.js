@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowsDownUp, Clock, Funnel, Sliders } from '@phosphor-icons/react';
+import Switch from '../Switch';
 import FieldLabel from '../FieldLabel';
 import { FoldSection } from '../FilterParts';
 
@@ -68,7 +69,7 @@ export default function FilterSortPanel({
         <label
           className={`btn w-full cursor-pointer justify-start gap-3 px-3 focus-within:outline-2 focus-within:outline-accent ${showHolds ? 'btn-hold font-semibold' : ''}`}
         >
-          <input type="checkbox" name="show-holds" className="size-5 accent-[var(--accent)]" checked={showHolds} onChange={(e) => onShowHolds(e.target.checked)} />
+          <Switch size="sm" icons={false} name="show-holds" checked={showHolds} onChange={onShowHolds} />
           <Clock size={18} aria-hidden="true" className="shrink-0" />
           Show On Hold
         </label>

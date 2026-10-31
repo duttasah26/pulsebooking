@@ -17,7 +17,7 @@ export default function StatusBadge({ status, deleted = false, children }) {
   const Icon = deleted ? Trash : STATUS_ICON[status] ?? Check;
   const tone = TONE[deleted ? 'deleted' : status] ?? TONE.checked_out;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-sm font-semibold leading-5 ${tone}`}>
+    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-sm font-semibold leading-5 transition-colors duration-300 ${tone}`}>
       <Icon size={14} weight="bold" aria-hidden="true" className="shrink-0" />
       {children ?? STATUS_LABEL[status]}
     </span>
