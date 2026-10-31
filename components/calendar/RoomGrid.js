@@ -463,7 +463,7 @@ export default function RoomGrid({
           ref={gridRef}
           role="grid"
           aria-label="Room availability"
-          style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH, fill: Boolean(rows && avail && (HEAD + rooms.length * cellH) * zoom < avail - 2 - rooms.length) }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), minHeight: rows && avail ? Math.max(0, (avail - 2) / zoom) : undefined, zoom }}
+          style={{ ...gridTemplate({ rows, n, rooms, cellW, cellH, fill: Boolean(rows && avail && (HEAD + rooms.length * cellH) * zoom < avail - 2) }), minWidth: gridMinWidth({ rows, n, rooms, cellW }), minHeight: rows && avail ? Math.max(0, (avail - 2) / zoom) : undefined, zoom }}
         >
           <GridCorner />
           {rows ? days.map((d, i) => <DayHeader key={d} d={d} i={i} isToday={d === todayStr} narrow={cellW * zoom < 36} spot={spot?.d === d} onPick={canPick ? () => onBlank({ d }) : undefined} />) : heads}
