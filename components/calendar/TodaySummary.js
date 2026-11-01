@@ -5,7 +5,9 @@ import CountTo from '../CountTo';
 // It says what it counts (Today, a day you clicked, a room you clicked, or both), then how many rooms are in use out of all of
 // them, with the room nights sold so far this month under it. One small tile: the label on the left, the lines beside it. Arriving and leaving only appear when there is one, so a quiet day is one short line, not three zeros.
 // The icons are the same ones the calendar uses for check-in (green) and check-out (brick).
-export default function TodaySummary({ label, arriving, leaving, staying, total, monthNights, monthName }) {
+export default function TodaySummary({ label, arriving, leaving, staying, total, monthNights, monthName, loading = false }) {
+  // Not loaded yet: the tile's own outline, so the header keeps its shape and shows no number that is not true.
+  if (loading) return <div aria-hidden="true" className="skeleton h-[4.25rem] w-80 rounded-lg" />;
   const part = (Icon, tone, text) => (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
       <Icon size={18} aria-hidden="true" className={tone} />
