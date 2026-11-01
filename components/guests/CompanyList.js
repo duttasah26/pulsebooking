@@ -30,7 +30,9 @@ export default function CompanyList({ onSearchGuests }) {
 
   return (
     <div className="space-y-4">
-      <SearchBox value={q} onChange={setQ} label="Search companies" placeholder="Search companies…" />
+      <div className="mx-auto w-full max-w-4xl">
+        <SearchBox value={q} onChange={setQ} label="Search companies" placeholder="Search companies…" />
+      </div>
       {list.error && <p role="alert" className="rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">Could not load companies: {list.error.message}</p>}
       {!list.data && !list.error ? (
         <div className="space-y-2" aria-busy="true">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-16 rounded-lg" />)}</div>
