@@ -75,7 +75,11 @@ export default function HoldButton({ onConfirm, duration = 700, className = '', 
           transition: `transform ${phase === 'holding' ? `${duration}ms linear` : phase === 'done' ? '0ms' : '350ms cubic-bezier(0.22, 1, 0.36, 1)'}, background-color 200ms`,
         }}
       />
-      <span className="relative inline-flex items-center justify-center gap-2">{children}</span>
+      <span className="relative inline-flex items-center justify-center gap-2">
+        {children}
+        {/* Once the hold completes, the same spinner as the sign-in button turns while the action runs. */}
+        {phase === 'done' && <span role="status" aria-label="Working" className="spinner size-4 shrink-0 rounded-full border-2 border-current border-t-transparent" />}
+      </span>
     </button>
   );
 }
