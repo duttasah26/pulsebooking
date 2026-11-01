@@ -139,7 +139,7 @@ export default function Bookings() {
   const pinnedRows = tab === 'deleted' ? [] : rows.filter(isPinned);
   const sections = (() => {
     const rest = pinnedRows.length ? rows.filter((b) => !isPinned(b)) : rows;
-    const head = pinnedRows.length ? [{ label: 'Pinned', items: pinnedRows }] : [];
+    const head = pinnedRows.length ? [{ label: 'Pinned', pinned: true, items: pinnedRows }] : [];
     if (!groupMode) return [...head, ...(rest.length ? [{ label: null, items: rest }] : [])];
     const out = [...head];
     const seen = new Map();
@@ -154,6 +154,23 @@ export default function Bookings() {
     });
     return out;
   })();
+
+  // One group of the list: its heading, then its rows. The Pinned group is drawn apart (see below), the others in the one list.
+  const renderSection = (sec, si) => (
+          <Fragment key={`${si}-${sec.label}`}>
+            {sec.label && (
+              <li className="flex items-baseline justify-between gap-3 bg-surface-2 px-4 py-2 md:px-5">
+                <h3 className="t-group">{sec.label}</h3>
+                {groupMode !== 'arrival' && <span className="font-mono text-[0.9375rem] text-muted">{sec.items.length}</span>}
+              </li>
+            )}
+            {sec.items.map((b, bi) => (
+              <BookingRow key={b.id} b={b} index={bi} hidden={hidden} density={density} onOpen={(row, members) => setSheet({ mode: 'edit', booking: row, group: members?.length > 1 ? members : undefined })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
+            ))}
+          </Fragment>
+  );
+  const pinnedSec = sections[0]?.pinned ? sections[0] : null;
+  const restSections = pinnedSec ? sections.slice(1) : sections;
 
   const restore = async (b) => {
     try {
@@ -383,20 +400,14 @@ export default function Bookings() {
             <>
             {/* The count is shown only when a search or filter narrowed the list (it says how many matched); otherwise screen readers still hear it. */}
             <p className={search || activeCount ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
+            {pinnedSec && (
+              // The pinned bookings stay at the top of the scrolling list while everything else scrolls under them (its own scroll if there are many).
+              <ul className="sticky top-0 z-10 mb-3 max-h-72 divide-y divide-line overflow-y-auto rounded-lg border border-line bg-surface shadow-sm">
+                {renderSection(pinnedSec, -1)}
+              </ul>
+            )}
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
-              {sections.map((sec, si) => (
-                <Fragment key={`${si}-${sec.label}`}>
-                  {sec.label && (
-                    <li className="flex items-baseline justify-between gap-3 bg-surface-2 px-4 py-2 md:px-5">
-                      <h3 className="t-group">{sec.label}</h3>
-                      {groupMode !== 'arrival' && <span className="font-mono text-[0.9375rem] text-muted">{sec.items.length}</span>}
-                    </li>
-                  )}
-                  {sec.items.map((b, bi) => (
-                    <BookingRow key={b.id} b={b} index={bi} hidden={hidden} density={density} onOpen={(row, members) => setSheet({ mode: 'edit', booking: row, group: members?.length > 1 ? members : undefined })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
-                  ))}
-                </Fragment>
-              ))}
+              {restSections.map(renderSection)}
             </ul>
             </>
           )}
