@@ -95,44 +95,44 @@
   --surface-2: #2a2622;
   --surface-3: #322d29;
   --line: #38332e;
-  --ink: #f2ede6;
-  --muted: #a69d92;        /* 6.5:1 on --surface */
+  --ink: #ddd7ce;
+  --muted: #9a9187;        /* 6.5:1 on --surface */
   --accent: #23765a;       /* white on it 5.6:1; calmer than light mode's green so it sits in the dark instead of glowing */
-  --accent-strong: #74c6a3; /* green words on a green tint */
+  --accent-strong: #68b494; /* green words on a green tint */
   --accent-ink: #ffffff;
   --accent-soft: #182f27;
-  --accent-text: #63b997;
+  --accent-text: #58a585;
   --accent-hover: #2b8666;
   --accent-press: #1d6249;
   --chrome: #2a2622;
   --chrome-line: #38332e;
   --grid-line: #3d3732;
-  --field-line: #857b70;   /* 3.9:1 on --surface */
-  --danger: #ff9480;       /* 7.6:1 on --surface */
+  --field-line: #7a7167;   /* 3.9:1 on --surface */
+  --danger: #e68a77;       /* 7.6:1 on --surface */
   --danger-soft: #3b211c;
   --hold: #3c3414;
-  --hold-edge: #c79a2b;
-  --hold-ink: #f0d58a;
-  --ink-rgb: 242 237 230;
+  --hold-edge: #b08a28;
+  --hold-ink: #d9bf78;
+  --ink-rgb: 221 215 206;
   --shadow-rgb: 0 0 0;
-  --edge-rgb: 242 237 230;
+  --edge-rgb: 221 215 206;
   --shadow-k: 3;
   --ring-a: 0.12;
-  --bar: #413b35;
-  --on-ink: #f2ede6;
-  --on-ink-warn: #f0d27a;
-  --on-ink-ok: #8fd3b4;
-  --raised: #3a352f;
-  --pop-green: #62d39c;
-  --pop-green-soft: #14291f;
-  --pop-red: #ff8f7b;
-  --pop-red-soft: #33201c;
-  --pop-blue: #8db0ff;
-  --pop-blue-soft: #19223a;
-  --pop-violet: #b4a3ff;
-  --pop-violet-soft: #231f3d;
-  --pop-amber: #f0b94f;
-  --pop-amber-soft: #302712;
+  --bar: #3b3631;
+  --on-ink: #ddd7ce;
+  --on-ink-warn: #e3c673;
+  --on-ink-ok: #86c8a8;
+  --raised: #37322d;
+  --pop-green: #52b184;
+  --pop-green-soft: #13241c;
+  --pop-red: #e27f6b;
+  --pop-red-soft: #2d1c19;
+  --pop-blue: #7c9ee0;
+  --pop-blue-soft: #171f33;
+  --pop-violet: #a595e6;
+  --pop-violet-soft: #1f1c35;
+  --pop-amber: #d4a043;
+  --pop-amber-soft: #292110;
   --tone-light: 0%;
   --tint: rgb(var(--ink-rgb) / 0.05);
   --tint-hover: rgb(var(--ink-rgb) / 0.08);
