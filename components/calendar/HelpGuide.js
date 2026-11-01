@@ -56,7 +56,7 @@ function BarKey() {
     { status: 'confirmed', name: 'Confirmed', says: 'A real booking' },
     { status: 'on_hold', name: 'On hold', says: 'Room kept, not confirmed yet' },
     { status: 'checked_in', name: 'Checked in', says: 'The guest is here', icon: SignIn },
-    { status: 'checked_out', name: 'Checked out', says: 'Finished, shown faded and struck through' },
+    { status: 'checked_out', name: 'Checked out', says: 'Finished, shown faded with light diagonal lines' },
   ];
   return (
     <ul className="grid gap-3 sm:grid-cols-2">
@@ -67,7 +67,7 @@ function BarKey() {
           <li key={status} className="flex items-center gap-4 rounded-lg border border-line bg-surface p-3">
             <span
               className={`flex h-9 w-24 shrink-0 items-center gap-1 rounded-lg border px-2 text-sm font-semibold ${hold ? 'border-dashed' : ''} ${status === 'checked_out' ? 'opacity-60' : ''}`}
-              style={{ backgroundColor: c.bg, borderColor: c.border, ...(hold ? { backgroundImage: HOLD_HATCH } : {}), ...(status === 'checked_out' ? { backgroundImage: 'linear-gradient(to top right, transparent calc(50% - 0.75px), rgb(38 31 28 / 0.4) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px))' } : {}) }}
+              style={{ backgroundColor: c.bg, borderColor: c.border, ...(hold ? { backgroundImage: HOLD_HATCH } : {}), ...(status === 'checked_out' ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(38 31 28 / 0.16) 6px 7px)' } : {}) }}
               aria-hidden="true"
             >
               {hold && <Clock size={14} />}

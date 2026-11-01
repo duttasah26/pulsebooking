@@ -12,7 +12,7 @@ import ColorPicker from './ColorPicker';
 import { Card, Moment, MomentPair, Stepper } from './formParts';
 import MoreOptions from './MoreOptions';
 import { RATE_PLANS } from './bookingOptions';
-import { useBookingForm } from './useBookingForm';
+import { clearBookingDraft, useBookingForm } from './useBookingForm';
 import { resolveColor, roomShade, statusColor } from '../../lib/colors';
 import { addDays, diffDays, fmtShort, nightsLabel } from '../../lib/dates';
 
@@ -107,10 +107,11 @@ function StepList({ step, done, onGo }) {
   when you go back. After a save the wizard starts over (a new key) unless the caller closes it.
   Props: see useBookingForm, plus rooms and onCancel.
 */
+// Clear also throws the saved draft away, or the old guest, rooms and days would come straight back.
 export default function BookingWizard({ onDone, ...props }) {
   const [round, setRound] = useState(0);
   const restart = () => setRound((n) => n + 1);
-  return <Steps key={round} {...props} onClear={() => { onDone?.(); restart(); }} onDone={() => { onDone?.(); restart(); }} />;
+  return <Steps key={round} {...props} onClear={() => { clearBookingDraft(); onDone?.(); restart(); }} onDone={() => { onDone?.(); restart(); }} />;
 }
 
 function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {

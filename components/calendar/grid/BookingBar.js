@@ -105,8 +105,8 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     boxShadow: '0 0 0 1.5px var(--surface)',
     ...(active && !picked ? { outline: '2px solid var(--ink)', outlineOffset: '1px' } : {}),
     ...(resizing ? { outline: '3px solid var(--accent)', outlineOffset: '1px' } : {}),
-    // A finished stay is also struck through: one thin line corner to corner.
-    ...(finished ? { backgroundImage: 'linear-gradient(to top right, transparent calc(50% - 0.75px), rgb(38 31 28 / 0.4) calc(50% - 0.75px) calc(50% + 0.75px), transparent calc(50% + 0.75px))' } : {}),
+    // A finished stay is also struck through: thin light diagonal lines across it.
+    ...(finished ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(38 31 28 / 0.16) 6px 7px)' } : {}),
     ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
   };
 
