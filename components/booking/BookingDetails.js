@@ -1,4 +1,4 @@
-import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User } from '@phosphor-icons/react';
+import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User, ArrowUpRight } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
@@ -38,7 +38,7 @@ function Line({ icon: Icon, children }) {
 // A booking as plain details. The contact card takes the booking's colour, so it matches its bar on the calendar.
 // The pencil in the panel header switches to the form.
 export default function BookingDetails({
-  booking: b, group, rooms = [], onRemove, onSaved, onDone, onRemoved, onConfirm, onPutOnHold, groupCount = 0, onShowGroup, pending, onSavePending, onCancelPending,
+  booking: b, group, rooms = [], onRemove, onSaved, onDone, onRemoved, onConfirm, onPutOnHold, groupCount = 0, onShowGroup, onShowInCalendar, pending, onSavePending, onCancelPending,
 }) {
   const targets = group && group.length > 1 ? group : [b];
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
@@ -56,8 +56,20 @@ export default function BookingDetails({
 
       {/* Who and where, in the booking's own colour (it matches its bar on the calendar): the status as a tag (dashed
           when on hold, so it reads without colour), the name, how to reach them, and the room or rooms as key tags. */}
-      <section aria-label="Guest and room" className="rounded-lg border p-4" style={{ backgroundColor: c.soft ?? c.bg, borderColor: c.border }}>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <section aria-label="Guest and room" className="relative rounded-lg border p-4" style={{ backgroundColor: c.soft ?? c.bg, borderColor: c.border }}>
+        {/* Show this booking on the calendar: in the card's top right corner, out of the crowded header. */}
+        {onShowInCalendar && (
+          <button
+            type="button"
+            className="absolute right-3 top-3 grid size-8 place-items-center rounded-md bg-surface/60 transition-colors duration-150 before:absolute before:-inset-1 before:content-[''] hover:bg-surface"
+            aria-label="Show in calendar"
+            title="Show in calendar"
+            onClick={() => onShowInCalendar(b)}
+          >
+            <ArrowUpRight size={18} weight="bold" aria-hidden="true" />
+          </button>
+        )}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pr-10">
           <StatusBadge status={b.status} />
           {b.status === 'on_hold' && <span className="text-[0.9375rem]">Not confirmed yet</span>}
         </div>
