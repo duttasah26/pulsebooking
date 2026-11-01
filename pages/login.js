@@ -18,7 +18,7 @@ export default function Login() {
   const [show, setShow] = useState(false);
   const [configured, setConfigured] = useState(true);
   // The Swell background (asciify-engine): small gold symbols that keep changing as slow waves roll through them, quiet round the
-  // card, lit under the  // pointer. Loaded after the page so sign-in never waits for it; if it cannot load or draw (no WebGL2) the page is just plain. It
+  // card, lit under the pointer. Loaded after the page so sign-in never waits for it; if it cannot load or draw (no WebGL2) the page is just plain. It
   // pauses off screen and holds a still frame with reduced motion by itself, and is torn down when the page goes.
   const page = useRef(null);
   const card = useRef(null);
