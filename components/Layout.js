@@ -23,7 +23,7 @@ const UTILITY = [
 // The phone's tab bar holds all six.
 const TABS = [...PLACES, ...UTILITY];
 
-// wide: the calendar, Overview, Bookings and Guests use the full screen width; Settings stays in a readable column.
+// wide: the calendar and the Overview use the full screen width; Bookings, Guests and Settings stay in a readable, centred column.
 export default function Layout({ title, wide = false, children }) {
   const max = wide ? 'max-w-none' : 'max-w-[1280px]';
   const { pathname, query } = useRouter();

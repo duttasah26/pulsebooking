@@ -175,7 +175,7 @@ export default function Guests() {
   const summary = `${SORTS.find(([v]) => v === sort)?.[1] ?? ''}${activeCount ? `, ${activeCount} ${activeCount === 1 ? 'filter' : 'filters'}` : ''}`;
 
   return (
-    <Layout title="Guests" wide>
+    <Layout title="Guests">
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-5">
@@ -199,10 +199,12 @@ export default function Guests() {
           {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          {/* Search, filters and saved views are one centred column; the list below uses the full width. */}
-          <div className="mx-auto w-full max-w-4xl space-y-3">
-            <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
-            <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
+          <div className="sticky top-14 z-20 bg-canvas pb-3 pt-1">
+            <div className="mx-auto w-full max-w-4xl space-y-3">
+              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
+              <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+            </div>
           </div>
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
