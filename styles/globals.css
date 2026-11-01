@@ -52,6 +52,16 @@
   --on-ink: #ffffff;        /* words on that bar */
   --on-ink-warn: #f0d27a;   /* a warning icon and a green action on that bar */
   --on-ink-ok: #8fd3b4;
+  --pop-green: #178a55;     /* the Overview's figures: vivid number colours and their soft fills (they are for numbers and tiles, not for buttons) */
+  --pop-green-soft: #e4f4ea;
+  --pop-red: #d03d27;
+  --pop-red-soft: #fcebe7;
+  --pop-blue: #2b62d4;
+  --pop-blue-soft: #e8eefb;
+  --pop-violet: #5b43c7;
+  --pop-violet-soft: #ece8fa;
+  --pop-amber: #b86e00;
+  --pop-amber-soft: #fbf0d6;
   --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
   --tone-light: 100%;       /* how much of a booking colour's light pastel is kept; in dark the colour's edge tints the dark surface instead */
   --tint: rgb(var(--ink-rgb) / 0.06);
@@ -113,6 +123,16 @@
   --on-ink-warn: #f0d27a;
   --on-ink-ok: #8fd3b4;
   --raised: #3a352f;
+  --pop-green: #62d39c;
+  --pop-green-soft: #14291f;
+  --pop-red: #ff8f7b;
+  --pop-red-soft: #33201c;
+  --pop-blue: #8db0ff;
+  --pop-blue-soft: #19223a;
+  --pop-violet: #b4a3ff;
+  --pop-violet-soft: #231f3d;
+  --pop-amber: #f0b94f;
+  --pop-amber-soft: #302712;
   --tone-light: 0%;
   --tint: rgb(var(--ink-rgb) / 0.05);
   --tint-hover: rgb(var(--ink-rgb) / 0.08);
@@ -157,6 +177,16 @@
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
   --color-bar: var(--bar);
+  --color-pop-green: var(--pop-green);
+  --color-pop-green-soft: var(--pop-green-soft);
+  --color-pop-red: var(--pop-red);
+  --color-pop-red-soft: var(--pop-red-soft);
+  --color-pop-blue: var(--pop-blue);
+  --color-pop-blue-soft: var(--pop-blue-soft);
+  --color-pop-violet: var(--pop-violet);
+  --color-pop-violet-soft: var(--pop-violet-soft);
+  --color-pop-amber: var(--pop-amber);
+  --color-pop-amber-soft: var(--pop-amber-soft);
   --color-surface-3: var(--surface-3);
   --color-on-ink: var(--on-ink);
   --color-on-ink-warn: var(--on-ink-warn);

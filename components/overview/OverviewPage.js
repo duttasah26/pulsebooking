@@ -33,14 +33,24 @@ function Card({ className = '', children, ...rest }) {
   return <section {...rest} className={`rounded-xl border border-line bg-surface ${className}`}>{children}</section>;
 }
 
-// One of the four figures: a title, a big centred number in its colour, its name under it, and two small counts. Choosing it fills the list.
-function Figure({ title, value, name, tone, notes, active, onPick }) {
+// Each figure has its own vivid colour (tokens --pop-*), written out in full so Tailwind sees them. Chosen, a card takes its colour's edge and soft fill.
+const POP = {
+  green: { text: 'text-pop-green', on: 'border-pop-green bg-pop-green-soft shadow-[0_0_0_1px_var(--pop-green)]' },
+  red: { text: 'text-pop-red', on: 'border-pop-red bg-pop-red-soft shadow-[0_0_0_1px_var(--pop-red)]' },
+  blue: { text: 'text-pop-blue', on: 'border-pop-blue bg-pop-blue-soft shadow-[0_0_0_1px_var(--pop-blue)]' },
+  violet: { text: 'text-pop-violet', on: 'border-pop-violet bg-pop-violet-soft shadow-[0_0_0_1px_var(--pop-violet)]' },
+  amber: { text: 'text-pop-amber', on: 'border-pop-amber bg-pop-amber-soft shadow-[0_0_0_1px_var(--pop-amber)]' },
+};
+
+// One of the figures: a title, a big centred number in its colour, its name under it, and a small count. Choosing it fills the list.
+function Figure({ title, value, name, pop, notes, active, onPick }) {
+  const tone = POP[pop].text;
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onPick}
-      className={`flex flex-col rounded-xl border bg-surface p-4 text-left transition-shadow duration-150 ${active ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-line hover:shadow-md'}`}
+      className={`flex flex-col rounded-xl border p-4 text-left transition-[box-shadow,background-color] duration-150 ${active ? POP[pop].on : 'border-line bg-surface hover:shadow-md'}`}
     >
       <span className="flex items-center justify-between">
         <span className="text-[0.9375rem] font-semibold">{title}</span>
@@ -86,13 +96,13 @@ function WeekChart({ days }) {
         </g>
       ))}
       {days.map((d, i) => (
-        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" fill="#b9b8ae" />
+        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" style={{ fill: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />
       ))}
-      <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--muted)" strokeWidth="2" />
+      <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--pop-blue)" strokeWidth="2" />
       {days.map((d, i) => (
         <g key={d.day}>
-          <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--muted)" />
-          <text x={x(i)} y={y(d.leaving) + 4} textAnchor="middle" fill="#fff" fontWeight="600">{d.leaving}</text>
+          <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--pop-blue)" />
+          <text x={x(i)} y={y(d.leaving) + 4} textAnchor="middle" fill="var(--surface)" fontWeight="600">{d.leaving}</text>
           <text transform={`translate(${x(i) + 4} ${H - B + 14}) rotate(-45)`} textAnchor="end" fill="var(--muted)">{fmtShort(d.day)}</text>
         </g>
       ))}
@@ -225,15 +235,15 @@ export default function OverviewPage() {
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} tone="text-accent-text" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
+            <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
-            <Figure title="Departures" name="Departures" value={dash(departures.length)} tone="text-danger" active={kind === 'departures'} onPick={() => pick('departures')}
+            <Figure title="Departures" name="Departures" value={dash(departures.length)} pop="red" active={kind === 'departures'} onPick={() => pick('departures')}
               notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first.status)).length)]]} />
-            <Figure title="In the house" name="Rooms in use" value={dash(inUse)} tone="text-ink" active={kind === 'house'} onPick={() => pick('house')}
+            <Figure title="In the house" name="Rooms in use" value={dash(inUse)} pop="blue" active={kind === 'house'} onPick={() => pick('house')}
               notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
-            <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} tone="text-muted" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
+            <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} pop="violet" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
               notes={[['Next 7 days', dash(thisWeek)]]} />
-            <Figure title="On hold" name="Holds" value={dash(holdRows.length)} tone="text-hold-ink" active={kind === 'holds'} onPick={() => pick('holds')}
+            <Figure title="On hold" name="Holds" value={dash(holdRows.length)} pop="amber" active={kind === 'holds'} onPick={() => pick('holds')}
               notes={[['Rooms', dash(holdRows.reduce((n, r) => n + r.rooms.length, 0))]]} />
           </div>
 
@@ -247,20 +257,20 @@ export default function OverviewPage() {
                 <div className="min-w-0">
                   <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
                     Arrivals vs. Departures
-                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm bg-[#b9b8ae]" />Arrivals</span>
-                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-muted" />Departures</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />Arrivals</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-pop-blue" />Departures</span>
                   </p>
                   <WeekChart days={week} />
                 </div>
                 <div>
                   <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
                   <div className="grid grid-cols-2 gap-3">
-                    <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-accent-soft" text="text-accent-text" />
-                    <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-tint" />
-                    <Tile label="Available rooms" value={dash(roomCount - inUse)} />
-                    <Tile label="Occupied rooms" value={dash(inUse)} />
-                    <Tile label="Adults" value={dash(adults)} />
-                    <Tile label="Children" value={dash(children)} />
+                    <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
+                    <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
+                    <Tile label="Available rooms" tone="bg-pop-blue-soft" value={dash(roomCount - inUse)} />
+                    <Tile label="Occupied rooms" tone="bg-pop-blue-soft" value={dash(inUse)} />
+                    <Tile label="Adults" tone="bg-pop-blue-soft" value={dash(adults)} />
+                    <Tile label="Children" tone="bg-pop-blue-soft" value={dash(children)} />
                   </div>
                 </div>
               </div>
