@@ -69,9 +69,8 @@ export default function BookingDetails({
             <ArrowUpRight size={18} weight="bold" aria-hidden="true" />
           </button>
         )}
-        {/* The headline: where (the room tags, in their floor colours), who, and the status. A confirmed booking is a green tick beside the name, as on
-            the calendar bar; any other status keeps its word (dashed when on hold, so it reads without colour). */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 pr-10">
+        {/* Where: the room tags on their own row(s), so many rooms never share a line with the name. The "more rooms" button belongs to the same row. */}
+        <div className="flex flex-wrap items-center gap-2 pr-10">
           <span className="sr-only">{targets.length > 1 ? 'Rooms' : 'Room'}</span>
           {[...new Set(targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number])].sort().map((n) => {
             const shade = roomShade({ number: n }, settings);
@@ -79,6 +78,15 @@ export default function BookingDetails({
               <span key={n} className="rounded-md px-2 py-0.5 font-mono text-lg font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>
             );
           })}
+          {groupCount > 1 && onShowGroup && (
+            <button type="button" className="btn btn-sm bg-surface/60 hover:bg-surface dark:bg-ink/10 dark:hover:bg-ink/15" onClick={onShowGroup}>
+              <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
+            </button>
+          )}
+        </div>
+        {/* Who, always on its own line: a confirmed booking is a green tick beside the name, as on the calendar bar; any other status keeps its
+            word (dashed when on hold, so it reads without colour). */}
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
           <h3 className="t-title flex min-w-0 items-center gap-1.5 break-words">
             {b.name}
             {b.status === 'confirmed' && <Check size={20} weight="bold" aria-label="Confirmed" className="shrink-0 text-ok-text" />}
@@ -86,11 +94,6 @@ export default function BookingDetails({
           {b.status !== 'confirmed' && <StatusBadge status={b.status} />}
         </div>
         {b.status === 'on_hold' && <p className="mt-1 text-[0.9375rem]">Not confirmed yet</p>}
-        {groupCount > 1 && onShowGroup && (
-          <button type="button" className="btn btn-sm mt-2 bg-surface/60 hover:bg-surface dark:bg-ink/10 dark:hover:bg-ink/15" onClick={onShowGroup}>
-            <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
-          </button>
-        )}
         {/* The facts, on one strict grid of two columns so everything lines up: the long lines (email, company) take the full width, then phone, guests,
             how it was booked and the plan fill the columns in pairs. An odd one out takes the full width instead of leaving a hole. */}
         {(() => {
