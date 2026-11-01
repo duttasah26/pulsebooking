@@ -10,12 +10,12 @@ It is not a channel manager or a multi-property suite. Product intent lives in `
 - **Bookings**: confirmed, on hold, checked in, checked out, cancelled. Several rooms can be booked at once (they share a `group_id`). On-hold bookings need no guest. Same-day turnover is allowed (check-out day can equal the next check-in day).
 - **Booking form**: a three-step wizard (guest, rooms and dates, options and a final check). An unfinished new booking is kept as a draft on the device; **Clear** throws the draft away too.
 - **Bookings tab**: filterable, sortable list grouped by arrival, guest, company or status. Each row is two lines (name and status, then room chips, dates, nights, guests, contact). Saved views are shared by all staff.
-- **Guests tab**: guest list with stays, companies, duplicate detection and merge.
+- **Guests tab**: guest list with stays, companies, duplicate detection and merge. Deleting a guest only marks them deleted (Undo in the toast, and a Deleted tab with Restore); their old stays stay attached.
 - **Overview tab** (after Guests, full screen width): a greeting with the signed-in name, a day picker, five figure cards (Arrivals, Departures, In the house, Upcoming, On hold), a week overview (arrivals as bars, departures as a line, occupancy tiles, past or next 7 days), and a full-height list panel on the right. A row opens the booking in a sheet on the same page; the diagonal arrow shows it on the calendar. The same arrow is in the Bookings tab's details.
 - **Search**: header search on the calendar (press `/` or Ctrl+K). Booking results use the same row design as the Bookings tab.
 - **Settings**: floor and status colours, default check-in and check-out times, automatic check-out, what the Overview shows, first calendar view, row density.
-- **Assistant**: an optional chat that answers questions about rooms and bookings and can make a booking or hold (Gemini).
-- **History and Undo**: every insert, update, delete and restore is recorded by a trigger with who and when. Nothing is hard-deleted except on-hold bookings that are cancelled.
+- **Assistant**: an optional chat that answers questions about rooms and bookings, can make a booking or hold, change dates or room, and bring back an accidentally deleted booking (`restore_booking`). Every write is summary first, then only after a yes (Gemini).
+- **History and Undo**: every insert, update, delete and restore of a booking is recorded by a trigger with who and when. Bookings and guests are soft-deleted and can be restored. The only hard delete is a removed on-hold booking (a hold), which is meant to be disposable.
 
 ## Stack
 
@@ -73,12 +73,12 @@ Make a session secret with `node -e "console.log(require('crypto').randomBytes(3
 
 ## Database
 
-Postgres with the `btree_gist` extension. Fresh installs run `db/schema.sql` then `db/seed.sql`. Existing databases apply the files in `db/migrations/` in order (`002` to `005`). Run migration SQL against Neon yourself; do not point tools at production by accident.
+Postgres with the `btree_gist` extension. Fresh installs run `db/schema.sql` then `db/seed.sql`. Existing databases apply the files in `db/migrations/` in order (`002` to `006`). Run `006_guests_soft_delete.sql` before deploying the code that deletes guests softly, or guest lists will fail. Run migration SQL against Neon yourself; do not point tools at production by accident.
 
 Tables:
 
 - `rooms(id, number, active, color)`: seeded rooms 101-105, 201-205, 301-305 (migration 005 adds 106, 206, 306). A booking with no colour of its own uses its room's colour.
-- `guests(id, name, phone, email, notes, organization, color)`: names are not unique, only the name is required.
+- `guests(id, name, phone, email, notes, organization, color, deleted_at, deleted_by)`: names are not unique, only the name is required. Deleted guests are filtered out of lists, search, duplicates, companies, new bookings and the assistant.
 - `bookings(id, room_id, guest_id, stay daterange [in,out), status, channel, rate_plan, adults, children, notes, color, organization, label, group_id, check_in_time, check_out_time, created/updated/deleted at and by)`.
   - An exclusion constraint blocks overlapping stays per room (ignoring deleted and cancelled ones).
   - `guest_id` may be NULL only when `status = 'on_hold'`.
@@ -100,8 +100,9 @@ All routes live in `pages/api` and use the `route()` wrapper from `lib/api.js`. 
 | `/api/bookings` | GET, POST | List (filters, search, sort, `when=upcoming\|all`, `from`/`to`), create one or several rooms |
 | `/api/bookings/[id]` | GET, PATCH, DELETE | Soft delete; on-hold bookings are removed for good |
 | `/api/bookings/[id]/restore` | POST | Undo a delete |
-| `/api/guests` | GET, POST | |
-| `/api/guests/[id]` | GET, PATCH, DELETE | |
+| `/api/guests` | GET, POST | `?deleted=1` lists only deleted guests |
+| `/api/guests/[id]` | GET, PATCH, DELETE | DELETE is a soft delete, refused while the guest has live stays |
+| `/api/guests/[id]/restore` | POST | Bring a deleted guest back |
 | `/api/guests/duplicates` | GET | Likely duplicate guests |
 | `/api/guests/merge` | POST | Merge guests |
 | `/api/companies` | GET, PATCH | Organizations and their preset colours |
