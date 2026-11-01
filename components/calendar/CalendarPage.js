@@ -390,6 +390,11 @@ export default function CalendarPage() {
     const source = !spot && !room && Array.isArray(todayRows) ? todayRows : bookingList;
     const live = source.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
     const stayers = live.filter((b) => b.check_in <= to && b.check_out > from);
+    // The month line follows what was picked: a room's own nights when a room is picked, the whole property's otherwise. One cell (a day in a
+    // room) answers the real question, free or who is staying, instead of a count.
+    const nightsIn = (list) => list.filter((b) => b.status !== 'cancelled').reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > thisMonth ? b.check_in : thisMonth, b.check_out < nextMonth ? b.check_out : nextMonth)), 0);
+    const monthShown = room && Array.isArray(monthRows) ? nightsIn(monthRows.filter((b) => b.room_id === room.id)) : monthNights;
+    const cell = spot?.d && room ? { free: stayers.length === 0, name: stayers[0]?.name } : null;
     return (
       <TodaySummary
         label={label}
@@ -397,11 +402,13 @@ export default function CalendarPage() {
         leaving={live.filter((b) => b.check_out >= from && b.check_out <= to).length}
         staying={room ? stayers.length : new Set(stayers.map((b) => b.room_id)).size}
         total={room ? undefined : (rooms.data ?? []).length || undefined}
-        monthNights={monthNights}
+        monthNights={monthShown}
+        inRoom={Boolean(room)}
+        cell={cell}
         monthName={fmtMonth(thisMonth).split(' ')[0]}
       />
     );
-  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, thisMonth, summaryReady]);
+  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, monthRows, thisMonth, nextMonth, summaryReady]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;

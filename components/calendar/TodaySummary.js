@@ -6,7 +6,7 @@ import CountTo from '../CountTo';
 // them, with the room nights sold so far this month under it. One tile: the label on the left, the lines beside it, 16px of padding on every
 // side; in the toolbar it is as tall as the two rows beside it, so the two lines spread to its top and bottom padding. Arriving and leaving only appear when there is one, so a quiet day is one short line, not three zeros.
 // The icons are the same ones the calendar uses for check-in (green) and check-out (brick).
-export default function TodaySummary({ label, arriving, leaving, staying, total, monthNights, monthName, loading = false }) {
+export default function TodaySummary({ label, arriving, leaving, staying, total, monthNights, monthName, inRoom = false, cell = null, loading = false }) {
   // Not loaded yet: the tile's own outline, so the header keeps its shape and shows no number that is not true.
   if (loading) return <div aria-hidden="true" className="skeleton min-h-[4.25rem] w-80 rounded-lg" />;
   const part = (Icon, tone, text) => (
@@ -16,7 +16,7 @@ export default function TodaySummary({ label, arriving, leaving, staying, total,
     </span>
   );
   return (
-    <div className="inline-flex items-stretch gap-4 rounded-lg bg-surface-2 p-4 text-[0.9375rem] text-muted">
+    <div aria-live="polite" className="inline-flex items-stretch gap-4 rounded-lg bg-surface-2 p-4 text-[0.9375rem] text-muted">
       {/* The label: "Today", or the day you clicked, with the room on the next line ("Tue 10 Nov" over "Room 201"), in a cell with a minimum
           width, so the tile keeps about the same size whatever is chosen. */}
       <span className="flex min-w-24 shrink-0 flex-col items-start justify-center self-stretch whitespace-nowrap border-r border-line pr-4 font-semibold text-ink">
@@ -25,12 +25,12 @@ export default function TodaySummary({ label, arriving, leaving, staying, total,
       </span>
       <div className="flex flex-col justify-between gap-1">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {part(Bed, 'text-muted', total ? <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> of {total} rooms in use</> : <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> staying</>)}
+          {cell ? part(Bed, 'text-muted', cell.free ? <span className="font-semibold text-ink">Free</span> : <><span className="font-semibold text-ink">{cell.name || 'On hold'}</span> staying</>) : part(Bed, 'text-muted', total ? <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> of {total} rooms in use</> : <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> staying</>)}
           {arriving > 0 && part(SignIn, 'text-ok-text', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={arriving} /></span> arriving</>)}
           {leaving > 0 && part(SignOut, 'text-danger', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={leaving} /></span> leaving</>)}
         </p>
         {monthNights != null && (
-          <p>{part(Moon, 'text-muted', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={monthNights} /></span> room nights in {monthName}</>)}</p>
+          <p>{part(Moon, 'text-muted', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={monthNights} /></span> {inRoom ? 'nights' : 'room nights'} in {monthName}</>)}</p>
         )}
       </div>
     </div>
