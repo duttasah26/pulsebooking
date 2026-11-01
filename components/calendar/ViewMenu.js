@@ -28,7 +28,7 @@ export default function ViewMenu({ floorKeys, shownFloors, onToggleFloor, showDo
 
   return (
     <div ref={box} className="relative shrink-0">
-      <button type="button" className={`btn gap-2 px-3 ${open ? 'btn-on' : ''}`} aria-expanded={open} aria-haspopup="dialog" onClick={() => {
+      <button type="button" className={`btn gap-2 px-3 ${open ? 'btn-on' : 'bg-chrome hover:bg-surface-3'}`} aria-expanded={open} aria-haspopup="dialog" onClick={() => {
         const r = box.current?.getBoundingClientRect();
         if (r) setAt({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - 296)) });
         setOpen((v) => !v);
