@@ -1,7 +1,7 @@
 import { PushPin } from '@phosphor-icons/react';
 import { useIsPinned } from '../../../lib/pinned';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Clock, SignIn, X } from '@phosphor-icons/react';
+import { Check, Clock, SignIn, X } from '@phosphor-icons/react';
 import { useSettings } from '../../SettingsProvider';
 import { colorFor, roomShade } from '../../../lib/colors';
 import { fmtShort } from '../../../lib/dates';
@@ -126,6 +126,8 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   // overflow-clip, not overflow-hidden, on the bar keeps this working: clip does not make the bar a scroll container of its own.
   const pin = rows ? { left: LABEL + 6 } : { top: MONTH_HEAD + 6 };
 
+  // Only on a bar big enough for the detail lines (zoomed in): a compact bar is just the name.
+  const tick = b.status === 'confirmed' && <Check size={14} weight="bold" aria-label="Confirmed" className="ml-1 inline-block shrink-0 align-[-2px] text-accent-text" />;
   const content = (
     <>
       {picked && <MarchingDashes color={c.border} />}
@@ -146,7 +148,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         </span>
       ) : (
         <span style={pin} className="sticky flex min-w-0 flex-col justify-center gap-px leading-4">
-          <span className="truncate font-semibold">{b.name}</span>
+          <span className="flex min-w-0 items-center"><span className="truncate font-semibold">{b.name}</span>{tick}</span>
           {lines.map((line) => (
             <span key={line.nodes[0].key} className="flex min-w-0 items-center gap-1 overflow-hidden font-normal">
               {line.nodes.map((n) => <span key={n.key} className="flex shrink-0 items-center gap-1">{n.node}</span>)}
