@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
-import Head from 'next/head';
 import Layout from '../components/Layout';
 import FilterDock from '../components/FilterDock';
 import SearchBox from '../components/SearchBox';
@@ -176,7 +175,6 @@ export default function Guests() {
 
   return (
     <Layout title="Guests">
-      <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="flex min-w-0 flex-col gap-5 lg:h-[calc(100dvh-5.5rem-1px)]">
           {/* One header row: the title on the left; on the right the three lists (Guests, Companies, Deleted) and the one action. */}

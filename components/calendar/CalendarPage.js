@@ -19,7 +19,6 @@ import HelpGuide from './HelpGuide';
 // changes size when the panel opens or closes.
 const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]' };
 import { useToast } from '../Toast';
-import Head from 'next/head';
 import Presence from '../Presence';
 import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
@@ -524,18 +523,11 @@ export default function CalendarPage() {
     </div>
   ) : null;
 
-  // The browser tab says what is on screen: the open booking, or the view and the days (Layout supplies the plain "Calendar").
-  const VIEW_NAMES = { timeline: 'Timeline', month: 'Month', calendar: 'Occupancy', day: 'Day' };
-  const tabTitle = panelBooking && !selection
-    ? `${panelBooking.name}, Room ${panelBooking.room_number} | Pulse Rooms`
-    : `${VIEW_NAMES[view] ?? 'Calendar'}: ${monthAligned && shift === 0 ? fmtMonth(date) : calendarTitle(view, shownDate, span)} | Pulse Rooms`;
-
   // The toolbar spans the whole width; below it the tool pane, the calendar and the booking panel all start on the same line.
   return (
     // The title row sits 16px under the navbar (the page's top padding), as far as the controls row sits under it.
     // md:-mb-2 halves the page padding under the grid (16 to 8px); the grid's reserve in RoomGrid is 8px smaller to match.
     <div className="space-y-4 md:-mb-2 short:mb-0">
-      <Head><title>{tabTitle}</title></Head>
       <div className="@container">
         <CalendarToolbar
           view={view}
