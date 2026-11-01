@@ -441,6 +441,27 @@ body {
   100% { transform: none; }
 }
 .animate-boing { animation: boing 360ms cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+/* The sign-in page. The card and what is in it rise into focus one after another (--i), then the rack of room keys below hangs
+   up floor by floor. While a sign-in is in flight the keys ripple along the rack: the only loop, and only while waiting. */
+@keyframes login-rise {
+  from { opacity: 0; transform: translateY(0.75rem); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes key-hang {
+  from { opacity: 0; transform: translateY(-0.5rem) rotate(-6deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes key-wave {
+  0%, 60%, 100% { transform: none; }
+  30% { transform: translateY(-4px); }
+}
+.login-rise { animation: login-rise 560ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
+.key-hang { transform-origin: top center; animation: key-hang 420ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 32ms + 480ms); }
+.key-wave { animation: key-wave 1000ms var(--ease-out) infinite; animation-delay: calc(var(--i, 0) * 60ms); }
+@media (prefers-reduced-motion: reduce) {
+  .login-rise, .key-hang { animation-name: fade-in; animation-duration: var(--dur-base); }
+  .key-wave { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .animate-boing { animation: none; }
   .row-in, .chip-in, .tray-in, .cell-in { animation: none; }
