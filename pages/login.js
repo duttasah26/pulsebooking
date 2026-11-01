@@ -3,12 +3,8 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Eye, EyeSlash, LockKey, User } from '@phosphor-icons/react';
-import { roomShade } from '../lib/colors';
 import FieldLabel from '../components/FieldLabel';
 import { api } from '../lib/useApi';
-
-// The rack of room keys under the card: the property's rooms, a row for each floor in that floor's colour. Decoration only.
-const FLOORS = [1, 2, 3].map((f) => [1, 2, 3, 4, 5, 6].map((n) => `${f}0${n}`));
 
 // Only ever go back to a page inside this app.
 const safeNext = (next) => (typeof next === 'string' && next.startsWith('/') && !next.startsWith('//') ? next : '/');
@@ -47,7 +43,7 @@ export default function Login() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
-      <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-8 px-4 py-10">
+      <main className="grid min-h-[100dvh] place-items-center px-4 py-10">
         <div className="card login-rise w-full max-w-md space-y-8 p-6 sm:p-10">
           <div className="flex flex-col items-center gap-2 text-center">
             <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority style={{ '--i': 1 }} className="login-rise h-12 w-auto" />
@@ -81,19 +77,6 @@ export default function Login() {
           </form>
         </div>
 
-        {/* Every room's key on its hook, a row per floor. While the sign-in is on its way the keys ripple along the rack. */}
-        <ul aria-hidden="true" className="grid grid-cols-6 gap-x-2 gap-y-2.5">
-          {FLOORS.flat().map((room, i) => {
-            const shade = roomShade({ number: room });
-            return (
-              <li key={room} style={{ '--i': i }} className="key-hang">
-                <span style={{ '--i': i % 6, backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }} className={`block rounded-md px-2.5 py-0.5 font-mono text-[0.8125rem] font-semibold leading-5 text-ink ${busy ? 'key-wave' : ''}`}>
-                  {room}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
       </main>
     </>
   );
