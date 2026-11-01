@@ -17,8 +17,9 @@ export const BOOKING_COLUMNS = [
 
 // One booking in the list, in two lines: its colour and the guest's name with the status, then a row of small facts, each with its icon
 // (room, dates, nights, guests, organization, contact; each can be switched off in a view). A chevron at the end says the row opens.
+// minimal: the quiet form for a narrow list (the Overview): the name, then room, dates, nights and guests in small plain text, no badge or chip.
 // A deleted booking offers Restore; a hold offers Confirm and Cancel in one click. Checked-out and cancelled stays are faded.
-export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy' }) {
+export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy', minimal = false }) {
   const { settings } = useSettings();
   const isDeleted = Boolean(b.deleted_at);
   const finished = !isDeleted && (b.status === 'checked_out' || b.status === 'cancelled');
@@ -36,12 +37,12 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         type="button"
         disabled={isDeleted}
         onClick={() => onOpen(b, members)}
-        className={`flex min-w-0 flex-1 items-center gap-3 px-4 text-left md:px-5 ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'} ${finished ? 'text-ink/75' : ''}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 px-4 text-left ${minimal ? 'min-h-14 py-2.5' : `md:px-5 ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'}`} ${finished ? 'text-ink/75' : ''}`}
       >
-        <span aria-hidden="true" className="size-4 shrink-0 rounded-md" style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
+        <span aria-hidden="true" className={`shrink-0 rounded-md ${minimal ? 'size-3.5' : 'size-4'}`} style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-            <span className={`truncate text-[1.0625rem] font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
+            <span className={`truncate ${minimal ? 'text-[0.9375rem]' : 'text-[1.0625rem]'} font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
             {show('status') && (
               isDeleted ? (
                 <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
@@ -50,10 +51,15 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
               )
             )}
           </span>
-          <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-[0.9375rem] text-muted">
+          <span className={`mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 ${minimal ? 'text-[0.8125rem]' : 'text-[0.9375rem]'} text-muted`}>
             {show('room') && (
               <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
-                {rooms.length > 1 ? (
+                {minimal ? (
+                  <>
+                    <span aria-hidden="true" className="size-2.5 rounded-full" style={{ backgroundColor: roomShade({ number: rooms[0] }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: rooms[0] }, settings).edge}` }} />
+                    <span>{rooms.length > 1 ? `${rooms.length} rooms` : <>Room <span className="font-mono font-semibold text-ink">{rooms[0]}</span></>}</span>
+                  </>
+                ) : rooms.length > 1 ? (
                   <>
                     <span className="font-semibold text-ink">{rooms.length} rooms</span>
                     {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => (
@@ -67,22 +73,22 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
             {show('dates') && (
               <span className="flex items-center gap-1.5">
-                <CalendarBlank size={16} aria-hidden="true" className="shrink-0" />
+                <CalendarBlank size={minimal ? 14 : 16} aria-hidden="true" className="shrink-0" />
                 <span>
-                  <span className="font-semibold text-ink">{fmtShort(b.check_in)}</span> to <span className="font-semibold text-ink">{fmtShort(b.check_out)}</span>
+                  <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_in)}</span> to <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_out)}</span>
                 </span>
               </span>
             )}
             {show('dates') && (
               <span className="flex items-center gap-1" title={nightsLabel(b.nights)}>
-                <Moon size={16} aria-hidden="true" />
+                <Moon size={minimal ? 14 : 16} aria-hidden="true" />
                 <span className="font-mono">{b.nights}</span>
                 <span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span>
               </span>
             )}
             {b.adults != null && (
               <span className="flex items-center gap-1" title={`${b.adults} adult${b.adults === 1 ? '' : 's'}${b.children ? `, ${b.children} child${b.children === 1 ? '' : 'ren'}` : ''}`}>
-                <User size={16} aria-hidden="true" />
+                <User size={minimal ? 14 : 16} aria-hidden="true" />
                 <span className="font-mono">{b.adults + (b.children ?? 0)}</span>
                 <span className="sr-only">guests</span>
               </span>

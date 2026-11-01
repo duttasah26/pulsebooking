@@ -187,98 +187,100 @@ export default function OverviewPage() {
   ].join(' · ');
   const first = me ? `${me[0].toUpperCase()}${me.slice(1)}` : '';
 
+  // The list panel runs the full height of the page along its right edge; everything else sits in the column beside it.
+  const panel = parts.cards !== false;
   return (
-    <div className="space-y-6" aria-busy={!ready}>
-      <div className="flex items-center gap-4">
-        <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-accent-soft text-2xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
-        <div className="min-w-0">
-          <h1 className="truncate text-3xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
-          <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
-            <Bell size={16} aria-hidden="true" />
-            <span>{label}: {ready ? summary : '…'}</span>
-          </p>
+    <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : ''}`} aria-busy={!ready}>
+      <div className="min-w-0 space-y-6 pt-4 md:pb-4">
+        <div className="flex items-center gap-4">
+          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-accent-soft text-2xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
+          <div className="min-w-0">
+            <h1 className="truncate text-3xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
+            <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
+              <Bell size={16} aria-hidden="true" />
+              <span>{label}: {ready ? summary : '…'}</span>
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[0.9375rem] font-medium">
-          <CalendarBlank size={18} aria-hidden="true" className="text-muted" />
-          <span className="sr-only">Day</span>
-          <input type="date" value={d} min={addDays(t, -7)} max={addDays(t, 59)} onChange={(e) => setDay(e.target.value)} className="bg-transparent font-medium outline-none" />
-        </label>
-        {d !== t && <button type="button" className="btn btn-quiet" onClick={() => setDay(t)}>Today</button>}
-      </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[0.9375rem] font-medium">
+            <CalendarBlank size={18} aria-hidden="true" className="text-muted" />
+            <span className="sr-only">Day</span>
+            <input type="date" value={d} min={addDays(t, -7)} max={addDays(t, 59)} onChange={(e) => setDay(e.target.value)} className="bg-transparent font-medium outline-none" />
+          </label>
+          {d !== t && <button type="button" className="btn btn-quiet" onClick={() => setDay(t)}>Today</button>}
+        </div>
 
-      {parts.cards !== false && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
-          <div className="min-w-0 space-y-4">
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-              <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} tone="text-accent-text" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
-                notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
-              <Figure title="Departures" name="Departures" value={dash(departures.length)} tone="text-danger" active={kind === 'departures'} onPick={() => pick('departures')}
-                notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first.status)).length)]]} />
-              <Figure title="In the house" name="Rooms in use" value={dash(inUse)} tone="text-ink" active={kind === 'house'} onPick={() => pick('house')}
-                notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
-              <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} tone="text-muted" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
-                notes={[['Next 7 days', dash(thisWeek)]]} />
-              <Figure title="On hold" name="Holds" value={dash(holdRows.length)} tone="text-hold-ink" active={kind === 'holds'} onPick={() => pick('holds')}
-                notes={[['Rooms', dash(holdRows.reduce((n, r) => n + r.rooms.length, 0))]]} />
-            </div>
-
-            {parts.week !== false && (
-              <Card className="p-5" aria-label="Week overview">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-xl font-semibold">Week overview</h2>
-                  <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
-                </div>
-                <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]">
-                  <div className="min-w-0">
-                    <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
-                      Arrivals vs. Departures
-                      <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm bg-[#b9b8ae]" />Arrivals</span>
-                      <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-muted" />Departures</span>
-                    </p>
-                    <WeekChart days={week} />
-                  </div>
-                  <div>
-                    <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-accent-soft" text="text-accent-text" />
-                      <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-tint" />
-                      <Tile label="Available rooms" value={dash(roomCount - inUse)} />
-                      <Tile label="Occupied rooms" value={dash(inUse)} />
-                      <Tile label="Adults" value={dash(adults)} />
-                      <Tile label="Children" value={dash(children)} />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+            <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} tone="text-accent-text" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
+              notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
+            <Figure title="Departures" name="Departures" value={dash(departures.length)} tone="text-danger" active={kind === 'departures'} onPick={() => pick('departures')}
+              notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first.status)).length)]]} />
+            <Figure title="In the house" name="Rooms in use" value={dash(inUse)} tone="text-ink" active={kind === 'house'} onPick={() => pick('house')}
+              notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
+            <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} tone="text-muted" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
+              notes={[['Next 7 days', dash(thisWeek)]]} />
+            <Figure title="On hold" name="Holds" value={dash(holdRows.length)} tone="text-hold-ink" active={kind === 'holds'} onPick={() => pick('holds')}
+              notes={[['Rooms', dash(holdRows.reduce((n, r) => n + r.rooms.length, 0))]]} />
           </div>
 
-          <Card className="overflow-hidden lg:sticky lg:top-20">
-            <div className="flex items-center justify-between gap-2 px-5 pt-4">
-              <h2 className="text-xl font-semibold">{list.title}</h2>
-              {kind !== 'arrivals' && (
-                <button type="button" className="btn btn-icon btn-quiet" aria-label="Back to arrivals" title="Back to arrivals" onClick={() => pick('arrivals')}>
-                  <X size={20} weight="bold" aria-hidden="true" />
-                </button>
-              )}
-            </div>
-            {pills && <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="px-5 pb-3 pt-3" />}
-            <div role="tabpanel" className={pills ? 'border-t border-line' : 'mt-3 border-t border-line'}>
-              {shown.length ? (
-                <ul className="divide-y divide-line">
-                  {shown.map((r, i) => (
-                    <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization']} onOpen={(row) => open(row)} />
-                  ))}
-                </ul>
-              ) : (
-                <p className="t-footnote p-5">{list.empty}</p>
-              )}
-            </div>
-          </Card>
+          {parts.week !== false && (
+            <Card className="p-5" aria-label="Week overview">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-xl font-semibold">Week overview</h2>
+                <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
+              </div>
+              <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]">
+                <div className="min-w-0">
+                  <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
+                    Arrivals vs. Departures
+                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm bg-[#b9b8ae]" />Arrivals</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-muted" />Departures</span>
+                  </p>
+                  <WeekChart days={week} />
+                </div>
+                <div>
+                  <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-accent-soft" text="text-accent-text" />
+                    <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-tint" />
+                    <Tile label="Available rooms" value={dash(roomCount - inUse)} />
+                    <Tile label="Occupied rooms" value={dash(inUse)} />
+                    <Tile label="Adults" value={dash(adults)} />
+                    <Tile label="Children" value={dash(children)} />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
+      </div>
+
+      {panel && (
+        <aside aria-label={list.title} className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-t-0">
+          <div className="flex min-h-14 items-center justify-between gap-2 px-4">
+            <h2 className="text-base font-semibold">{list.title}</h2>
+            {kind !== 'arrivals' && (
+              <button type="button" className="btn btn-icon btn-quiet" aria-label="Back to arrivals" title="Back to arrivals" onClick={() => pick('arrivals')}>
+                <X size={20} weight="bold" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+          {pills && <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="px-4 pb-3" />}
+          <div role="tabpanel" className="border-t border-line">
+            {shown.length ? (
+              <ul className="divide-y divide-line">
+                {shown.map((r, i) => (
+                  <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization', 'status']} minimal onOpen={(row) => open(row)} />
+                ))}
+              </ul>
+            ) : (
+              <p className="t-footnote p-4">{list.empty}</p>
+            )}
+          </div>
+        </aside>
       )}
     </div>
   );
