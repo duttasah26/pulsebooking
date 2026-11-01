@@ -34,7 +34,19 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
     setBusy(true);
     try {
       await api(`/api/guests/${guest.id}`, { method: 'DELETE' });
-      toast({ message: `${guest.name} deleted`, duration: 3000 });
+      toast({
+        message: `${guest.name} deleted`,
+        actionLabel: 'Undo',
+        onAction: async () => {
+          try {
+            await api(`/api/guests/${guest.id}/restore`, { method: 'POST' });
+            toast({ message: `${guest.name} restored`, duration: 3000 });
+            onChanged();
+          } catch (err) {
+            toast({ message: `Could not restore: ${err.message}` });
+          }
+        },
+      });
       onChanged();
       onClose();
     } catch (err) {
@@ -149,7 +161,7 @@ export default function GuestForm({ isNew, guest, rooms, onClose, onChanged, toa
               <p className="t-footnote mb-4 mt-1">
                 {liveStays > 0
                   ? `${guest.name} has ${liveStays} ${liveStays === 1 ? 'stay' : 'stays'} on the calendar. Delete those first, or merge this guest into another.`
-                  : 'Removes the guest for good. This cannot be undone.'}
+                  : 'Moves the guest to Deleted, where they can be restored.'}
               </p>
               <HoldButton className="btn btn-danger" title="Press and hold to delete this guest" reminder="Hold the button to delete the guest" onConfirm={remove} disabled={busy || liveStays > 0}>
                 <Trash size={18} aria-hidden="true" /> Hold to Delete Guest
