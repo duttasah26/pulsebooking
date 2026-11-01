@@ -447,18 +447,12 @@ body {
   to { opacity: 1; transform: none; filter: none; }
 }
 .login-rise { animation: login-rise 560ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
-/* Three dots bounce in turn beside "Signing in" while the sign-in is on its way. Reduced motion: they fade in turn instead. */
-@keyframes dot-bounce {
-  0%, 60%, 100% { transform: none; }
-  30% { transform: translateY(-0.3rem); }
-}
-@keyframes dot-fade {
-  0%, 60%, 100% { opacity: 0.35; }
-  30% { opacity: 1; }
-}
-.dot-bounce { animation: dot-bounce 900ms var(--ease-out) infinite; animation-delay: calc(var(--i, 0) * 130ms); }
+/* A small ring turns beside "Signing in" while the sign-in is on its way. Reduced motion: it holds still and breathes instead. */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spinner-breathe { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+.spinner { animation: spin 700ms linear infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .dot-bounce { animation-name: dot-fade; }
+  .spinner { animation: spinner-breathe 1400ms ease-in-out infinite; }
 }
 @media (prefers-reduced-motion: reduce) {
   .login-rise { animation-name: fade-in; animation-duration: var(--dur-base); }

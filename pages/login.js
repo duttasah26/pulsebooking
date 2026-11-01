@@ -104,9 +104,7 @@ export default function Login() {
               {busy ? (
                 <span className="inline-flex items-center gap-2" role="status">
                   Signing in
-                  <span aria-hidden="true" className="inline-flex items-end gap-1 pb-0.5">
-                    {[0, 1, 2].map((i) => <span key={i} style={{ '--i': i }} className="dot-bounce size-1.5 rounded-full bg-current" />)}
-                  </span>
+                  <span aria-hidden="true" className="spinner size-4 rounded-full border-2 border-current border-t-transparent" />
                 </span>
               ) : 'Sign In'}
             </button>
