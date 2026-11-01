@@ -48,6 +48,8 @@
   --edge-rgb: 0 0 0;        /* a hairline or hover wash that is black in light and light in dark */
   --shadow-k: 1;            /* how strong shadows are; dark needs more, black on near black is invisible */
   --ring-a: 0;              /* a hairline round floating things; only dark draws it */
+  --hatch-rgb: 255 255 255; /* the diagonal lines across an on-hold bar */
+  --hatch-a: 0.55;
   --bar: var(--ink);        /* a solid bar: selection strip, toasts, mode banner, a chosen tool. In dark it is a soft raised grey, not a bright slab */
   --on-ink: #ffffff;        /* words on that bar */
   --on-ink-warn: #f0d27a;   /* a warning icon and a green action on that bar */
@@ -119,6 +121,8 @@
   --edge-rgb: 221 215 206;
   --shadow-k: 3;
   --ring-a: 0.12;
+  --hatch-rgb: 242 237 230;
+  --hatch-a: 0.12;
   --bar: #3a352f;
   --on-ink: #ddd7ce;
   --on-ink-warn: #e3c673;

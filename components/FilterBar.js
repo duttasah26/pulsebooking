@@ -85,7 +85,7 @@ export default function FilterBar({ fields, onClearAll, search }) {
 
   // The search box and the + Filter button share one row (search first); the applied filters take a row below only when there are some.
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-3" role="group" aria-label="Search and filters">
+    <div className="space-y-3" role="group" aria-label="Search and filters">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">{search}</div>
         {(off.length > 0 || adding) && (

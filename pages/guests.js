@@ -178,7 +178,7 @@ export default function Guests() {
     <Layout title="Guests" wide>
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-5">
           <div className="flex items-center justify-between gap-3">
             <h1 className="t-display">Guests</h1>
             <button type="button" className="btn btn-primary" onClick={() => setOpen('new')}>
@@ -191,13 +191,16 @@ export default function Guests() {
               <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
             ))}
           </div>
-          <Swap id={tab} className="space-y-4">
+          <Swap id={tab} className="space-y-5">
           {tab === 'deleted' && <DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} />}
           {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
-          <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          {/* Search, filters and saved views are one centred column; the list below uses the full width. */}
+          <div className="mx-auto w-full max-w-4xl space-y-3">
+            <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
+            <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          </div>
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
           {list.error && (

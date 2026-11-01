@@ -332,7 +332,7 @@ export default function Bookings() {
     <Layout title="Bookings" wide>
       <Head><title>{`${active.label} Bookings${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-5">
           <div className="flex items-center justify-between gap-3">
             <h1 className="t-display">Bookings</h1>
             <button type="button" className="btn btn-primary" disabled={!rooms.data?.length} onClick={newBooking}>
@@ -341,8 +341,11 @@ export default function Bookings() {
           </div>
 
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />} />
-          <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          {/* Search, filters and saved views are one centred column; the list below uses the full width. */}
+          <div className="mx-auto w-full max-w-4xl space-y-3">
+            <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />} />
+            <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          </div>
 
           {list.error && (
             <p role="alert" className="flex flex-wrap items-center gap-3 rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">

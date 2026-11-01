@@ -107,7 +107,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     ...(resizing ? { outline: '3px solid var(--accent)', outlineOffset: '1px' } : {}),
     // A finished stay is also struck through: thin light diagonal lines across it.
     ...(finished ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(var(--ink-rgb) / 0.16) 6px 7px)' } : {}),
-    ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
+    ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(var(--hatch-rgb) / var(--hatch-a)) 5px 7px)' } : {}),
   };
 
   // Room for text beside the bar's own padding, icons, room chip and (on a hold) the remove button.

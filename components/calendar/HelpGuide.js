@@ -12,7 +12,7 @@ import {
 // the screen is (a small drawn calendar), then what the bars mean (the real bar colours), then the tools (the same icons
 // and colours as the buttons), then short numbered recipes that open one at a time. Large text, one idea per line.
 
-const HOLD_HATCH = 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)';
+const HOLD_HATCH = 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(var(--hatch-rgb) / var(--hatch-a)) 5px 7px)';
 
 // A drawn miniature of the calendar, with the three things to know called out in colour.
 function MiniCalendar() {
