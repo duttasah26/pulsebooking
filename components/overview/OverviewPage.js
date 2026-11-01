@@ -50,15 +50,15 @@ function Figure({ title, value, name, pop, notes, active, onPick }) {
       type="button"
       aria-pressed={active}
       onClick={onPick}
-      className={`flex flex-col rounded-xl border p-4 text-left transition-[box-shadow,background-color] duration-150 ${active ? POP[pop].on : 'border-line bg-surface hover:shadow-md'}`}
+      className={`flex flex-col rounded-xl border p-4 text-left transition-[box-shadow,background-color] duration-150 lg:p-3 ${active ? POP[pop].on : 'border-line bg-surface hover:shadow-md'}`}
     >
       <span className="flex items-center justify-between">
         <span className="text-[0.9375rem] font-semibold">{title}</span>
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" className="text-muted" />
       </span>
-      <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none ${tone}`}>{value}</span>
+      <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none lg:mt-2 lg:text-4xl ${tone}`}>{value}</span>
       <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{name}</span>
-      <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted">
+      <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted lg:mt-2 lg:pt-2">
         {notes.map(([label, n]) => (
           <span key={label} className="flex items-baseline gap-1.5">{label} <span className="font-mono text-base font-semibold text-ink">{n}</span></span>
         ))}
@@ -69,7 +69,7 @@ function Figure({ title, value, name, pop, notes, active, onPick }) {
 
 function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = false }) {
   return (
-    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} ${tone}`}>
+    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} lg:min-h-0 ${tone}`}>
       <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{value}</p>
       <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{label}</p>
     </div>
@@ -88,7 +88,7 @@ function WeekChart({ days }) {
   const y = (n) => T + (H - T - B) * (1 - n / max);
   const summary = days.map((d) => `${fmtShort(d.day)}: ${plural(d.arriving, 'arrival')}, ${plural(d.leaving, 'departure')}`).join('. ');
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Arrivals and departures. ${summary}`} className="w-full max-w-xl overflow-visible text-[11px]">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Arrivals and departures. ${summary}`} className="w-full max-w-xl overflow-visible text-[11px] lg:h-full lg:max-w-none">
       {ticks.map((n) => (
         <g key={n}>
           <line x1={L} x2={W - R} y1={y(n)} y2={y(n)} stroke="var(--grid-line)" strokeWidth="1" strokeDasharray={n ? '3 4' : undefined} />
@@ -115,17 +115,19 @@ function OverviewSkeleton({ panel, week }) {
   const block = (cls, i = 0) => <div aria-hidden="true" className={`skeleton ${cls}`} style={{ animationDelay: `${i * 90}ms` }} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy="true" aria-label="Loading the overview">
-      <div className="min-w-0 space-y-6 pt-4 md:pb-4">
-        <div className="flex items-center gap-4">
-          {block('size-14 shrink-0 rounded-full')}
-          <div className="space-y-2">{block('h-7 w-56 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
-        </div>
-        {block('h-11 w-44 rounded-lg')}
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl', i))}
+      <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="flex items-center gap-4">
+            {block('size-14 shrink-0 rounded-full')}
+            <div className="space-y-2">{block('h-7 w-56 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
           </div>
-          {week && block('h-96 w-full rounded-xl', 2)}
+          {block('h-11 w-44 rounded-lg')}
+        </div>
+        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl lg:h-32', i))}
+          </div>
+          {week && block('h-96 w-full rounded-xl lg:h-auto lg:flex-1', 2)}
         </div>
       </div>
       {panel && (
@@ -244,8 +246,9 @@ export default function OverviewPage() {
   if (!ready) return <OverviewSkeleton panel={panel} week={parts.week !== false} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
-      <div className="min-w-0 space-y-6 pt-4 md:pb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
@@ -255,7 +258,6 @@ export default function OverviewPage() {
             </p>
           </div>
         </div>
-
         <div className="flex flex-wrap items-center gap-3">
           <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[0.9375rem] font-medium">
             <CalendarBlank size={18} aria-hidden="true" className="text-muted" />
@@ -264,8 +266,9 @@ export default function OverviewPage() {
           </label>
           {d !== t && <button type="button" className="btn btn-quiet" onClick={() => setDay(t)}>Today</button>}
         </div>
+        </div>
 
-        <div className="space-y-4">
+        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
@@ -280,23 +283,23 @@ export default function OverviewPage() {
           </div>
 
           {parts.week !== false && (
-            <Card className="p-4" aria-label="Week overview">
+            <Card className="p-4 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col" aria-label="Week overview">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-base font-semibold">Week overview</h2>
                 <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
               </div>
-              <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)]">
-                <div className="min-w-0">
+              <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:min-h-0 lg:flex-1">
+                <div className="flex min-h-0 min-w-0 flex-col">
                   <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
                     Arrivals vs. Departures
                     <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />Arrivals</span>
                     <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-pop-blue" />Departures</span>
                   </p>
-                  {ready ? <WeekChart days={week} /> : <div aria-hidden="true" className="skeleton h-56 w-full max-w-xl rounded-lg" />}
+                  <div className="min-h-0 lg:flex-1"><WeekChart days={week} /></div>
                 </div>
-                <div>
+                <div className="flex min-h-0 flex-col">
                   <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 lg:min-h-0 lg:flex-1 lg:grid-rows-3">
                     <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
                     <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
                     <Tile label="Available rooms" tone="bg-pop-blue-soft" value={dash(roomCount - inUse)} />
