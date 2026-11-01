@@ -65,6 +65,7 @@
   --pop-amber: #b86e00;
   --pop-amber-soft: #fbf0d6;
   --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
+  --edge-keep: 100%;        /* how much of a booking colour's edge is kept (dark softens it) */
   --tone-light: 100%;       /* how much of a booking colour's light pastel is kept; in dark the colour's edge tints the dark surface instead */
   --tint: rgb(var(--ink-rgb) / 0.06);
   --tint-hover: rgb(var(--ink-rgb) / 0.1);
@@ -139,6 +140,7 @@
   --pop-amber: #d4a043;
   --pop-amber-soft: rgb(212 160 67 / 0.13);
   --tone-light: 0%;
+  --edge-keep: 58%;
   --tint: rgb(var(--ink-rgb) / 0.05);
   --tint-hover: rgb(var(--ink-rgb) / 0.08);
   --tint-press: rgb(var(--ink-rgb) / 0.12);
