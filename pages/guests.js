@@ -188,7 +188,7 @@ export default function Guests() {
                   <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-9">{label}</button>
                 ))}
               </div>
-              <button type="button" className="btn btn-primary ml-auto sm:ml-0" onClick={() => setOpen('new')}>
+              <button type="button" className="btn btn-primary ml-auto sm:ml-0 sm:w-40" onClick={() => setOpen('new')}>
                 <Plus size={18} aria-hidden="true" /> New Guest
               </button>
             </div>

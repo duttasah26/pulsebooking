@@ -94,7 +94,7 @@ export default function FilterBar({ fields, onClearAll, search }) {
             onToggle={toggle}
             align="right"
             button={
-              <button type="button" aria-expanded={open} className="btn min-h-12 shrink-0 gap-2 px-4 lg:min-h-11" onClick={() => toggle(!open)}>
+              <button type="button" aria-expanded={open} className="btn min-h-12 shrink-0 gap-2 px-4 sm:w-40 lg:min-h-11" onClick={() => toggle(!open)}>
                 <Plus size={18} aria-hidden="true" /> Filter
               </button>
             }
