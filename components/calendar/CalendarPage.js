@@ -27,6 +27,7 @@ import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
+import PinnedBookings from './PinnedBookings';
 import { useApi } from '../../lib/useApi';
 import { useShowDone } from '../../lib/devicePrefs';
 import { useBookingData } from './useBookingData';
@@ -689,6 +690,7 @@ export default function CalendarPage() {
         </div>
 
         <BookingPanel
+          renderSide={() => <PinnedBookings except={panel?.booking?.id} />}
           wide={wide}
           formOpen={formOpen}
           onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change

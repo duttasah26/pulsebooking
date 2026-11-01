@@ -19,8 +19,9 @@ export const DOCK_GRID = {
 */
 // overlay: lie over the right side of the parent (which must be position: relative), as tall as the parent, instead of taking
 // a column, so what is behind it does not move.
-// renderSide(): another slim tab under the folded one (the Today tab). It opens its own panel over the page, so the page never changes size.
-export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, renderSide, children }) {
+// The folded tab reads "New Booking" and becomes the selected booking's tab when one is open (tabColor: that booking's colour).
+// renderSide(): more slim tabs right under it (the pinned bookings, each in its own colour).
+export default function Dock({ open, onToggle, label, title, actions, tab, tabMark = false, overlay = false, renderSide, tabColor, children }) {
   // The panel is as tall as the room left below where it starts (the toolbar sits above it), so its own scrolling reaches
   // everything, including the buttons at the bottom of a long form.
   const [leaving, hide] = useLeave(() => onToggle(false), 170); // fades out before the column folds
@@ -69,14 +70,15 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
       </aside>
 
       {!open && (
-        <div className="sticky top-[4.75rem] flex flex-col gap-2">
+        <div className="sticky top-[4.75rem] flex max-h-[calc(100dvh-5.75rem)] flex-col gap-2">
         <button
           type="button"
           aria-label={`Show ${label.toLowerCase()}`}
           aria-expanded="false"
           title={`Show ${label.toLowerCase()}`}
           onClick={() => onToggle(true)}
-          className={`animate-fade flex h-44 w-11 flex-col items-center gap-3 rounded-lg border border-line bg-surface py-3 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2`}
+          style={tabColor ? { backgroundColor: tabColor.soft ?? tabColor.bg, borderColor: tabColor.border } : undefined}
+          className={`animate-fade flex h-44 min-h-24 w-11 shrink flex-col items-center gap-3 overflow-hidden rounded-lg border py-3 text-[0.9375rem] font-semibold transition-colors duration-150 ${tabColor ? '' : 'border-line bg-surface hover:bg-surface-2'}`}
         >
           <CaretLeft size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>
