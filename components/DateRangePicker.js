@@ -25,7 +25,7 @@ function End({ icon: Icon, label, date, out = false, active, onClick }) {
       onClick={onClick}
       aria-pressed={active}
       aria-label={`Change ${label.toLowerCase()}`}
-      className={`rounded-lg bg-surface-2 p-4 text-left transition-colors hover:bg-[#e8e6df] ${active ? 'outline outline-2 -outline-offset-2 outline-ink' : ''}`}
+      className={`rounded-lg bg-surface-2 p-4 text-left transition-colors hover:bg-chrome ${active ? 'outline outline-2 -outline-offset-2 outline-ink' : ''}`}
     >
       <span className="t-group block">{label}</span>
       <span key={date ?? 'none'} className={`mt-1 block text-xl font-bold leading-tight tabular-nums ${out && date ? 'text-danger' : ''}`}>{date ? fmtShort(date) : 'Pick a day'}</span>

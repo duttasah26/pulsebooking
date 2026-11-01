@@ -106,7 +106,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     ...(active && !picked ? { outline: '2px solid var(--ink)', outlineOffset: '1px' } : {}),
     ...(resizing ? { outline: '3px solid var(--accent)', outlineOffset: '1px' } : {}),
     // A finished stay is also struck through: thin light diagonal lines across it.
-    ...(finished ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(38 31 28 / 0.16) 6px 7px)' } : {}),
+    ...(finished ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(var(--ink-rgb) / 0.16) 6px 7px)' } : {}),
     ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
   };
 
@@ -191,7 +191,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         aria-label={`Cancel hold, ${label}`}
         title="Cancel this hold (Undo brings it back)"
         onClick={() => onDelete?.(b)}
-        className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-white/70 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
+        className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-surface/70 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
       >
         <X size={14} weight="bold" />
       </button>

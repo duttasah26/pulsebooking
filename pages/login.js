@@ -73,7 +73,7 @@ export default function Login() {
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
       <main ref={page} className="relative grid min-h-[100dvh] place-items-center px-4 py-10">
-        <div ref={card} className="card login-rise relative w-full max-w-md space-y-8 !rounded-3xl border-white/70 p-6 shadow-md sm:p-10">
+        <div ref={card} className="card login-rise relative w-full max-w-md space-y-8 !rounded-3xl border-line p-6 shadow-md sm:p-10">
           <div className="flex flex-col items-center gap-2 text-center">
             <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority style={{ '--i': 1 }} className="login-rise h-12 w-auto" />
             <h1 style={{ '--i': 2 }} className="t-display login-rise">Sign in</h1>

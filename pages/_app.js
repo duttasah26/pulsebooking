@@ -1,10 +1,12 @@
 import { Outfit } from 'next/font/google';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { IconContext } from '@phosphor-icons/react';
 import { MotionConfig } from 'framer-motion';
 import { ToastProvider } from '../components/Toast';
 import { SettingsProvider } from '../components/SettingsProvider';
 import Assistant from '../components/Assistant';
+import { watchSystemTheme } from '../lib/theme';
 import '../styles/globals.css';
 
 // One typeface for everything, words and numbers: Outfit, round and open.
@@ -12,6 +14,7 @@ const text = Outfit({ subsets: ['latin'], variable: '--font-text', display: 'swa
 
 export default function App({ Component, pageProps }) {
   const { pathname } = useRouter();
+  useEffect(() => watchSystemTheme(), []);
   return (
     <div className={`${text.variable} font-sans`}>
       {/* Icons here are decorative (the text or an aria-label carries the meaning), so hide them from screen readers. Bold

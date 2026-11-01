@@ -32,7 +32,7 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
           <span className="flex min-w-0 items-center gap-2">
             <span className="truncate text-[1.0625rem] font-semibold">{g.name}</span>
             {duplicate && (
-              <span className="shrink-0 rounded-md bg-ink px-2 text-sm font-semibold text-white">Same person?</span>
+              <span className="shrink-0 rounded-md bg-ink px-2 text-sm font-semibold text-on-ink">Same person?</span>
             )}
           </span>
           {anyLine && (

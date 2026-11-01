@@ -44,7 +44,7 @@ export default function ColorPicker({
         <label
           title="Pick any colour"
           className={`cell relative flex h-11 cursor-pointer items-center gap-1.5 rounded-lg border px-3 text-base font-medium focus-within:outline-2 focus-within:outline-accent ${custom ? 'border-transparent ring-2 ring-ink ring-offset-2' : 'border-transparent bg-tint'}`}
-          style={custom ? { backgroundColor: `color-mix(in srgb, ${color} 28%, white)` } : undefined}
+          style={custom ? { backgroundColor: `color-mix(in srgb, ${color} calc(28% + (100% - var(--tone-light, 100%)) * 0.12), var(--surface))` } : undefined}
         >
           <Eyedropper size={16} aria-hidden="true" />
           Custom

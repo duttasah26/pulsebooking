@@ -84,7 +84,7 @@ export function FoldSection({ id, title, icon: Icon, badge = 0, defaultOpen = fa
           className="flex min-h-12 w-full items-center gap-2 rounded-md px-1 text-left text-[1.0625rem] font-semibold transition-colors duration-150 hover:bg-surface-2"
         >
           <span className="min-w-0 flex-1 truncate">{title}</span>
-          {badge > 0 && <span className="grid min-w-6 place-items-center rounded-md bg-ink px-1.5 font-mono text-sm font-semibold text-white"><span className="sr-only">{badge} on: </span>{badge}</span>}
+          {badge > 0 && <span className="grid min-w-6 place-items-center rounded-md bg-ink px-1.5 font-mono text-sm font-semibold text-on-ink"><span className="sr-only">{badge} on: </span>{badge}</span>}
           <CaretDown size={18} aria-hidden="true" className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </button>
       </h3>

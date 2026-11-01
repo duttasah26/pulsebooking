@@ -25,7 +25,7 @@ const MODES = {
   select: {
     icon: CheckSquare,
     name: 'Select',
-    box: 'bg-ink text-white',
+    box: 'bg-ink text-on-ink',
     iconTone: '',
     touch: 'Tap each booking to pick it, then drag its white tabs to change the days',
     mouse: 'Click bookings to pick them. Drag a picked booking to move it, or its white tabs to change the days',
@@ -33,7 +33,7 @@ const MODES = {
   hand: {
     icon: Hand,
     name: 'Hand',
-    box: 'bg-ink text-white',
+    box: 'bg-ink text-on-ink',
     iconTone: '',
     touch: 'Drag the calendar to move around',
     mouse: 'Drag the calendar to move around',
@@ -52,7 +52,7 @@ export default function ModeBanner({ mode, touch, onExit, onSkip, still = false 
       {onSkip && (
         <button type="button" className="btn btn-inverse shrink-0 px-3" onClick={onSkip}><span>Type Dates<span className="max-sm:hidden"> Instead</span></span></button>
       )}
-      <button type="button" className={`btn shrink-0 px-4 font-semibold ${mode === 'reserve' ? 'bg-hold-ink text-white hover:bg-hold-ink/90 active:bg-hold-ink' : 'bg-white text-ink hover:bg-white/90 active:bg-white/80'}`} onClick={onExit}>
+      <button type="button" className={`btn shrink-0 px-4 font-semibold ${mode === 'reserve' ? 'bg-hold-ink text-on-ink hover:bg-hold-ink/90 active:bg-hold-ink' : 'bg-surface text-ink hover:bg-surface/90 active:bg-surface/80'}`} onClick={onExit}>
         {mode === 'draw' ? 'Cancel' : 'Done'}
       </button>
     </div>

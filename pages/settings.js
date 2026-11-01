@@ -13,6 +13,7 @@ import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/color
 import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
 import { tabKeys } from '../lib/tabKeys';
+import { THEMES, useTheme } from '../lib/theme';
 import { OVERVIEW_PARTS, useFirstView, useOverviewParts, useRowSize, useShowDone } from '../lib/devicePrefs';
 
 /*
@@ -100,6 +101,7 @@ export default function Settings() {
   const { settings, save, textSize, setTextSize } = useSettings();
   const [firstView, setFirstView] = useFirstView();
   const [rowSize, setRowSize] = useRowSize();
+  const [theme, setTheme] = useTheme();
   const [showDone, setShowDone] = useShowDone();
   const [overview, setOverview] = useOverviewParts();
   const toast = useToast();
@@ -267,6 +269,15 @@ export default function Settings() {
             {tab === 'calendar' && (
               <>
                 <Group id="calendar" icon={CalendarBlank} title="Calendar" scope="This device only" hint="How the calendar opens and looks on this phone or computer. Other devices keep their own choices.">
+                  <Setting label="Appearance" hint="Light, dark, or follow this device's setting.">
+                    <Segmented
+                      legend="Appearance"
+                      legendHidden
+                      options={THEMES}
+                      value={theme}
+                      onChange={(v) => { setTheme(v); setSaved('Appearance changed on this device'); }}
+                    />
+                  </Setting>
                   <Setting label="First view" hint="What the calendar shows when you open it. It always starts on the current month.">
                     <Segmented
                       legend="First view"
@@ -333,7 +344,7 @@ export default function Settings() {
                     <li key={r.id}>
                       <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
                         <Switch size="sm" icons={false} name={`room-${r.number}`} checked={r.active} onChange={(on) => setActive(r, on)} />
-                        <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-black/20" style={{ backgroundColor: tone.fill }} />
+                        <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-ink/20" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
                         {!r.active && <span className="text-[0.9375rem] text-muted">off</span>}
                       </label>

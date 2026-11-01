@@ -26,7 +26,7 @@ function MiniCalendar() {
       <div className="grid grid-cols-[3.25rem_repeat(6,minmax(0,1fr))] gap-1.5 rounded-lg border border-line bg-surface-2 p-3" aria-hidden="true">
         <span style={{ gridRow: 1, gridColumn: 1 }} />
         {days.map((d, i) => (
-          <span key={d} style={{ gridRow: 1, gridColumn: i + 2 }} className="rounded-md bg-white py-1 text-center font-mono text-sm font-semibold ring-2 ring-ink/25">{d}</span>
+          <span key={d} style={{ gridRow: 1, gridColumn: i + 2 }} className="rounded-md bg-surface py-1 text-center font-mono text-sm font-semibold ring-2 ring-ink/25">{d}</span>
         ))}
         {rooms.map((n, r) => {
           const shade = roomShade({ number: n }, settings);
@@ -35,13 +35,13 @@ function MiniCalendar() {
           );
         })}
         {rooms.map((n, r) => days.map((d, i) => (
-          <span key={`${n}-${d}`} style={{ gridRow: r + 2, gridColumn: i + 2 }} className="h-8 rounded-md bg-white" />
+          <span key={`${n}-${d}`} style={{ gridRow: r + 2, gridColumn: i + 2 }} className="h-8 rounded-md bg-surface" />
         )))}
         <span style={{ gridRow: 2, gridColumn: '3 / span 3', backgroundColor: stay.bg, borderColor: stay.border }} className="z-[1] flex h-8 items-center rounded-lg border px-2 text-sm font-semibold ring-2 ring-accent">Ana</span>
         <span style={{ gridRow: 3, gridColumn: '2 / span 2', backgroundColor: hold.bg, borderColor: hold.border, backgroundImage: HOLD_HATCH }} className="z-[1] flex h-8 items-center gap-1 rounded-lg border border-dashed px-2 text-sm font-semibold"><Clock size={14} aria-hidden="true" /> Hold</span>
       </div>
       <figcaption className="grid gap-3 text-base sm:grid-cols-3">
-        <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded bg-white ring-2 ring-ink/25" aria-hidden="true" /> A <strong>column</strong> is a day</p>
+        <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded bg-surface ring-2 ring-ink/25" aria-hidden="true" /> A <strong>column</strong> is a day</p>
         <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded bg-surface-2 ring-2 ring-line" aria-hidden="true" /> A <strong>row</strong> is a room</p>
         <p className="flex items-center gap-2"><span className="size-4 shrink-0 rounded ring-2 ring-accent" style={{ backgroundColor: stay.bg }} aria-hidden="true" /> A <strong>bar</strong> is a booking</p>
       </figcaption>
@@ -67,7 +67,7 @@ function BarKey() {
           <li key={status} className="flex items-center gap-4 rounded-lg border border-line bg-surface p-3">
             <span
               className={`flex h-9 w-24 shrink-0 items-center gap-1 rounded-lg border px-2 text-sm font-semibold ${hold ? 'border-dashed' : ''} ${status === 'checked_out' ? 'opacity-60' : ''}`}
-              style={{ backgroundColor: c.bg, borderColor: c.border, ...(hold ? { backgroundImage: HOLD_HATCH } : {}), ...(status === 'checked_out' ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(38 31 28 / 0.16) 6px 7px)' } : {}) }}
+              style={{ backgroundColor: c.bg, borderColor: c.border, ...(hold ? { backgroundImage: HOLD_HATCH } : {}), ...(status === 'checked_out' ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(var(--ink-rgb) / 0.16) 6px 7px)' } : {}) }}
               aria-hidden="true"
             >
               {hold && <Clock size={14} />}

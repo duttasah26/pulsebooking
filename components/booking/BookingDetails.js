@@ -82,7 +82,7 @@ export default function BookingDetails({
             );
           })}
           {groupCount > 1 && onShowGroup && (
-            <button type="button" className="btn btn-sm ml-auto bg-white/60 hover:bg-white" onClick={onShowGroup}>
+            <button type="button" className="btn btn-sm ml-auto bg-surface/60 hover:bg-surface" onClick={onShowGroup}>
               <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
             </button>
           )}

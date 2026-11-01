@@ -126,7 +126,7 @@ export default function SelectionPanel({
                       onClick={() => onUnpick(b)}
                       aria-label={`Take ${b.name}, room ${b.room_number}, out of the selection`}
                       title="Take this one out of the selection"
-                      className="absolute right-2 top-2 grid size-10 place-items-center rounded-md bg-white/70 transition-colors duration-150 hover:bg-white"
+                      className="absolute right-2 top-2 grid size-10 place-items-center rounded-md bg-surface/70 transition-colors duration-150 hover:bg-surface"
                     >
                       <X size={14} weight="bold" aria-hidden="true" />
                     </button>

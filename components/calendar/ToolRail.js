@@ -15,7 +15,7 @@ import ToolButton from './ToolButton';
 const TIP = {
   green: 'border-accent bg-accent text-accent-ink',
   amber: 'border-dashed border-hold-edge bg-hold text-hold-ink',
-  ink: 'border-ink bg-ink text-white',
+  ink: 'border-ink bg-ink text-on-ink',
 };
 
 export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, onHelp }) {

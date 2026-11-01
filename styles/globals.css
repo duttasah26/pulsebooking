@@ -12,7 +12,10 @@
   Secondary text #6f655c is 5.7:1 on white; field edges #948b80 are 3.35:1 (non text minimum 3:1).
 
   Shape: one corner, 6px. Buttons are filled, never outlined: a tinted fill for ordinary actions, emerald for the primary
-  one, no fill at all for leaving. Light mode only.
+  one, no fill at all for leaving.
+  Themes: light is the default tokens in :root; dark overrides them under :root[data-theme="dark"] (set before first paint by
+  the script in pages/_document.js, from the device's choice: Light, Dark or System). Components never hold a colour of their
+  own: tints and shadows are built from --ink-rgb and --shadow-rgb, booking colours from --tone-light (lib/colors.js).
   Layers: app nav 30, sheet 40, toast 50. Inside the room grid: bars 1, labels and headers 2, corner 3.
 */
 :root {
@@ -37,14 +40,27 @@
   --hold: #f6ebc8;          /* straw: on hold, and nothing else */
   --hold-edge: #a87708;     /* 3.96:1, a visible dashed edge */
   --hold-ink: #7a4e05;      /* 6.0:1 on the hold fill */
-  --tint: rgb(38 31 28 / 0.06);
-  --tint-hover: rgb(38 31 28 / 0.1);
-  --tint-press: rgb(38 31 28 / 0.15);
-  --btn: rgb(38 31 28 / 0.13);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
-  --btn-hover: rgb(38 31 28 / 0.19);
-  --btn-press: rgb(38 31 28 / 0.26);
-  --btn-sm: rgb(38 31 28 / 0.09);    /* a small chip: lighter than a full button, firmer than quiet */
+  --ink-rgb: 38 31 28;      /* the ink as channels, for tints and lines drawn at some opacity */
+  --shadow-rgb: 38 31 28;
+  --on-ink: #ffffff;
+  --on-ink-warn: #f0d27a;   /* a warning icon and a green action on an ink bar */
+  --on-ink-ok: #8fd3b4;        /* words on an ink bar (the selection strip, toasts, the mode banner) */
+  --accent-hover: #155a43;  /* the green button when pointed at, and when pressed */
+  --accent-press: #0f4733;
+  --tone-light: 100%;       /* how much of a booking colour's light pastel is kept; in dark the colour's edge tints the dark surface instead */
+  --tint: rgb(var(--ink-rgb) / 0.06);
+  --tint-hover: rgb(var(--ink-rgb) / 0.1);
+  --tint-press: rgb(var(--ink-rgb) / 0.15);
+  --btn: rgb(var(--ink-rgb) / 0.13);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
+  --btn-hover: rgb(var(--ink-rgb) / 0.19);
+  --btn-press: rgb(var(--ink-rgb) / 0.26);
+  --btn-sm: rgb(var(--ink-rgb) / 0.09);    /* a small chip: lighter than a full button, firmer than quiet */
   --danger-btn: #f8e7e3;
+  --danger-hover: #f2d6cf;
+  --danger-press: #ecc5bc;
+  --hold-hover: #efdc9e;
+  --hold-press: #e7d085;
+  --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
   /* One motion set. Durations: quick (colour, hover), base (fades, small moves), slow (sheets, panels). Ease out for
      arrivals, ease in for exits. */
   --dur-quick: 120ms;
@@ -52,6 +68,46 @@
   --dur-slow: 280ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* Dark: the same warm paper turned over. Surfaces step up in lightness (canvas, surface, surface-2); ink is warm off-white, never
+   pure white; green and red are lifted so words in them keep 4.5:1 or better on the dark surfaces. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #151311;
+  --surface: #1f1c19;
+  --surface-2: #2a2622;
+  --line: #38332e;
+  --ink: #f2ede6;
+  --muted: #a69d92;        /* 6.5:1 on --surface */
+  --accent: #2b8a66;       /* white on it 4.5:1; 4.1:1 against the surface as a shape */
+  --accent-strong: #7bd6b0; /* green words on a green tint (8.6:1) */
+  --accent-ink: #ffffff;
+  --accent-soft: #1b3a2e;
+  --accent-text: #6ccaa2;
+  --chrome: #2a2622;
+  --chrome-line: #38332e;
+  --grid-line: #3d3732;
+  --field-line: #857b70;   /* 3.9:1 on --surface */
+  --danger: #ff9480;       /* 7.6:1 on --surface */
+  --danger-soft: #3b211c;
+  --hold: #3c3414;
+  --hold-edge: #c79a2b;
+  --hold-ink: #f0d58a;
+  --ink-rgb: 242 237 230;
+  --shadow-rgb: 0 0 0;
+  --on-ink: #1a1613;
+  --on-ink-warn: #8a5a00;
+  --on-ink-ok: #1d6b50;
+  --accent-hover: #35a077;
+  --accent-press: #3fb386;
+  --tone-light: 0%;
+  --danger-btn: #3b211c;
+  --danger-hover: #4a2a24;
+  --danger-press: #58322b;
+  --hold-hover: #4a4018;
+  --hold-press: #574b1d;
+  --raised: #46403a;
 }
 
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
@@ -79,6 +135,11 @@
   --color-hold-edge: var(--hold-edge);
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
+  --color-on-ink: var(--on-ink);
+  --color-on-ink-warn: var(--on-ink-warn);
+  --color-on-ink-ok: var(--on-ink-ok);
+  --color-accent-hover: var(--accent-hover);
+  --color-raised: var(--raised);
   --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-text), ui-sans-serif, system-ui, sans-serif; /* one typeface everywhere; figures are only set to line up in columns */
   /* One corner everywhere; rounded-md is the same corner, for small things inside a control. */
@@ -86,10 +147,10 @@
   --radius-md: 6px;
   --radius-lg: 6px;
   /* Shadows only on things that float over the page (sheets, popovers, toasts). */
-  --shadow-sm: 0 1px 2px rgb(38 31 28 / 0.08);
-  --shadow: 0 1px 3px rgb(38 31 28 / 0.1), 0 1px 2px rgb(38 31 28 / 0.06);
-  --shadow-md: 0 4px 12px rgb(38 31 28 / 0.08), 0 1px 3px rgb(38 31 28 / 0.06);
-  --shadow-lg: 0 12px 32px rgb(38 31 28 / 0.14), 0 2px 6px rgb(38 31 28 / 0.08);
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-rgb) / 0.08);
+  --shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.1), 0 1px 2px rgb(var(--shadow-rgb) / 0.06);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-rgb) / 0.08), 0 1px 3px rgb(var(--shadow-rgb) / 0.06);
+  --shadow-lg: 0 12px 32px rgb(var(--shadow-rgb) / 0.14), 0 2px 6px rgb(var(--shadow-rgb) / 0.08);
 }
 
 /* No double-tap zoom delay on anything tappable, and no grey flash on tap (pressed states are drawn instead). */
@@ -165,7 +226,7 @@ body {
   }
   .sw-handle {
     position: absolute; top: 50%; left: var(--edge); margin-left: var(--edge); display: grid; place-items: center;
-    width: var(--off); height: var(--off); border-radius: 9999px; background: var(--muted); color: #fff;
+    width: var(--off); height: var(--off); border-radius: 9999px; background: var(--muted); color: var(--surface);
     transform: translate(0, -50%); box-shadow: var(--shadow-sm);
     transition: width 300ms var(--spring), height 300ms var(--spring), margin 300ms var(--spring), transform 300ms var(--spring), background-color 300ms, color 300ms;
   }
@@ -177,7 +238,7 @@ body {
   .sw:hover .sw-handle::before { opacity: 0.06; transform: translate(-50%, -50%) scale(1); }
   .sw .peer:active ~ .sw-track .sw-handle::before { opacity: 0.12; transform: translate(-50%, -50%) scale(1); }
   .sw .peer:checked ~ .sw-track { background: var(--accent); border-color: var(--accent); }
-  .sw .peer:checked ~ .sw-track .sw-handle { width: var(--on); height: var(--on); margin-left: 0; transform: translate(var(--travel), -50%); background: #fff; color: var(--accent); }
+  .sw .peer:checked ~ .sw-track .sw-handle { width: var(--on); height: var(--on); margin-left: 0; transform: translate(var(--travel), -50%); background: var(--raised); color: var(--accent); }
   .sw .peer:checked ~ .sw-track .sw-handle::before { background: var(--accent); }
   .sw .peer:active ~ .sw-track .sw-handle { width: var(--press); height: var(--press); margin-left: calc(var(--edge) * -1); }
   .sw .peer:checked:active ~ .sw-track .sw-handle { margin-left: calc(var(--edge) * -1); }
@@ -215,6 +276,9 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23261f1c' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.875rem center;
+  }
+  :root[data-theme="dark"] select.field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23f2ede6' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
   }
   .label {
     @apply mb-2 block text-[0.9375rem] leading-5 font-semibold text-ink;
@@ -262,8 +326,8 @@ body {
     @apply font-semibold text-accent-ink;
     background-color: var(--accent);
   }
-  .btn-primary:hover, .btn-block-primary:hover { background-color: var(--accent-strong); }
-  .btn-primary:active, .btn-block-primary:active { background-color: #0f4733; }
+  .btn-primary:hover, .btn-block-primary:hover { background-color: var(--accent-hover); }
+  .btn-primary:active, .btn-block-primary:active { background-color: var(--accent-press); }
   .btn-primary:disabled, .btn-block-primary:disabled { background-color: var(--accent); }
 
   .btn-quiet { @apply text-ink; background-color: transparent; }
@@ -275,29 +339,29 @@ body {
     @apply text-danger;
     background-color: var(--danger-btn);
   }
-  .btn-danger:hover, .btn-block-danger:hover { background-color: #f2d6cf; }
-  .btn-danger:active, .btn-block-danger:active { background-color: #ecc5bc; }
+  .btn-danger:hover, .btn-block-danger:hover { background-color: var(--danger-hover); }
+  .btn-danger:active, .btn-block-danger:active { background-color: var(--danger-press); }
   .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-btn); }
 
   .btn-hold, .btn-block-hold {
     @apply border-dashed border-hold-edge text-hold-ink;
     background-color: var(--hold);
   }
-  .btn-hold:hover, .btn-block-hold:hover { background-color: #efdc9e; }
-  .btn-hold:active, .btn-block-hold:active { background-color: #e7d085; }
+  .btn-hold:hover, .btn-block-hold:hover { background-color: var(--hold-hover); }
+  .btn-hold:active, .btn-block-hold:active { background-color: var(--hold-press); }
 
   .btn-on, .btn-on:hover, .btn-on:active {
-    @apply font-semibold text-white;
+    @apply font-semibold text-on-ink;
     background-color: var(--ink);
   }
 
-  .btn-inverse { @apply text-white; background-color: rgb(255 255 255 / 0.18); }
-  .btn-inverse:hover { background-color: rgb(255 255 255 / 0.27); }
-  .btn-inverse:active { background-color: rgb(255 255 255 / 0.36); }
+  .btn-inverse { @apply text-on-ink; background-color: color-mix(in srgb, var(--on-ink) 18%, transparent); }
+  .btn-inverse:hover { background-color: color-mix(in srgb, var(--on-ink) 27%, transparent); }
+  .btn-inverse:active { background-color: color-mix(in srgb, var(--on-ink) 36%, transparent); }
   .btn-inverse.btn-quiet { background-color: transparent; }
-  .btn-inverse.btn-quiet:active { background-color: rgb(255 255 255 / 0.2); }
-  .btn-inverse.btn-quiet:hover { background-color: rgb(255 255 255 / 0.12); }
-  .btn-inverse:focus-visible { outline-color: #ffffff; }
+  .btn-inverse.btn-quiet:active { background-color: color-mix(in srgb, var(--on-ink) 20%, transparent); }
+  .btn-inverse.btn-quiet:hover { background-color: color-mix(in srgb, var(--on-ink) 12%, transparent); }
+  .btn-inverse:focus-visible { outline-color: var(--on-ink); }
 
   /* Forms keep 44px targets and 16px type on every screen. */
   .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
@@ -321,10 +385,11 @@ body {
     @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-[0.9375rem] font-medium text-ink/80 lg:min-h-9;
     transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
   }
-  .seg-item:hover { @apply text-ink; background-color: rgb(255 255 255 / 0.5); }
+  .seg-item:hover { @apply text-ink; background-color: color-mix(in srgb, var(--raised) 50%, transparent); }
   .seg-item[aria-selected="true"], .seg-item[aria-current="page"], .seg-item[aria-current="step"], .seg-item[aria-pressed="true"] {
-    @apply bg-surface font-semibold text-ink;
-    box-shadow: 0 1px 2px rgb(38 31 28 / 0.14), 0 0 0 0.5px rgb(38 31 28 / 0.1);
+    @apply font-semibold text-ink;
+    background-color: var(--raised);
+    box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.14), 0 0 0 0.5px rgb(var(--shadow-rgb) / 0.1);
   }
 
   /* A group of related content: white on the canvas, hairline edge, no shadow. Never a card inside a card. */
@@ -374,7 +439,7 @@ body {
   border-radius: 6px;
   background: var(--surface);
   border: 1px solid var(--field-line);
-  box-shadow: 0 1px 3px rgb(38 31 28 / 0.2);
+  box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.2);
 }
 .zoom-range::-moz-range-track { height: 4px; border-radius: 2px; background: var(--surface-2); }
 .zoom-range::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent); }
@@ -384,7 +449,7 @@ body {
   border-radius: 6px;
   background: var(--surface);
   border: 1px solid var(--field-line);
-  box-shadow: 0 1px 3px rgb(38 31 28 / 0.2);
+  box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.2);
 }
 .zoom-range:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 

@@ -86,7 +86,7 @@ function StepList({ step, done, onGo }) {
               {missing ? (
                 <WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />
               ) : (
-                <span className={`grid size-6 place-items-center rounded-md font-mono text-sm font-semibold ${current ? 'bg-ink text-white' : done[i] ? 'bg-accent text-accent-ink' : 'bg-ink/10'}`}>
+                <span className={`grid size-6 place-items-center rounded-md font-mono text-sm font-semibold ${current ? 'bg-ink text-on-ink' : done[i] ? 'bg-accent text-accent-ink' : 'bg-ink/10'}`}>
                   {done[i] && !current ? <Check size={14} /> : i + 1}
                 </span>
               )}
@@ -445,7 +445,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           </div>
 
           {/* The rest, as one short line each, with the same small icons used elsewhere. */}
-          <ul className="space-y-1.5 border-t border-black/10 pt-3 text-base">
+          <ul className="space-y-1.5 border-t border-ink/10 pt-3 text-base">
             <li className="flex items-center gap-2"><Users size={18} aria-hidden="true" className="shrink-0 text-muted" />{f.adults} {Number(f.adults) === 1 ? 'adult' : 'adults'}{Number(f.children) > 0 && <>, {f.children} {Number(f.children) === 1 ? 'child' : 'children'}</>}</li>
             <li className="flex items-center gap-2"><Megaphone size={18} aria-hidden="true" className="shrink-0 text-muted" />Booked via {f.channel}</li>
             <li className="flex items-center gap-2"><Receipt size={18} aria-hidden="true" className="shrink-0 text-muted" />{ratePlan}</li>

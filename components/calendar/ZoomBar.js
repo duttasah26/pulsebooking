@@ -28,7 +28,7 @@ const TOUCH_HINT = {
 // Holding a room is two taps, drawn as two numbered steps. The second tap places the hold: there is nothing to confirm.
 function HoldSteps() {
   const step = 'inline-flex items-center gap-1.5 whitespace-nowrap';
-  const num = 'grid size-6 shrink-0 place-items-center rounded-md bg-ink font-mono text-sm font-semibold text-white';
+  const num = 'grid size-6 shrink-0 place-items-center rounded-md bg-ink font-mono text-sm font-semibold text-on-ink';
   return (
     <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-medium" aria-label="How to reserve a room">
       <li className={step}><span className={num}>1</span> Tap the first night</li>

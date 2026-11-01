@@ -6,7 +6,7 @@
 // out at an end where the bar runs off the screen. On the month sheet (days running down) they sit above and below.
 export default function BarHandles({ b, g, rows, style: placement, onStart }) {
   const tab =
-    "pointer-events-auto absolute z-[3] size-3 touch-none rounded-full border border-black/30 bg-white shadow-sm transition-colors hover:bg-surface-2 before:absolute before:content-[''] [@media(pointer:coarse)]:size-4";
+    "pointer-events-auto absolute z-[3] size-3 touch-none rounded-full border border-ink/30 bg-surface shadow-sm transition-colors hover:bg-surface-2 before:absolute before:content-[''] [@media(pointer:coarse)]:size-4";
   const side = rows
     ? 'top-1/2 -translate-y-1/2 cursor-col-resize before:-inset-[7px] [@media(pointer:coarse)]:before:-inset-[16px]'
     : 'left-1/2 -translate-x-1/2 cursor-row-resize before:-inset-[7px] [@media(pointer:coarse)]:before:-inset-[16px]';

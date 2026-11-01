@@ -13,8 +13,8 @@ let CH = 8.4;
 const CHIP_PAD = 8;
 
 const CHIP = {
-  in: 'bg-white/80 text-accent-text',
-  out: 'bg-white/80 text-danger',
+  in: 'bg-surface/80 text-accent-text',
+  out: 'bg-surface/80 text-danger',
   confirmed: 'bg-accent-soft text-accent-text',
   on_hold: 'bg-hold text-hold-ink',
   checked_in: 'bg-accent text-accent-ink',
@@ -24,7 +24,7 @@ const CHIP = {
 export const STATUS_WORD = { confirmed: 'Confirmed', on_hold: 'On hold', checked_in: 'Checked in', checked_out: 'Checked out', cancelled: 'Cancelled' };
 
 function Chip({ tone, children }) {
-  return <span className={`shrink-0 whitespace-nowrap rounded px-1 font-semibold ${CHIP[tone] ?? 'bg-white/80'}`}>{children}</span>;
+  return <span className={`shrink-0 whitespace-nowrap rounded px-1 font-semibold ${CHIP[tone] ?? 'bg-surface/80'}`}>{children}</span>;
 }
 const chipW = (text) => String(text).length * CH + CHIP_PAD;
 

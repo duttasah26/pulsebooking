@@ -102,7 +102,7 @@ export default function Assistant() {
         onClick={() => setOpen(true)}
         aria-label="Open the assistant"
         title="Ask about rooms and bookings"
-        className={`${place.replace('z-[45]', 'z-[35]')} grid size-12 place-items-center rounded-lg bg-ink text-white shadow-lg transition-colors duration-150 hover:bg-ink/90`}
+        className={`${place.replace('z-[45]', 'z-[35]')} grid size-12 place-items-center rounded-lg bg-ink text-on-ink shadow-lg transition-colors duration-150 hover:bg-ink/90`}
       >
         <ChatCircleDots size={24} weight="fill" aria-hidden="true" />
       </button>
@@ -144,7 +144,7 @@ export default function Assistant() {
           <p
             key={i}
             className={`max-w-[88%] whitespace-pre-wrap rounded-lg [overflow-wrap:anywhere] px-3.5 py-2.5 text-[0.9375rem] leading-snug ${
-              m.role === 'user' ? 'ml-auto bg-ink text-white' : m.error ? 'bg-danger-soft text-danger' : 'bg-surface-2'
+              m.role === 'user' ? 'ml-auto bg-ink text-on-ink' : m.error ? 'bg-danger-soft text-danger' : 'bg-surface-2'
             }`}
           >
             {m.role === 'assistant' && !m.error ? <Answer text={m.text} rooms={rooms.data} /> : m.text}
