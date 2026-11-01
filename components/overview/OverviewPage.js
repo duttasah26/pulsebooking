@@ -6,10 +6,13 @@ import { useApi } from '../../lib/useApi';
 import { useOverviewParts } from '../../lib/devicePrefs';
 import { tabKeys } from '../../lib/tabKeys';
 import BookingRow from '../bookings/BookingRow';
+import BookingSheet from '../booking/BookingSheet';
+import { useToast } from '../Toast';
+import { NeedGuestError, confirmHolds } from '../../lib/holds';
 
 // The Overview page. Left: the day's figures (they also choose the list), the week overview with its chart and occupancy tiles.
 // Right: the list behind the chosen figure, with filter pills. It reads its own data (a week back to 60 days ahead, the holds, this
-// month). A booking in several rooms is one row with its rooms. A row opens the booking on the calendar. Cancelled bookings are left out.
+// month). A booking in several rooms is one row with its rooms. A row opens the booking in a panel on this page, with an arrow to show it on the calendar. Cancelled bookings are left out.
 const live = (list) => (Array.isArray(list) ? list : []).filter((b) => b.status !== 'cancelled');
 
 function groupRows(list) {
@@ -37,15 +40,15 @@ function Figure({ title, value, name, tone, notes, active, onPick }) {
       type="button"
       aria-pressed={active}
       onClick={onPick}
-      className={`flex flex-col rounded-xl border bg-surface p-4 text-left transition-shadow duration-150 ${active ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-line hover:shadow-md'}`}
+      className={`flex flex-col rounded-xl border bg-surface p-3.5 text-left transition-shadow duration-150 ${active ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-line hover:shadow-md'}`}
     >
       <span className="flex items-center justify-between">
         <span className="text-[0.9375rem] font-semibold">{title}</span>
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" className="text-muted" />
       </span>
-      <span className={`mt-3 text-center font-mono text-6xl font-medium leading-none ${tone}`}>{value}</span>
-      <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{name}</span>
-      <span className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3 text-[0.8125rem] text-muted">
+      <span className={`mt-3 text-center font-mono text-4xl font-medium leading-none ${tone}`}>{value}</span>
+      <span className={`mt-1.5 text-center text-[0.9375rem] font-semibold ${tone}`}>{name}</span>
+      <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted">
         {notes.map(([label, n]) => (
           <span key={label} className="flex items-baseline gap-1.5">{label} <span className="font-mono text-base font-semibold text-ink">{n}</span></span>
         ))}
@@ -56,16 +59,16 @@ function Figure({ title, value, name, tone, notes, active, onPick }) {
 
 function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = false }) {
   return (
-    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-32' : 'min-h-24'} ${tone}`}>
-      <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{value}</p>
-      <p className={`mt-2 leading-tight ${big ? `text-base font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{label}</p>
+    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-24' : 'min-h-20'} ${tone}`}>
+      <p className={`font-mono font-medium leading-none ${big ? 'text-3xl' : 'text-2xl'} ${text}`}>{value}</p>
+      <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{label}</p>
     </div>
   );
 }
 
 // Arrivals as bars and departures as a line with its numbers boxed on the points, over a numbered axis, the days slanted underneath.
 function WeekChart({ days }) {
-  const W = 520, H = 250, L = 30, R = 12, T = 18, B = 70;
+  const W = 520, H = 220, L = 30, R = 12, T = 18, B = 70;
   const top = Math.max(2, ...days.flatMap((d) => [d.arriving, d.leaving]));
   const step = top <= 5 ? 1 : Math.ceil(top / 5);
   const max = Math.ceil(top / step) * step;
@@ -75,7 +78,7 @@ function WeekChart({ days }) {
   const y = (n) => T + (H - T - B) * (1 - n / max);
   const summary = days.map((d) => `${fmtShort(d.day)}: ${plural(d.arriving, 'arrival')}, ${plural(d.leaving, 'departure')}`).join('. ');
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Arrivals and departures. ${summary}`} className="w-full overflow-visible text-[11px]">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Arrivals and departures. ${summary}`} className="w-full max-w-xl overflow-visible text-[11px]">
       {ticks.map((n) => (
         <g key={n}>
           <line x1={L} x2={W - R} y1={y(n)} y2={y(n)} stroke="var(--grid-line)" strokeWidth="1" strokeDasharray={n ? '3 4' : undefined} />
@@ -133,11 +136,18 @@ export default function OverviewPage() {
   const monthDays = daysInMonth(monthFrom);
   const monthTo = addDays(monthFrom, monthDays);
   // From a week back: the week chart can look back, and a guest who arrived before the day and leaves on it is in the lists too.
-  const soon = useApi(`/api/bookings?from=${addDays(t, -7)}&to=${addDays(t, 60)}&sort=check_in&dir=asc`).data;
-  const holds = useApi('/api/bookings?when=upcoming&status=on_hold&sort=check_in&dir=asc').data;
-  const month = useApi(`/api/bookings?from=${monthFrom}&to=${monthTo}`).data;
+  const toast = useToast();
+  const [sheet, setSheet] = useState(null);
+  const soonApi = useApi(`/api/bookings?from=${addDays(t, -7)}&to=${addDays(t, 60)}&sort=check_in&dir=asc`);
+  const holdsApi = useApi('/api/bookings?when=upcoming&status=on_hold&sort=check_in&dir=asc');
+  const monthApi = useApi(`/api/bookings?from=${monthFrom}&to=${monthTo}`);
+  const soon = soonApi.data;
+  const holds = holdsApi.data;
+  const month = monthApi.data;
+  const reload = () => { soonApi.reload(); holdsApi.reload(); monthApi.reload(); };
   const me = (useApi('/api/me').data?.name ?? '').split('@')[0];
-  const roomCount = (useApi('/api/rooms').data ?? []).length;
+  const rooms = useApi('/api/rooms').data ?? [];
+  const roomCount = rooms.length;
 
   const pool = live(soon);
   const arrivals = groupRows(pool.filter((b) => b.check_in === d));
@@ -177,8 +187,9 @@ export default function OverviewPage() {
   const shown = pills && filter !== 'all' ? list.rows.filter((r) => isDone(kind, r.first.status) === (filter === 'done')) : list.rows;
   const pick = (k) => { setKind(k); setFilter('all'); };
 
-  // A booking on the calendar: the address names the view, the days and the booking, and the calendar opens it.
-  const open = (b) => router.push({ pathname: '/', query: { view: 'timeline', date: addDays(b.check_in, -3), span: 21, open: b.id } });
+  const open = (b, members) => setSheet({ mode: 'edit', booking: b, group: members?.length > 1 ? members : undefined });
+  // The same booking on the calendar: the address names the view, the days and the booking, and the calendar opens it.
+  const showInCalendar = (b) => router.push({ pathname: '/', query: { view: 'timeline', date: addDays(b.check_in, -3), span: 21, open: b.id } });
 
   const label = d === t ? 'Today' : fmtShort(d);
   const summary = [
@@ -193,9 +204,9 @@ export default function OverviewPage() {
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : ''}`} aria-busy={!ready}>
       <div className="min-w-0 space-y-6 pt-4 md:pb-4">
         <div className="flex items-center gap-4">
-          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-accent-soft text-2xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
+          <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
           <div className="min-w-0">
-            <h1 className="truncate text-3xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
+            <h1 className="truncate text-2xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
               <Bell size={16} aria-hidden="true" />
               <span>{label}: {ready ? summary : '…'}</span>
@@ -213,7 +224,7 @@ export default function OverviewPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} tone="text-accent-text" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
             <Figure title="Departures" name="Departures" value={dash(departures.length)} tone="text-danger" active={kind === 'departures'} onPick={() => pick('departures')}
@@ -227,12 +238,12 @@ export default function OverviewPage() {
           </div>
 
           {parts.week !== false && (
-            <Card className="p-5" aria-label="Week overview">
+            <Card className="p-4" aria-label="Week overview">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold">Week overview</h2>
+                <h2 className="text-base font-semibold">Week overview</h2>
                 <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
               </div>
-              <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]">
+              <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)]">
                 <div className="min-w-0">
                   <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
                     Arrivals vs. Departures
@@ -273,7 +284,7 @@ export default function OverviewPage() {
             {shown.length ? (
               <ul className="divide-y divide-line">
                 {shown.map((r, i) => (
-                  <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization', 'status']} minimal onOpen={(row) => open(row)} />
+                  <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization', 'status']} minimal onOpen={open} />
                 ))}
               </ul>
             ) : (
@@ -281,6 +292,32 @@ export default function OverviewPage() {
             )}
           </div>
         </aside>
+      )}
+
+      {sheet && (
+        <BookingSheet
+          key={sheet.booking.id}
+          {...sheet}
+          rooms={rooms}
+          onClose={() => setSheet(null)}
+          onSaved={(message) => { reload(); if (message) toast({ message, duration: 3000 }); }}
+          onShowInCalendar={showInCalendar}
+          onConfirm={async (b) => {
+            setSheet(null);
+            try {
+              await confirmHolds([b]);
+              toast({ message: 'Hold confirmed', duration: 3000 });
+              reload();
+            } catch (err) {
+              if (err instanceof NeedGuestError) {
+                setSheet({ mode: 'edit', booking: b });
+                toast({ message: err.message, important: true });
+              } else {
+                toast({ message: err.message });
+              }
+            }
+          }}
+        />
       )}
     </div>
   );
