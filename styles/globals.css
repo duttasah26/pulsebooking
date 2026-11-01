@@ -167,6 +167,30 @@
   --hold-press: rgb(240 190 70 / 0.32);
 }
 
+/* Increase Contrast (the device asks for it): firmer text, lines and field edges in both themes. Same hues, more separation. */
+@media (prefers-contrast: more) {
+  :root {
+    --ink: #1a1512;
+    --muted: #4e453e;          /* 8.5:1 on white */
+    --line: #b9b4a8;
+    --grid-line: #aaa599;
+    --field-line: #6a6158;     /* 5.7:1 */
+    --accent-text: #134f3a;
+    --ok-text: #0b5a4c;
+    --danger: #8a2616;
+  }
+  :root[data-theme="dark"] {
+    --ink: #fffaf3;
+    --muted: #cfc7bc;
+    --line: #5a544c;
+    --grid-line: #605a52;
+    --field-line: #a89e92;
+    --accent-text: #86e0b9;
+    --ok-text: #7fe0cf;
+    --danger: #ffb3a3;
+  }
+}
+
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
 /* `dark:` in class names follows the theme switch (data-theme), not the device setting directly. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
