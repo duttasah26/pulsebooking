@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Moon, Sun } from '@phosphor-icons/react';
-import { resolveTheme, useTheme } from '../lib/theme';
+import { Desktop, Moon, Sun } from '@phosphor-icons/react';
+import { useTheme } from '../lib/theme';
 
-// Light or dark in one press, in the navbar. It shows the one you would switch to. Settings has the third choice (follow the device).
+// The one appearance control, in the navbar: each press goes to the next of Light, Dark and System (follow the device). It shows the one in use.
+const NEXT = { light: 'dark', dark: 'system', system: 'light' };
+const WORD = { light: 'Light', dark: 'Dark', system: 'System' };
+const ICON = { light: Sun, dark: Moon, system: Desktop };
+
 export default function ThemeToggle() {
   const [choice, setChoice] = useTheme();
-  const [dark, setDark] = useState(false);
-  useEffect(() => setDark(resolveTheme(choice) === 'dark'), [choice]);
-  const Icon = dark ? Sun : Moon;
-  const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  const Icon = ICON[choice] ?? Desktop;
+  const label = `Appearance: ${WORD[choice] ?? 'System'}. Switch to ${WORD[NEXT[choice] ?? 'light']}`;
   return (
-    <button type="button" className="btn btn-quiet btn-icon text-muted" onClick={() => setChoice(dark ? 'light' : 'dark')} aria-label={label} title={label}>
+    <button type="button" className="btn btn-quiet btn-icon text-muted" onClick={() => setChoice(NEXT[choice] ?? 'light')} aria-label={label} title={label}>
       <Icon size={20} weight="bold" />
     </button>
   );

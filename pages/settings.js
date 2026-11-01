@@ -13,7 +13,6 @@ import { STATUS_SWATCHES, roomShade, statusColor, stayColor } from '../lib/color
 import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
 import { tabKeys } from '../lib/tabKeys';
-import { THEMES, useTheme } from '../lib/theme';
 import { OVERVIEW_PARTS, useFirstView, useOverviewParts, useRowSize, useShowDone } from '../lib/devicePrefs';
 
 /*
@@ -101,7 +100,6 @@ export default function Settings() {
   const { settings, save, textSize, setTextSize } = useSettings();
   const [firstView, setFirstView] = useFirstView();
   const [rowSize, setRowSize] = useRowSize();
-  const [theme, setTheme] = useTheme();
   const [showDone, setShowDone] = useShowDone();
   const [overview, setOverview] = useOverviewParts();
   const toast = useToast();
@@ -269,15 +267,6 @@ export default function Settings() {
             {tab === 'calendar' && (
               <>
                 <Group id="calendar" icon={CalendarBlank} title="Calendar" scope="This device only" hint="How the calendar opens and looks on this phone or computer. Other devices keep their own choices.">
-                  <Setting label="Appearance" hint="Light, dark, or follow this device's setting.">
-                    <Segmented
-                      legend="Appearance"
-                      legendHidden
-                      options={THEMES}
-                      value={theme}
-                      onChange={(v) => { setTheme(v); setSaved('Appearance changed on this device'); }}
-                    />
-                  </Setting>
                   <Setting label="First view" hint="What the calendar shows when you open it. It always starts on the current month.">
                     <Segmented
                       legend="First view"
