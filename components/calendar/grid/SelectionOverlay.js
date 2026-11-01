@@ -6,7 +6,7 @@ export function SelectionSummary({ summary }) {
   return (
     <p
       aria-live="polite"
-      className="pointer-events-none absolute right-2 top-2 z-[4] max-w-[85%] rounded-lg bg-ink px-3 py-1.5 text-sm font-medium text-canvas shadow-lg short:hidden"
+      className="pointer-events-none absolute right-2 top-2 z-[4] max-w-[85%] rounded-lg bg-bar px-3 py-1.5 text-sm font-medium text-on-ink shadow-lg short:hidden"
     >
       {summary}
     </p>

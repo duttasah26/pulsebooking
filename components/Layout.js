@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import ThemeToggle from './ThemeToggle';
 import { useRouter } from 'next/router';
 import IndiaClock from './IndiaClock';
 import GlobalSearch from './GlobalSearch';
@@ -80,6 +81,7 @@ export default function Layout({ title, wide = false, children }) {
             <IndiaClock />
             <span aria-hidden="true" className="hidden h-6 w-px bg-line lg:block" />
             <div className="flex items-center gap-1">
+            <ThemeToggle />
             {UTILITY.map(({ href, label, Icon }) => (
               <Link
                 key={href}

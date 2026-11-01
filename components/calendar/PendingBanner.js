@@ -47,7 +47,7 @@ function Change({ item: i, rooms, showName }) {
           <span className="flex items-center gap-1">
             <span className="rounded bg-surface-2 px-1.5 text-muted line-through">Room <span className="font-mono">{was.room_number}</span></span>
             <ArrowRight size={14} weight="bold" aria-hidden="true" />
-            <span className="rounded bg-ink px-1.5 font-semibold text-on-ink">Room <span className="font-mono">{nowRoom}</span></span>
+            <span className="rounded bg-bar px-1.5 font-semibold text-on-ink">Room <span className="font-mono">{nowRoom}</span></span>
           </span>
         ) : (
           <span className="rounded bg-surface-2 px-1.5 font-semibold">Room <span className="font-mono">{nowRoom}</span></span>

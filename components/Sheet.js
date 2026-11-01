@@ -45,7 +45,7 @@ export default function Sheet({ title, onClose: closeNow, children, footer, acti
 
   return (
     <div ref={root} tabIndex={-1} onKeyDown={keepFocus} className="fixed inset-0 z-40 flex items-end outline-none md:justify-end short:justify-center" role="dialog" aria-modal="true" aria-label={title}>
-      <button type="button" aria-label="Close" tabIndex={-1} className={`absolute inset-0 bg-ink/35 ${leaving ? 'animate-fade-out' : 'animate-fade'}`} onClick={locked ? undefined : onClose} />
+      <button type="button" aria-label="Close" tabIndex={-1} className={`absolute inset-0 bg-[rgb(var(--shadow-rgb)/0.35)] ${leaving ? 'animate-fade-out' : 'animate-fade'}`} onClick={locked ? undefined : onClose} />
       <div className={`${leaving ? 'animate-sheet-out' : 'animate-sheet'} relative flex max-h-[92dvh] w-full flex-col rounded-t-lg bg-surface shadow-lg md:h-full md:max-h-none ${wide ? 'md:max-w-2xl' : 'md:max-w-md'} md:rounded-none md:border-l md:border-line short:h-auto short:max-h-[96dvh] short:max-w-3xl short:rounded-t-lg`}>
         <div className="flex min-h-16 items-center justify-between gap-3 border-b border-line px-4 py-2">
           <h2 className="t-title min-w-0 truncate">{title}</h2>

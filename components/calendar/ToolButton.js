@@ -6,7 +6,7 @@
 const ON = {
   green: 'bg-accent text-accent-ink hover:bg-accent-hover active:bg-accent-hover',
   amber: 'border-hold-edge bg-hold text-hold-ink hover:bg-hold active:bg-hold',
-  ink: 'bg-ink text-on-ink hover:bg-ink active:bg-ink',
+  ink: 'bg-bar text-on-ink hover:bg-bar active:bg-bar',
 };
 
 export default function ToolButton({ icon: Icon, label, title, on, onClick, disabled, tone = 'ink', vertical = false, iconOnly = false, side = false, keyHint, tip }) {

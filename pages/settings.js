@@ -344,7 +344,7 @@ export default function Settings() {
                     <li key={r.id}>
                       <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
                         <Switch size="sm" icons={false} name={`room-${r.number}`} checked={r.active} onChange={(on) => setActive(r, on)} />
-                        <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-ink/20" style={{ backgroundColor: tone.fill }} />
+                        <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-[rgb(var(--edge-rgb)/0.2)]" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
                         {!r.active && <span className="text-[0.9375rem] text-muted">off</span>}
                       </label>

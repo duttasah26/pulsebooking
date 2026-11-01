@@ -547,7 +547,7 @@ export default function RoomGrid({
       {resize.drag && resize.drag.x !== undefined && (
         <p
           aria-live="polite"
-          className="pointer-events-none fixed z-[60] rounded-lg bg-ink px-2.5 py-1 text-sm font-medium text-canvas shadow-lg"
+          className="pointer-events-none fixed z-[60] rounded-lg bg-bar px-2.5 py-1 text-sm font-medium text-on-ink shadow-lg"
           style={{ left: resize.drag.x + 14, top: resize.drag.y + 16 }}
         >
           {rooms.find((r) => r.id === resize.drag.roomId)?.number ? `Room ${rooms.find((r) => r.id === resize.drag.roomId).number}: ` : ''}

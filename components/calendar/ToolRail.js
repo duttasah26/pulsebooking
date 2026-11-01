@@ -11,11 +11,12 @@ import ToolButton from './ToolButton';
 //   On Hold drag across free nights to place a hold, or drag a hold to change it
 //   Hand    drag the calendar to move around it
 // then Undo and Redo (zoom lives in the top toolbar, beside the month). The pane scrolls if the screen is too short for all of it.
-// The name beside a tool wears the tool's colour: New green (a booking), On Hold straw with a dashed edge (a hold), the rest ink.
+// The name beside a tool wears the tool's colour in light mode: New green (a booking), On Hold straw with a dashed edge (a hold), the rest ink.
+// In dark mode those fills would glow or vanish, so the name is a plain surface-coloured label with ink words; the edge keeps the tool's colour.
 const TIP = {
-  green: 'border-accent bg-accent text-accent-ink',
-  amber: 'border-dashed border-hold-edge bg-hold text-hold-ink',
-  ink: 'border-ink bg-ink text-on-ink',
+  green: 'border-accent bg-accent text-accent-ink dark:bg-surface dark:text-ink',
+  amber: 'border-dashed border-hold-edge bg-hold text-hold-ink dark:bg-surface dark:text-ink',
+  ink: 'border-ink bg-bar text-on-ink dark:border-field-line dark:bg-surface dark:text-ink',
 };
 
 export default function ToolRail({ canTool, quickHold, drawing, hand, touch, touchSelect, onToggleMouse, onToggleSelect, onToggleHold, onToggleHand, history, onNew, onHelp }) {

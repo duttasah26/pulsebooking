@@ -34,7 +34,7 @@ export default function GridCell({ room, d, r, i, free, selected, draw, chip, st
       onClick={onClick}
     >
       {chip && (
-        <span className="pointer-events-none rounded-lg bg-ink px-1.5 py-0.5 font-mono text-sm font-semibold text-canvas">
+        <span className="pointer-events-none rounded-lg bg-bar px-1.5 py-0.5 font-mono text-sm font-semibold text-on-ink">
           {chip}
         </span>
       )}

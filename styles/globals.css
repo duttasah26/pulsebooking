@@ -23,6 +23,7 @@
   --canvas: #f3f2ee;
   --surface: #ffffff;
   --surface-2: #efeee9;
+  --surface-3: #e8e6df;     /* a surface under the pointer: one step past --surface-2 */
   --line: #e3e1d9;
   --ink: #261f1c;
   --muted: #6f655c;
@@ -31,6 +32,8 @@
   --accent-ink: #ffffff;
   --accent-soft: #e6f0ea;
   --accent-text: #1d6b50;   /* 6.4:1 on white, 5.7:1 on the canvas */
+  --accent-hover: #155a43;  /* the green button when pointed at, and when pressed */
+  --accent-press: #0f4733;
   --chrome: #ebe9e3;        /* the track of a segmented control */
   --chrome-line: #e3e1d9;
   --grid-line: #d6d3c9;
@@ -42,11 +45,14 @@
   --hold-ink: #7a4e05;      /* 6.0:1 on the hold fill */
   --ink-rgb: 38 31 28;      /* the ink as channels, for tints and lines drawn at some opacity */
   --shadow-rgb: 38 31 28;
-  --on-ink: #ffffff;
-  --on-ink-warn: #f0d27a;   /* a warning icon and a green action on an ink bar */
-  --on-ink-ok: #8fd3b4;        /* words on an ink bar (the selection strip, toasts, the mode banner) */
-  --accent-hover: #155a43;  /* the green button when pointed at, and when pressed */
-  --accent-press: #0f4733;
+  --edge-rgb: 0 0 0;        /* a hairline or hover wash that is black in light and light in dark */
+  --shadow-k: 1;            /* how strong shadows are; dark needs more, black on near black is invisible */
+  --ring-a: 0;              /* a hairline round floating things; only dark draws it */
+  --bar: var(--ink);        /* a solid bar: selection strip, toasts, mode banner, a chosen tool. In dark it is a soft raised grey, not a bright slab */
+  --on-ink: #ffffff;        /* words on that bar */
+  --on-ink-warn: #f0d27a;   /* a warning icon and a green action on that bar */
+  --on-ink-ok: #8fd3b4;
+  --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
   --tone-light: 100%;       /* how much of a booking colour's light pastel is kept; in dark the colour's edge tints the dark surface instead */
   --tint: rgb(var(--ink-rgb) / 0.06);
   --tint-hover: rgb(var(--ink-rgb) / 0.1);
@@ -60,7 +66,6 @@
   --danger-press: #ecc5bc;
   --hold-hover: #efdc9e;
   --hold-press: #e7d085;
-  --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
   /* One motion set. Durations: quick (colour, hover), base (fades, small moves), slow (sheets, panels). Ease out for
      arrivals, ease in for exits. */
   --dur-quick: 120ms;
@@ -71,20 +76,24 @@
 }
 
 /* Dark: the same warm paper turned over. Surfaces step up in lightness (canvas, surface, surface-2); ink is warm off-white, never
-   pure white; green and red are lifted so words in them keep 4.5:1 or better on the dark surfaces. */
+   pure white; green and red are lifted so words in them keep 4.5:1 or better on the dark surfaces. Buttons, bars and the green are
+   held back (lower tint, a calmer green) so nothing glows; floating things get a hairline and a deeper shadow so they still read. */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --canvas: #151311;
   --surface: #1f1c19;
   --surface-2: #2a2622;
+  --surface-3: #322d29;
   --line: #38332e;
   --ink: #f2ede6;
   --muted: #a69d92;        /* 6.5:1 on --surface */
-  --accent: #2b8a66;       /* white on it 4.5:1; 4.1:1 against the surface as a shape */
-  --accent-strong: #7bd6b0; /* green words on a green tint (8.6:1) */
+  --accent: #23765a;       /* white on it 5.6:1; calmer than light mode's green so it sits in the dark instead of glowing */
+  --accent-strong: #74c6a3; /* green words on a green tint */
   --accent-ink: #ffffff;
-  --accent-soft: #1b3a2e;
-  --accent-text: #6ccaa2;
+  --accent-soft: #182f27;
+  --accent-text: #63b997;
+  --accent-hover: #2b8666;
+  --accent-press: #1d6249;
   --chrome: #2a2622;
   --chrome-line: #38332e;
   --grid-line: #3d3732;
@@ -96,21 +105,33 @@
   --hold-ink: #f0d58a;
   --ink-rgb: 242 237 230;
   --shadow-rgb: 0 0 0;
-  --on-ink: #1a1613;
-  --on-ink-warn: #8a5a00;
-  --on-ink-ok: #1d6b50;
-  --accent-hover: #35a077;
-  --accent-press: #3fb386;
+  --edge-rgb: 242 237 230;
+  --shadow-k: 3;
+  --ring-a: 0.12;
+  --bar: #413b35;
+  --on-ink: #f2ede6;
+  --on-ink-warn: #f0d27a;
+  --on-ink-ok: #8fd3b4;
+  --raised: #3a352f;
   --tone-light: 0%;
+  --tint: rgb(var(--ink-rgb) / 0.05);
+  --tint-hover: rgb(var(--ink-rgb) / 0.08);
+  --tint-press: rgb(var(--ink-rgb) / 0.12);
+  --btn: rgb(var(--ink-rgb) / 0.08);       /* quieter than light mode's: light tints on a dark ground glare fast */
+  --btn-hover: rgb(var(--ink-rgb) / 0.12);
+  --btn-press: rgb(var(--ink-rgb) / 0.17);
+  --btn-sm: rgb(var(--ink-rgb) / 0.06);
   --danger-btn: #3b211c;
   --danger-hover: #4a2a24;
   --danger-press: #58322b;
   --hold-hover: #4a4018;
   --hold-press: #574b1d;
-  --raised: #46403a;
 }
 
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
+/* `dark:` in class names follows the theme switch (data-theme), not the device setting directly. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
 @theme inline {
@@ -135,6 +156,8 @@
   --color-hold-edge: var(--hold-edge);
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
+  --color-bar: var(--bar);
+  --color-surface-3: var(--surface-3);
   --color-on-ink: var(--on-ink);
   --color-on-ink-warn: var(--on-ink-warn);
   --color-on-ink-ok: var(--on-ink-ok);
@@ -147,10 +170,10 @@
   --radius-md: 6px;
   --radius-lg: 6px;
   /* Shadows only on things that float over the page (sheets, popovers, toasts). */
-  --shadow-sm: 0 1px 2px rgb(var(--shadow-rgb) / 0.08);
-  --shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.1), 0 1px 2px rgb(var(--shadow-rgb) / 0.06);
-  --shadow-md: 0 4px 12px rgb(var(--shadow-rgb) / 0.08), 0 1px 3px rgb(var(--shadow-rgb) / 0.06);
-  --shadow-lg: 0 12px 32px rgb(var(--shadow-rgb) / 0.14), 0 2px 6px rgb(var(--shadow-rgb) / 0.08);
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k)));
+  --shadow: 0 1px 3px rgb(var(--shadow-rgb) / calc(0.1 * var(--shadow-k))), 0 1px 2px rgb(var(--shadow-rgb) / calc(0.06 * var(--shadow-k)));
+  --shadow-md: 0 0 0 1px rgb(var(--edge-rgb) / var(--ring-a)), 0 4px 12px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k))), 0 1px 3px rgb(var(--shadow-rgb) / calc(0.06 * var(--shadow-k)));
+  --shadow-lg: 0 0 0 1px rgb(var(--edge-rgb) / var(--ring-a)), 0 12px 32px rgb(var(--shadow-rgb) / calc(0.14 * var(--shadow-k))), 0 2px 6px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k)));
 }
 
 /* No double-tap zoom delay on anything tappable, and no grey flash on tap (pressed states are drawn instead). */
@@ -352,7 +375,7 @@ body {
 
   .btn-on, .btn-on:hover, .btn-on:active {
     @apply font-semibold text-on-ink;
-    background-color: var(--ink);
+    background-color: var(--bar);
   }
 
   .btn-inverse { @apply text-on-ink; background-color: color-mix(in srgb, var(--on-ink) 18%, transparent); }
@@ -656,4 +679,11 @@ details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-ou
   .active\:scale-95:active, .active\:scale-90:active, .active\:scale-\[0\.98\]:active, .active\:translate-y-px:active { transform: none; }
   .btn:hover { translate: none; } /* reduced motion: the hover keeps its colour and shadow, but nothing moves */
   .motion-safe\:animate-pulse { animation: none; }
+}
+
+/* In dark a solid bar (selection strip, mode banner, toasts) is only a step lighter than the canvas, so it gets a hairline of light to read as a
+   bar. Not on buttons, which keep their own focus outline. */
+:root[data-theme="dark"] :where(div, span).bg-bar {
+  outline: 1px solid rgb(var(--ink-rgb) / 0.16);
+  outline-offset: -1px;
 }

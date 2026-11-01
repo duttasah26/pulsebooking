@@ -120,7 +120,7 @@ function Recipe({ icon: Icon, title, steps, note, open = false }) {
         <ol className="space-y-4">
           {steps.map((step, i) => (
             <li key={i} className="flex gap-4">
-              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-ink font-mono text-sm font-semibold text-canvas" aria-hidden="true">{i + 1}</span>
+              <span className="grid size-7 shrink-0 place-items-center rounded-md bg-bar font-mono text-sm font-semibold text-on-ink" aria-hidden="true">{i + 1}</span>
               <p className="min-w-0 pt-0.5 text-base leading-loose"><span className="sr-only">Step {i + 1}: </span>{step}</p>
             </li>
           ))}

@@ -471,7 +471,7 @@ export default function CalendarPage() {
   // the calendar down when it appears.
   // Nothing picked yet: the Select banner below already says what to do (and has Done), so the strip waits for the first pick.
   const selectionStrip = selecting && pickedBookings.length > 0 ? (
-    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg bg-ink px-2 text-[0.9375rem] text-on-ink">
+    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg bg-bar px-2 text-[0.9375rem] text-on-ink">
       <span className="min-w-0 flex-1 shrink-0 whitespace-nowrap px-2 font-semibold">
         {pending ? 'Change not saved yet' : pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>

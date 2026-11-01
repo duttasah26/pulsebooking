@@ -25,7 +25,7 @@ const MODES = {
   select: {
     icon: CheckSquare,
     name: 'Select',
-    box: 'bg-ink text-on-ink',
+    box: 'bg-bar text-on-ink',
     iconTone: '',
     touch: 'Tap each booking to pick it, then drag its white tabs to change the days',
     mouse: 'Click bookings to pick them. Drag a picked booking to move it, or its white tabs to change the days',
@@ -33,7 +33,7 @@ const MODES = {
   hand: {
     icon: Hand,
     name: 'Hand',
-    box: 'bg-ink text-on-ink',
+    box: 'bg-bar text-on-ink',
     iconTone: '',
     touch: 'Drag the calendar to move around',
     mouse: 'Drag the calendar to move around',

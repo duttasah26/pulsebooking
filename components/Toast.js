@@ -44,7 +44,7 @@ export function ToastProvider({ children }) {
       {children}
       <div role="status" aria-live="polite" className="pointer-events-none fixed bottom-16 left-3 right-3 z-50 flex justify-start md:bottom-4 lg:left-24 lg:right-[26rem]">
         {toast && (
-          <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-lg bg-ink py-1.5 pl-4 pr-1.5 text-[0.9375rem] text-on-ink shadow-lg">
+          <div className="pointer-events-auto flex min-h-12 max-w-full items-center gap-3 rounded-lg bg-bar py-1.5 pl-4 pr-1.5 text-[0.9375rem] text-on-ink shadow-lg">
             {!toast.actionLabel && <WarningCircle size={20} weight="fill" aria-hidden="true" className="shrink-0 text-on-ink-warn" />}
             <span key={toast.id} className="min-w-0 animate-bar-in">{toast.message}</span>
             {toast.actionLabel && (
