@@ -293,6 +293,13 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
+/* A list you have just chosen from keeps the focus: no green ring each time. Keyboard focus still shows, as a plain grey edge (3:1 or better). (Not in a layer, so it
+   beats the ring above.) */
+select.field:focus-visible, select.pop-btn:focus-visible {
+  outline: none;
+  border-color: var(--field-line);
+  box-shadow: none;
+}
 
 html,
 body {
@@ -391,8 +398,6 @@ body {
     background-position: right 0.75rem center;
   }
   select.pop-btn:hover { background-color: var(--surface-3); }
-  /* A list you have just chosen from keeps the focus: no green ring each time. Keyboard focus still shows, as a plain ink edge. */
-  select.field:focus-visible, select.pop-btn:focus-visible { outline: none; border-color: var(--ink); box-shadow: none; }
   :root[data-theme="dark"] select.pop-btn {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23f2ede6' d='M181.66 170.34a8 8 0 0 1 0 11.32l-48 48a8 8 0 0 1-11.32 0l-48-48a8 8 0 0 1 11.32-11.32L128 212.69l42.34-42.35a8 8 0 0 1 11.32 0ZM85.66 85.66 128 43.31l42.34 42.35a8 8 0 0 0 11.32-11.32l-48-48a8 8 0 0 0-11.32 0l-48 48a8 8 0 0 0 11.32 11.32Z'/%3E%3C/svg%3E");
   }
