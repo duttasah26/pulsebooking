@@ -368,7 +368,9 @@ export default function CalendarPage() {
   const monthNights = Array.isArray(monthRows)
     ? monthRows.filter((b) => b.status !== 'cancelled').reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > thisMonth ? b.check_in : thisMonth, b.check_out < nextMonth ? b.check_out : nextMonth)), 0)
     : null;
+  const summaryReady = Boolean(rooms.data) && Array.isArray(todayRows) && monthNights !== null; // until then the tile is a skeleton, never a "0 staying" that is not true
   const todaySummary = useMemo(() => {
+    if (!summaryReady) return <TodaySummary loading />;
     const room = spot?.roomId != null ? (rooms.data ?? []).find((r) => r.id === spot.roomId) : null;
     let from;
     let to;
@@ -400,7 +402,7 @@ export default function CalendarPage() {
         monthName={fmtMonth(thisMonth).split(' ')[0]}
       />
     );
-  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, thisMonth]);
+  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, thisMonth, summaryReady]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;
@@ -530,10 +532,9 @@ export default function CalendarPage() {
 
   // The toolbar spans the whole width; below it the tool pane, the calendar and the booking panel all start on the same line.
   return (
-    // md:-mt-4 cancels the page's 16px top padding on desktop: the tall summary tile in the toolbar already puts about 14px above the buttons,
-    // so the title row sits as far under the navbar (about 15px) as the controls row sits under the title row.
+    // The title row sits 16px under the navbar (the page's top padding), as far as the controls row sits under it.
     // md:-mb-2 halves the page padding under the grid (16 to 8px); the grid's reserve in RoomGrid is 8px smaller to match.
-    <div className="space-y-4 md:-mb-2 md:-mt-4 short:mb-0 short:mt-0">
+    <div className="space-y-4 md:-mb-2 short:mb-0">
       <Head><title>{tabTitle}</title></Head>
       <div className="@container">
         <CalendarToolbar

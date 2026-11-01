@@ -77,10 +77,11 @@ export default function CalendarToolbar({
     set(n === 1 ? { date: d } : { date: d, span: n, view: 'timeline' }); // one day just jumps; more opens the timeline for those days
   };
   return (
-    <div className="space-y-2 md:space-y-0 short:flex short:items-center short:gap-2 short:space-y-0">
+    // On desktop the toolbar is a grid: the two rows on the left, and the Today tile on the right, centred against both of them (it is taller than a row).
+    <div className="space-y-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-4 md:gap-y-4 md:space-y-0 short:flex short:items-center short:gap-2 short:space-y-0">
       {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
       <div
-        className="flex flex-wrap items-center gap-2 short:shrink-0 short:flex-nowrap"
+        className="flex flex-wrap items-center gap-2 md:col-start-1 md:row-start-1 short:shrink-0 short:flex-nowrap"
         onTouchStart={phone ? onTouchStart : undefined}
         onTouchEnd={phone ? onTouchEnd : undefined}
         onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
@@ -119,11 +120,11 @@ export default function CalendarToolbar({
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
           </div>
         </div>
-        {summary && <div className="hidden shrink-0 md:block short:hidden">{summary}</div>}
       </div>
+      {summary && <div className="hidden md:col-start-2 md:row-span-2 md:row-start-1 md:flex md:items-center short:hidden">{summary}</div>}
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
-      <div className="no-scrollbar flex flex-wrap items-center gap-2 max-md:flex-nowrap max-md:overflow-x-auto short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
+      <div className="no-scrollbar flex flex-wrap items-center gap-2 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
         <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
         {onToggleDone && (view === 'timeline' || view === 'month') && (
