@@ -182,13 +182,13 @@ export default function Guests() {
           {/* One header row: the title on the left; on the right the three lists (Guests, Companies, Deleted) and the one action. */}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <h1 className="t-display">Guests</h1>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
               <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
                 {TABS.map(([key, label]) => (
                   <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-9">{label}</button>
                 ))}
               </div>
-              <button type="button" className="btn btn-primary" onClick={() => setOpen('new')}>
+              <button type="button" className="btn btn-primary ml-auto sm:ml-0" onClick={() => setOpen('new')}>
                 <Plus size={18} aria-hidden="true" /> New Guest
               </button>
             </div>

@@ -108,7 +108,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
-        <div className="flex shrink-0 items-center gap-2 pr-3">
+        <div className="flex shrink-0 items-center gap-3 pr-3 sm:gap-2">
           <button type="button" className="btn btn-sm" onClick={() => onConfirm(b)} aria-label={`Confirm hold, ${b.name}`}>
             <Check size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Confirm</span>
           </button>
