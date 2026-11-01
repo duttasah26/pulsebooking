@@ -332,7 +332,7 @@ export default function Bookings() {
     <Layout title="Bookings">
       <Head><title>{`${active.label} Bookings${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-5">
+        <div className="flex min-w-0 flex-col gap-5 lg:h-[calc(100dvh-5.5rem-1px)]">
           <div className="flex items-center justify-between gap-3">
             <h1 className="t-display">Bookings</h1>
             <button type="button" className="btn btn-primary" disabled={!rooms.data?.length} onClick={newBooking}>
@@ -342,13 +342,14 @@ export default function Bookings() {
 
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
-          <div className="sticky top-14 z-20 bg-canvas pb-3 pt-1">
+          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
               <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />} />
               <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
             </div>
           </div>
 
+          <div className="min-h-0 space-y-5 lg:flex-1 lg:overflow-y-auto">
           {list.error && (
             <p role="alert" className="flex flex-wrap items-center gap-3 rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">
               Could not load bookings: {list.error.message}. Check the connection and try again.
@@ -392,6 +393,7 @@ export default function Bookings() {
             </ul>
             </>
           )}
+          </div>
         </div>
 
         {wide && <FilterDock wide open={dockOpen} onToggle={setDockOpen}>{panel}</FilterDock>}

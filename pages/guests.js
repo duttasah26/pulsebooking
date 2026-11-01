@@ -178,7 +178,7 @@ export default function Guests() {
     <Layout title="Guests">
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-5">
+        <div className="flex min-w-0 flex-col gap-5 lg:h-[calc(100dvh-5.5rem-1px)]">
           {/* One header row: the title on the left; on the right the three lists (Guests, Companies, Deleted) and the one action. */}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <h1 className="t-display">Guests</h1>
@@ -194,18 +194,19 @@ export default function Guests() {
             </div>
           </div>
 
-          <Swap id={tab} className="space-y-5">
-          {tab === 'deleted' && <DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} />}
-          {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
+          <Swap id={tab} className="flex min-h-0 flex-col gap-5 lg:flex-1">
+          {tab === 'deleted' && <div className="min-h-0 lg:flex-1 lg:overflow-y-auto"><DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} /></div>}
+          {tab === 'companies' && <div className="min-h-0 lg:flex-1 lg:overflow-y-auto"><CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} /></div>}
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
-          <div className="sticky top-14 z-20 bg-canvas pb-3 pt-1">
+          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
               <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
               <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
             </div>
           </div>
+          <div className="min-h-0 space-y-5 lg:flex-1 lg:overflow-y-auto">
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
           {list.error && (
@@ -234,6 +235,7 @@ export default function Guests() {
               </ul>
             </>
           )}
+          </div>
           </>}
           </Swap>
         </div>
