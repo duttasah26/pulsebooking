@@ -85,16 +85,17 @@
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
 }
 
-/* Dark: the same warm paper turned over. Surfaces step up in lightness (canvas, surface, surface-2); ink is warm off-white, never
+/* Dark: the way Instagram, Uber and Material do it: a near-black base with clearly lighter layers above it (canvas, surface, surface-2,
+   surface-3), edges done by the step in lightness as much as by lines, text off-white and never pure white, and colour held back; ink is warm off-white, never
    pure white; green and red are lifted so words in them keep 4.5:1 or better on the dark surfaces. Buttons, bars and the green are
    held back (lower tint, a calmer green) so nothing glows; floating things get a hairline and a deeper shadow so they still read. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #151311;
-  --surface: #1f1c19;
-  --surface-2: #2a2622;
-  --surface-3: #322d29;
-  --line: #38332e;
+  --canvas: #0b0a09;
+  --surface: #171513;
+  --surface-2: #211e1b;
+  --surface-3: #2a2622;
+  --line: #2b2723;
   --ink: #ddd7ce;
   --muted: #9a9187;        /* 6.5:1 on --surface */
   --accent: #23765a;       /* white on it 5.6:1; calmer than light mode's green so it sits in the dark instead of glowing */
@@ -104,9 +105,9 @@
   --accent-text: #58a585;
   --accent-hover: #2b8666;
   --accent-press: #1d6249;
-  --chrome: #2a2622;
-  --chrome-line: #38332e;
-  --grid-line: #3d3732;
+  --chrome: #211e1b;
+  --chrome-line: #2b2723;
+  --grid-line: #332e29;
   --field-line: #7a7167;   /* 3.9:1 on --surface */
   --danger: #e68a77;       /* 7.6:1 on --surface */
   --danger-soft: #3b211c;
@@ -118,11 +119,11 @@
   --edge-rgb: 221 215 206;
   --shadow-k: 3;
   --ring-a: 0.12;
-  --bar: #3b3631;
+  --bar: #3a352f;
   --on-ink: #ddd7ce;
   --on-ink-warn: #e3c673;
   --on-ink-ok: #86c8a8;
-  --raised: #37322d;
+  --raised: #35302b;
   --pop-green: #52b184;
   --pop-green-soft: #13241c;
   --pop-red: #e27f6b;
