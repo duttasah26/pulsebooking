@@ -170,12 +170,12 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                   key={r.id}
                   type="button"
                   onClick={() => onCreate({ roomIds: [r.id], checkIn: date, checkOut: addDays(date, 1) })}
-                  className="btn group h-auto min-h-16 flex-col gap-1 px-1 py-2"
+                  className="btn group relative h-auto min-h-16 flex-col justify-center px-1 py-2"
                   aria-label={`Room ${r.number} is free. Hold it for tonight`}
                   title="Hold this room for tonight"
                 >
                   <span className="rounded-md px-2 font-mono text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{r.number}</span>
-                  <span className="flex items-center gap-1 text-sm font-medium text-hold-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><Clock size={16} aria-hidden="true" /> Hold</span>
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-1 flex items-center justify-center gap-1 text-xs font-medium text-hold-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><Clock size={12} /> Hold</span>
                 </button>
               );
             })}
