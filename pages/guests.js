@@ -179,18 +179,21 @@ export default function Guests() {
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-5">
-          <div className="flex items-center justify-between gap-3">
+          {/* One header row: the title on the left; on the right the three lists (Guests, Companies, Deleted) and the one action. */}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <h1 className="t-display">Guests</h1>
-            <button type="button" className="btn btn-primary" onClick={() => setOpen('new')}>
-              <Plus size={18} aria-hidden="true" /> New Guest
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
+                {TABS.map(([key, label]) => (
+                  <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-9">{label}</button>
+                ))}
+              </div>
+              <button type="button" className="btn btn-primary" onClick={() => setOpen('new')}>
+                <Plus size={18} aria-hidden="true" /> New Guest
+              </button>
+            </div>
           </div>
 
-          <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
-            {TABS.map(([key, label]) => (
-              <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
-            ))}
-          </div>
           <Swap id={tab} className="space-y-5">
           {tab === 'deleted' && <DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} />}
           {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
