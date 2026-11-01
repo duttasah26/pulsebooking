@@ -182,7 +182,7 @@ export default function GlobalSearch() {
       <p className="sr-only" role="status" aria-live="polite">{showing && fresh && !searching ? (total ? `${total} ${total === 1 ? 'result' : 'results'}` : 'No results') : ''}</p>
       {open && typeof document !== 'undefined' && createPortal(
         <>
-      {open && (showing || q.trim().length === 1) && <div aria-hidden="true" className="fixed inset-x-0 bottom-0 top-13 z-30 bg-ink/20" />}
+      {open && (showing || q.trim().length === 1) && <div aria-hidden="true" className="fixed inset-x-0 bottom-0 top-13 z-30 bg-[rgb(var(--shadow-rgb)/0.2)]" />}
       {open && q.trim().length === 1 && (
         <div data-gs-panel className={`${panel} p-4 text-base text-muted`}>Type 2 or more letters.</div>
       )}

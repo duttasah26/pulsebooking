@@ -9,7 +9,7 @@ import { fmtDayMonth, nightsLabel, diffDays } from '../../lib/dates';
 // coloured edge; an unchanged end is plain and says so.
 function End({ label, tone, was, now }) {
   const changed = was !== now;
-  const t = tone === 'in' ? { box: 'border-accent bg-accent-soft', ink: 'text-accent-text' } : { box: 'border-danger bg-danger-soft', ink: 'text-danger' };
+  const t = tone === 'in' ? { box: 'border-ok bg-ok-soft', ink: 'text-ok-text' } : { box: 'border-danger bg-danger-soft', ink: 'text-danger' };
   return (
     <div className={`min-w-0 rounded-lg px-2.5 py-2 ${changed ? `border-2 ${t.box}` : 'border border-line bg-surface'}`}>
       <p className={`text-sm font-semibold ${changed ? t.ink : 'text-muted'}`}>{label}</p>
@@ -47,7 +47,7 @@ function Change({ item: i, rooms, showName }) {
           <span className="flex items-center gap-1">
             <span className="rounded bg-surface-2 px-1.5 text-muted line-through">Room <span className="font-mono">{was.room_number}</span></span>
             <ArrowRight size={14} weight="bold" aria-hidden="true" />
-            <span className="rounded bg-ink px-1.5 font-semibold text-white">Room <span className="font-mono">{nowRoom}</span></span>
+            <span className="rounded bg-bar px-1.5 font-semibold text-on-ink">Room <span className="font-mono">{nowRoom}</span></span>
           </span>
         ) : (
           <span className="rounded bg-surface-2 px-1.5 font-semibold">Room <span className="font-mono">{nowRoom}</span></span>

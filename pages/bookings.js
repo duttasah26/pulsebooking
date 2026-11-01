@@ -1,6 +1,5 @@
 import { Fragment, useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import BookingSheet from '../components/booking/BookingSheet';
@@ -24,6 +23,7 @@ import { useStoredState } from '../lib/useStoredState';
 import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
 import { useSettings } from '../components/SettingsProvider';
+import { usePinned } from '../lib/pinned';
 import { colorFor, roomShade, stayColor } from '../lib/colors';
 import { addDays, diffDays, fmtMonth, fmtShort, today } from '../lib/dates';
 
@@ -54,6 +54,7 @@ const URL_DEFAULTS = {
 const CLEAR_FILTERS = { room: '', floor: '', status: '', org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', holds: '' };
 
 export default function Bookings() {
+  const { ids: pinnedIds } = usePinned();
   const toast = useToast();
   const router = useRouter();
   const { settings } = useSettings();
@@ -132,11 +133,16 @@ export default function Bookings() {
     arrival: (b) => arrivalGroup(b.check_in),
   };
   const groupMode = groupBy === 'none' ? null : groupBy || (sort === 'check_in' && !sort2 ? 'arrival' : null);
+  // Pinned bookings (a pin button sits beside Edit in a booking's details) come first, in their own group, then the rest as the list is grouped.
+  const isPinned = (b) => pinnedIds.includes(b.id) || Boolean(b.members?.some((m) => pinnedIds.includes(m.id)));
+  const pinnedRows = tab === 'deleted' ? [] : rows.filter(isPinned);
   const sections = (() => {
-    if (!groupMode) return [{ label: null, items: rows }];
-    const out = [];
+    const rest = pinnedRows.length ? rows.filter((b) => !isPinned(b)) : rows;
+    const head = pinnedRows.length ? [{ label: 'Pinned', pinned: true, items: pinnedRows }] : [];
+    if (!groupMode) return [...head, ...(rest.length ? [{ label: null, items: rest }] : [])];
+    const out = [...head];
     const seen = new Map();
-    rows.forEach((b) => {
+    rest.forEach((b) => {
       const label = groupLabel[groupMode](b);
       const at = groupMode === 'arrival' ? out.length - 1 : seen.get(label) ?? -1;
       if (at >= 0 && out[at].label === label) out[at].items.push(b);
@@ -147,6 +153,23 @@ export default function Bookings() {
     });
     return out;
   })();
+
+  // One group of the list: its heading, then its rows. The Pinned group is drawn apart (see below), the others in the one list.
+  const renderSection = (sec, si) => (
+          <Fragment key={`${si}-${sec.label}`}>
+            {sec.label && (
+              <li className="flex items-baseline justify-between gap-3 bg-surface-2 px-4 py-2 md:px-5">
+                <h3 className="t-group">{sec.label}</h3>
+                {groupMode !== 'arrival' && <span className="font-mono text-[0.9375rem] text-muted">{sec.items.length}</span>}
+              </li>
+            )}
+            {sec.items.map((b, bi) => (
+              <BookingRow key={b.id} b={b} index={bi} hidden={hidden} density={density} onOpen={(row, members) => setSheet({ mode: 'edit', booking: row, group: members?.length > 1 ? members : undefined })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
+            ))}
+          </Fragment>
+  );
+  const pinnedSec = sections[0]?.pinned ? sections[0] : null;
+  const restSections = pinnedSec ? sections.slice(1) : sections;
 
   const restore = async (b) => {
     try {
@@ -330,20 +353,25 @@ export default function Bookings() {
 
   return (
     <Layout title="Bookings">
-      <Head><title>{`${active.label} Bookings${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-4">
+        <div className="flex min-w-0 flex-col gap-5 lg:h-[calc(100dvh-5.5rem-1px)]">
           <div className="flex items-center justify-between gap-3">
             <h1 className="t-display">Bookings</h1>
-            <button type="button" className="btn btn-primary" disabled={!rooms.data?.length} onClick={newBooking}>
+            <button type="button" className="btn btn-primary sm:w-40" disabled={!rooms.data?.length} onClick={newBooking}>
               <Plus size={18} aria-hidden="true" /> New Booking
             </button>
           </div>
 
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />} />
-          <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
+          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
+            <div className="mx-auto w-full max-w-4xl space-y-3">
+              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name, initials (ZB) or month…" />} />
+              <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+            </div>
+          </div>
 
+          <div className="min-h-0 space-y-5 lg:flex-1 lg:overflow-y-auto">
           {list.error && (
             <p role="alert" className="flex flex-wrap items-center gap-3 rounded-lg bg-danger-soft px-4 py-3 text-base text-danger">
               Could not load bookings: {list.error.message}. Check the connection and try again.
@@ -370,23 +398,20 @@ export default function Bookings() {
             <>
             {/* The count is shown only when a search or filter narrowed the list (it says how many matched); otherwise screen readers still hear it. */}
             <p className={search || activeCount ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
+            {pinnedSec && (
+              // The pinned bookings stay at the top of the scrolling list while everything else scrolls under them (its own scroll if there are many).
+              <div className="sticky top-0 z-10 bg-canvas pb-3">
+                <ul className="max-h-72 divide-y divide-line overflow-y-auto rounded-lg border border-line bg-surface">
+                  {renderSection(pinnedSec, -1)}
+                </ul>
+              </div>
+            )}
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
-              {sections.map((sec, si) => (
-                <Fragment key={`${si}-${sec.label}`}>
-                  {sec.label && (
-                    <li className="flex items-baseline justify-between gap-3 bg-surface-2 px-4 py-2 md:px-5">
-                      <h3 className="t-group">{sec.label}</h3>
-                      {groupMode !== 'arrival' && <span className="font-mono text-[0.9375rem] text-muted">{sec.items.length}</span>}
-                    </li>
-                  )}
-                  {sec.items.map((b, bi) => (
-                    <BookingRow key={b.id} b={b} index={bi} hidden={hidden} density={density} onOpen={(row, members) => setSheet({ mode: 'edit', booking: row, group: members?.length > 1 ? members : undefined })} onRestore={restore} onConfirm={confirmHold} onCancelHold={cancelHold} />
-                  ))}
-                </Fragment>
-              ))}
+              {restSections.map(renderSection)}
             </ul>
             </>
           )}
+          </div>
         </div>
 
         {wide && <FilterDock wide open={dockOpen} onToggle={setDockOpen}>{panel}</FilterDock>}

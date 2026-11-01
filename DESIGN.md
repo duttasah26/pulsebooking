@@ -87,8 +87,8 @@ tab bar, check-in. Never decoration. Golden and peru accents were rejected and m
   `surface-2`, never yellow.
 - Booking, guest and floor colours are muted tints (like coloured index cards) with a firmer edge. They carry meaning on
   the calendar and are never reused for decoration.
-- Secondary text is `muted` (5.7:1 on white) and never lighter. Field edges are `field-line` (3.35:1). Light mode only;
-  the page tells the browser not to darken it.
+- Secondary text is `muted` (5.7:1 on white) and never lighter. Field edges are `field-line` (3.35:1). Two themes: light (the default tokens) and a calmer dark one set under `data-theme="dark"`;
+  components use tokens (`bg-surface`, `text-ink`, `bg-bar`, `text-on-ink`), never white or black.
 
 ## Typography
 

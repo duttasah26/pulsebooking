@@ -86,7 +86,7 @@ function StepList({ step, done, onGo }) {
               {missing ? (
                 <WarningCircle size={20} weight="fill" className="shrink-0 text-danger" />
               ) : (
-                <span className={`grid size-6 place-items-center rounded-md font-mono text-sm font-semibold ${current ? 'bg-ink text-white' : done[i] ? 'bg-accent text-accent-ink' : 'bg-ink/10'}`}>
+                <span className={`grid size-6 place-items-center rounded-md font-mono text-sm font-semibold ${current ? 'bg-bar text-on-ink' : done[i] ? 'bg-accent text-accent-ink' : 'bg-ink/10'}`}>
                   {done[i] && !current ? <Check size={14} /> : i + 1}
                 </span>
               )}
@@ -370,7 +370,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         <div>
           {allIds.length > 1 && <p className="mb-1 text-base font-medium">{forAll ? 'Times for all rooms' : `Times for Room ${numberOf(activeId)}`}</p>}
           <MomentPair>
-            <Moment icon={SignIn} tone="text-accent-text" label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
+            <Moment icon={SignIn} tone="text-ok-text" label="Check-in" id="b-in" time={timeIn} onTime={(v) => setRoomTimes(activeId, { checkInTime: v })} />
             <Moment icon={SignOut} tone="text-danger" label="Check-out" id="b-out" time={timeOut} onTime={(v) => setRoomTimes(activeId, { checkOutTime: v })} />
           </MomentPair>
         </div>
@@ -416,7 +416,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <input id="b-label" name="label" className="field" placeholder="For example, Sharma wedding party…" value={f.label} onChange={(e) => f.setLabel(e.target.value)} autoComplete="off" />
           </div>
         )}
-        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-4" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
+        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-4" style={{ backgroundColor: tone.soft ?? tone.bg, borderColor: tone.border }}>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="t-title break-words">{guestName ?? 'No guest yet'}</h3>
@@ -445,7 +445,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           </div>
 
           {/* The rest, as one short line each, with the same small icons used elsewhere. */}
-          <ul className="space-y-1.5 border-t border-black/10 pt-3 text-base">
+          <ul className="space-y-1.5 border-t border-[rgb(var(--edge-rgb)/0.1)] pt-3 text-base">
             <li className="flex items-center gap-2"><Users size={18} aria-hidden="true" className="shrink-0 text-muted" />{f.adults} {Number(f.adults) === 1 ? 'adult' : 'adults'}{Number(f.children) > 0 && <>, {f.children} {Number(f.children) === 1 ? 'child' : 'children'}</>}</li>
             <li className="flex items-center gap-2"><Megaphone size={18} aria-hidden="true" className="shrink-0 text-muted" />Booked via {f.channel}</li>
             <li className="flex items-center gap-2"><Receipt size={18} aria-hidden="true" className="shrink-0 text-muted" />{ratePlan}</li>

@@ -1,5 +1,7 @@
+import { PushPin } from '@phosphor-icons/react';
+import { useIsPinned } from '../../../lib/pinned';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Clock, SignIn, X } from '@phosphor-icons/react';
+import { Check, Clock, SignIn, X } from '@phosphor-icons/react';
 import { useSettings } from '../../SettingsProvider';
 import { colorFor, roomShade } from '../../../lib/colors';
 import { fmtShort } from '../../../lib/dates';
@@ -42,6 +44,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const c = colorFor(b, settings);
   const hold = b.status === 'on_hold';
   const finished = b.status === 'checked_out';
+  const pinned = useIsPinned(b.id);
   // A finger has no Ctrl key: on phones the Select tool makes a tap pick a booking; pressing and holding one for half a
   // second also picks it (then taps pick or unpick). With the Hold tool a finger drags the bar (touch-none stops the page scrolling instead).
   const press = useRef({ timer: null, fired: false });
@@ -106,8 +109,8 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     ...(active && !picked ? { outline: '2px solid var(--ink)', outlineOffset: '1px' } : {}),
     ...(resizing ? { outline: '3px solid var(--accent)', outlineOffset: '1px' } : {}),
     // A finished stay is also struck through: thin light diagonal lines across it.
-    ...(finished ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(38 31 28 / 0.16) 6px 7px)' } : {}),
-    ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
+    ...(finished ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgb(var(--ink-rgb) / 0.16) 6px 7px)' } : {}),
+    ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(var(--hatch-rgb) / var(--hatch-a)) 5px 7px)' } : {}),
   };
 
   // Room for text beside the bar's own padding, icons, room chip and (on a hold) the remove button.
@@ -123,9 +126,12 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   // overflow-clip, not overflow-hidden, on the bar keeps this working: clip does not make the bar a scroll container of its own.
   const pin = rows ? { left: LABEL + 6 } : { top: MONTH_HEAD + 6 };
 
+  // Only on a bar big enough for the detail lines (zoomed in): a compact bar is just the name.
+  const tick = b.status === 'confirmed' && <Check size={14} weight="bold" aria-label="Confirmed" className="ml-1 inline-block shrink-0 align-[-2px] text-ok-text" />;
   const content = (
     <>
       {picked && <MarchingDashes color={c.border} />}
+      {pinned && <PushPin size={11} weight="fill" aria-label="Pinned" className="pointer-events-none absolute right-1 top-1 hidden text-ink/60 @min-[56px]:block" />}
       {b.status === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
       {hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
       {hold && (
@@ -142,7 +148,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         </span>
       ) : (
         <span style={pin} className="sticky flex min-w-0 flex-col justify-center gap-px leading-4">
-          <span className="truncate font-semibold">{b.name}</span>
+          <span className="flex min-w-0 items-center"><span className="truncate font-semibold">{b.name}</span>{tick}</span>
           {lines.map((line) => (
             <span key={line.nodes[0].key} className="flex min-w-0 items-center gap-1 overflow-hidden font-normal">
               {line.nodes.map((n) => <span key={n.key} className="flex shrink-0 items-center gap-1">{n.node}</span>)}
@@ -191,7 +197,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         aria-label={`Cancel hold, ${label}`}
         title="Cancel this hold (Undo brings it back)"
         onClick={() => onDelete?.(b)}
-        className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-white/70 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
+        className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-surface/70 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
       >
         <X size={14} weight="bold" />
       </button>

@@ -4,8 +4,13 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Light only, on purpose: the app has no dark mode, and this stops browsers from darkening it on their own. */}
-        <meta name="color-scheme" content="light only" />
+        <meta name="color-scheme" content="light dark" />
+        {/* The device's theme choice (Settings: System, Light or Dark), applied before the first paint so a dark page never flashes white. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var c=localStorage.getItem('pulse.theme');var d=c==='dark'||(c!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){}`,
+          }}
+        />
       </Head>
       <body className="antialiased">
         <Main />

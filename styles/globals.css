@@ -12,7 +12,10 @@
   Secondary text #6f655c is 5.7:1 on white; field edges #948b80 are 3.35:1 (non text minimum 3:1).
 
   Shape: one corner, 6px. Buttons are filled, never outlined: a tinted fill for ordinary actions, emerald for the primary
-  one, no fill at all for leaving. Light mode only.
+  one, no fill at all for leaving.
+  Themes: light is the default tokens in :root; dark overrides them under :root[data-theme="dark"] (set before first paint by
+  the script in pages/_document.js, from the device's choice: Light, Dark or System). Components never hold a colour of their
+  own: tints and shadows are built from --ink-rgb and --shadow-rgb, booking colours from --tone-light (lib/colors.js).
   Layers: app nav 30, sheet 40, toast 50. Inside the room grid: bars 1, labels and headers 2, corner 3.
 */
 :root {
@@ -20,6 +23,7 @@
   --canvas: #f3f2ee;
   --surface: #ffffff;
   --surface-2: #efeee9;
+  --surface-3: #e8e6df;     /* a surface under the pointer: one step past --surface-2 */
   --line: #e3e1d9;
   --ink: #261f1c;
   --muted: #6f655c;
@@ -28,6 +32,11 @@
   --accent-ink: #ffffff;
   --accent-soft: #e6f0ea;
   --accent-text: #1d6b50;   /* 6.4:1 on white, 5.7:1 on the canvas */
+  --accent-hover: #155a43;  /* the green button when pointed at, and when pressed */
+  --ok: #117a68;            /* status: confirmed, arriving, checked in. A teal-leaning green, so it never reads as the button green (--accent), which means do this / chosen */
+  --ok-soft: #e1f2ee;
+  --ok-text: #117a68;       /* 5.4:1 on white */
+  --accent-press: #0f4733;
   --chrome: #ebe9e3;        /* the track of a segmented control */
   --chrome-line: #e3e1d9;
   --grid-line: #d6d3c9;
@@ -37,14 +46,45 @@
   --hold: #f6ebc8;          /* straw: on hold, and nothing else */
   --hold-edge: #a87708;     /* 3.96:1, a visible dashed edge */
   --hold-ink: #7a4e05;      /* 6.0:1 on the hold fill */
-  --tint: rgb(38 31 28 / 0.06);
-  --tint-hover: rgb(38 31 28 / 0.1);
-  --tint-press: rgb(38 31 28 / 0.15);
-  --btn: rgb(38 31 28 / 0.13);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
-  --btn-hover: rgb(38 31 28 / 0.19);
-  --btn-press: rgb(38 31 28 / 0.26);
-  --btn-sm: rgb(38 31 28 / 0.09);    /* a small chip: lighter than a full button, firmer than quiet */
+  --ink-rgb: 38 31 28;      /* the ink as channels, for tints and lines drawn at some opacity */
+  --shadow-rgb: 38 31 28;
+  --edge-rgb: 0 0 0;        /* a hairline or hover wash that is black in light and light in dark */
+  --shadow-k: 1;            /* how strong shadows are; dark needs more, black on near black is invisible */
+  --ring-a: 0;              /* a hairline round floating things; only dark draws it */
+  --hatch-rgb: 255 255 255; /* the diagonal lines across an on-hold bar */
+  --hatch-a: 0.55;
+  --bar: var(--ink);        /* a solid bar: selection strip, toasts, mode banner, a chosen tool. In dark it is a soft raised grey, not a bright slab */
+  --on-ink: #ffffff;        /* words on that bar */
+  --on-ink-warn: #f0d27a;   /* a warning icon and a green action on that bar */
+  --on-ink-ok: #8fd3b4;
+  --pop-green: #12806c;     /* the Overview's figures: vivid number colours and their soft fills (they are for numbers and tiles, not for buttons) */
+  --pop-green-soft: #e1f3ef;
+  --pop-red: #d03d27;
+  --pop-red-soft: #fcebe7;
+  --pop-blue: #2b62d4;
+  --pop-blue-soft: #e8eefb;
+  --pop-violet: #5b43c7;
+  --pop-violet-soft: #ece8fa;
+  --pop-amber: #b86e00;
+  --pop-amber-soft: #fbf0d6;
+  --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
+  --edge-keep: 100%;        /* how much of a booking colour's edge is kept */
+  --edge-lift: 0%;          /* how far a booking colour's edge is lifted toward white (dark does) */
+  --soft-tint: 22%;         /* how much of its colour a large panel takes (dark only; light keeps the pastel) */
+  --fill-tint: 50%;         /* how much of its edge colour fills a booking bar (only dark uses it) */
+  --tone-light: 100%;       /* how much of a booking colour's light pastel is kept; in dark the colour's edge tints the dark surface instead */
+  --tint: rgb(var(--ink-rgb) / 0.06);
+  --tint-hover: rgb(var(--ink-rgb) / 0.1);
+  --tint-press: rgb(var(--ink-rgb) / 0.15);
+  --btn: rgb(var(--ink-rgb) / 0.13);       /* an ordinary button: firmer than --tint so it reads as a button on the canvas and on white */
+  --btn-hover: rgb(var(--ink-rgb) / 0.19);
+  --btn-press: rgb(var(--ink-rgb) / 0.26);
+  --btn-sm: rgb(var(--ink-rgb) / 0.09);    /* a small chip: lighter than a full button, firmer than quiet */
   --danger-btn: #f8e7e3;
+  --danger-hover: #f2d6cf;
+  --danger-press: #ecc5bc;
+  --hold-hover: #efdc9e;
+  --hold-press: #e7d085;
   /* One motion set. Durations: quick (colour, hover), base (fades, small moves), slow (sheets, panels). Ease out for
      arrivals, ease in for exits. */
   --dur-quick: 120ms;
@@ -54,7 +94,107 @@
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
 }
 
+/* Dark: the way Instagram, Uber and Material do it: a near-black base with clearly lighter layers above it (canvas, surface, surface-2,
+   surface-3), edges done by the step in lightness as much as by lines, text off-white and never pure white, and colour held back; ink is warm off-white, never
+   pure white; green and red are lifted so words in them keep 4.5:1 or better on the dark surfaces. Buttons, bars and the green are
+   held back (lower tint, a calmer green) so nothing glows; floating things get a hairline and a deeper shadow so they still read. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0b0a09;
+  --surface: #171513;
+  --surface-2: #211e1b;
+  --surface-3: #2a2622;
+  --line: #2b2723;
+  --ink: #efeae2;
+  --muted: #aaa196;        /* 6.5:1 on --surface */
+  --accent: #2b8a66;       /* white on it 5.6:1; calmer than light mode's green so it sits in the dark instead of glowing */
+  --accent-strong: #7bd6b0; /* green words on a green tint */
+  --accent-ink: #ffffff;
+  --accent-soft: rgb(82 190 140 / 0.17);
+  --accent-text: #6ccaa2;
+  --accent-hover: #35a077;
+  --ok: #3fb8a5;
+  --ok-soft: rgb(70 200 185 / 0.15);
+  --ok-text: #62d3c1;
+  --accent-press: #2b8a66;
+  --chrome: #211e1b;
+  --chrome-line: #2b2723;
+  --grid-line: #332e29;
+  --field-line: #7a7167;   /* 3.9:1 on --surface */
+  --danger: #ff9a86;       /* 7.6:1 on --surface */
+  --danger-soft: rgb(255 130 110 / 0.15);
+  --hold: rgb(240 190 70 / 0.16);
+  --hold-edge: #d9b04a;
+  --hold-ink: #f5d98a;
+  --ink-rgb: 239 234 226;
+  --shadow-rgb: 0 0 0;
+  --edge-rgb: 239 234 226;
+  --shadow-k: 3;
+  --ring-a: 0.12;
+  --hatch-rgb: 242 237 230;
+  --hatch-a: 0.12;
+  --bar: #3a352f;
+  --on-ink: #efeae2;
+  --on-ink-warn: #f0d27a;
+  --on-ink-ok: #8fd3b4;
+  --raised: #35302b;
+  --pop-green: #5fd2c0;
+  --pop-green-soft: rgb(80 200 185 / 0.14);
+  --pop-red: #ff8f7b;
+  --pop-red-soft: rgb(255 130 110 / 0.15);
+  --pop-blue: #8db0ff;
+  --pop-blue-soft: rgb(124 166 255 / 0.16);
+  --pop-violet: #b4a3ff;
+  --pop-violet-soft: rgb(170 150 255 / 0.16);
+  --pop-amber: #f0b94f;
+  --pop-amber-soft: rgb(240 190 70 / 0.15);
+  --tone-light: 0%;
+  --edge-keep: 100%;
+  --edge-lift: 24%;
+  --fill-tint: 58%;
+  --soft-tint: 20%;
+  --tint: rgb(var(--ink-rgb) / 0.05);
+  --tint-hover: rgb(var(--ink-rgb) / 0.08);
+  --tint-press: rgb(var(--ink-rgb) / 0.12);
+  --btn: rgb(var(--ink-rgb) / 0.08);       /* quieter than light mode's: light tints on a dark ground glare fast */
+  --btn-hover: rgb(var(--ink-rgb) / 0.12);
+  --btn-press: rgb(var(--ink-rgb) / 0.17);
+  --btn-sm: rgb(var(--ink-rgb) / 0.06);
+  --danger-btn: rgb(255 130 110 / 0.15);
+  --danger-hover: rgb(255 130 110 / 0.23);
+  --danger-press: rgb(255 130 110 / 0.31);
+  --hold-hover: rgb(240 190 70 / 0.24);
+  --hold-press: rgb(240 190 70 / 0.32);
+}
+
+/* Increase Contrast (the device asks for it): firmer text, lines and field edges in both themes. Same hues, more separation. */
+@media (prefers-contrast: more) {
+  :root {
+    --ink: #1a1512;
+    --muted: #4e453e;          /* 8.5:1 on white */
+    --line: #b9b4a8;
+    --grid-line: #aaa599;
+    --field-line: #6a6158;     /* 5.7:1 */
+    --accent-text: #134f3a;
+    --ok-text: #0b5a4c;
+    --danger: #8a2616;
+  }
+  :root[data-theme="dark"] {
+    --ink: #fffaf3;
+    --muted: #cfc7bc;
+    --line: #5a544c;
+    --grid-line: #605a52;
+    --field-line: #a89e92;
+    --accent-text: #86e0b9;
+    --ok-text: #7fe0cf;
+    --danger: #ffb3a3;
+  }
+}
+
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */
+/* `dark:` in class names follows the theme switch (data-theme), not the device setting directly. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
 @theme inline {
@@ -79,6 +219,26 @@
   --color-hold-edge: var(--hold-edge);
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
+  --color-bar: var(--bar);
+  --color-pop-green: var(--pop-green);
+  --color-pop-green-soft: var(--pop-green-soft);
+  --color-pop-red: var(--pop-red);
+  --color-pop-red-soft: var(--pop-red-soft);
+  --color-pop-blue: var(--pop-blue);
+  --color-pop-blue-soft: var(--pop-blue-soft);
+  --color-pop-violet: var(--pop-violet);
+  --color-pop-violet-soft: var(--pop-violet-soft);
+  --color-pop-amber: var(--pop-amber);
+  --color-pop-amber-soft: var(--pop-amber-soft);
+  --color-surface-3: var(--surface-3);
+  --color-on-ink: var(--on-ink);
+  --color-on-ink-warn: var(--on-ink-warn);
+  --color-on-ink-ok: var(--on-ink-ok);
+  --color-accent-hover: var(--accent-hover);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-text: var(--ok-text);
+  --color-raised: var(--raised);
   --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-text), ui-sans-serif, system-ui, sans-serif; /* one typeface everywhere; figures are only set to line up in columns */
   /* One corner everywhere; rounded-md is the same corner, for small things inside a control. */
@@ -86,10 +246,10 @@
   --radius-md: 6px;
   --radius-lg: 6px;
   /* Shadows only on things that float over the page (sheets, popovers, toasts). */
-  --shadow-sm: 0 1px 2px rgb(38 31 28 / 0.08);
-  --shadow: 0 1px 3px rgb(38 31 28 / 0.1), 0 1px 2px rgb(38 31 28 / 0.06);
-  --shadow-md: 0 4px 12px rgb(38 31 28 / 0.08), 0 1px 3px rgb(38 31 28 / 0.06);
-  --shadow-lg: 0 12px 32px rgb(38 31 28 / 0.14), 0 2px 6px rgb(38 31 28 / 0.08);
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k)));
+  --shadow: 0 1px 3px rgb(var(--shadow-rgb) / calc(0.1 * var(--shadow-k))), 0 1px 2px rgb(var(--shadow-rgb) / calc(0.06 * var(--shadow-k)));
+  --shadow-md: 0 0 0 1px rgb(var(--edge-rgb) / var(--ring-a)), 0 4px 12px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k))), 0 1px 3px rgb(var(--shadow-rgb) / calc(0.06 * var(--shadow-k)));
+  --shadow-lg: 0 0 0 1px rgb(var(--edge-rgb) / var(--ring-a)), 0 12px 32px rgb(var(--shadow-rgb) / calc(0.14 * var(--shadow-k))), 0 2px 6px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k)));
 }
 
 /* No double-tap zoom delay on anything tappable, and no grey flash on tap (pressed states are drawn instead). */
@@ -133,6 +293,13 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
+/* A list you have just chosen from keeps the focus: no green ring each time. Keyboard focus still shows, as a plain grey edge (3:1 or better). (Not in a layer, so it
+   beats the ring above.) */
+select.field:focus-visible, select.pop-btn:focus-visible {
+  outline: none;
+  border-color: var(--field-line);
+  box-shadow: none;
+}
 
 html,
 body {
@@ -165,7 +332,7 @@ body {
   }
   .sw-handle {
     position: absolute; top: 50%; left: var(--edge); margin-left: var(--edge); display: grid; place-items: center;
-    width: var(--off); height: var(--off); border-radius: 9999px; background: var(--muted); color: #fff;
+    width: var(--off); height: var(--off); border-radius: 9999px; background: var(--muted); color: var(--surface);
     transform: translate(0, -50%); box-shadow: var(--shadow-sm);
     transition: width 300ms var(--spring), height 300ms var(--spring), margin 300ms var(--spring), transform 300ms var(--spring), background-color 300ms, color 300ms;
   }
@@ -177,7 +344,7 @@ body {
   .sw:hover .sw-handle::before { opacity: 0.06; transform: translate(-50%, -50%) scale(1); }
   .sw .peer:active ~ .sw-track .sw-handle::before { opacity: 0.12; transform: translate(-50%, -50%) scale(1); }
   .sw .peer:checked ~ .sw-track { background: var(--accent); border-color: var(--accent); }
-  .sw .peer:checked ~ .sw-track .sw-handle { width: var(--on); height: var(--on); margin-left: 0; transform: translate(var(--travel), -50%); background: #fff; color: var(--accent); }
+  .sw .peer:checked ~ .sw-track .sw-handle { width: var(--on); height: var(--on); margin-left: 0; transform: translate(var(--travel), -50%); background: var(--raised); color: var(--accent); }
   .sw .peer:checked ~ .sw-track .sw-handle::before { background: var(--accent); }
   .sw .peer:active ~ .sw-track .sw-handle { width: var(--press); height: var(--press); margin-left: calc(var(--edge) * -1); }
   .sw .peer:checked:active ~ .sw-track .sw-handle { margin-left: calc(var(--edge) * -1); }
@@ -215,6 +382,24 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23261f1c' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.875rem center;
+  }
+  :root[data-theme="dark"] select.field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23f2ede6' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
+  }
+  /* A pop-up button: a toolbar control that shows the current choice and opens the list of the others. The same grey as the other toolbar
+     buttons (not a white field), with up-down chevrons that say "pick one". Put it on a native <select>, so the list is the system's. */
+  select.pop-btn {
+    appearance: none;
+    background-color: var(--chrome);
+    padding-right: 2.25rem;
+    font-weight: 500;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23261f1c' d='M181.66 170.34a8 8 0 0 1 0 11.32l-48 48a8 8 0 0 1-11.32 0l-48-48a8 8 0 0 1 11.32-11.32L128 212.69l42.34-42.35a8 8 0 0 1 11.32 0ZM85.66 85.66 128 43.31l42.34 42.35a8 8 0 0 0 11.32-11.32l-48-48a8 8 0 0 0-11.32 0l-48 48a8 8 0 0 0 11.32 11.32Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+  select.pop-btn:hover { background-color: var(--surface-3); }
+  :root[data-theme="dark"] select.pop-btn {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23f2ede6' d='M181.66 170.34a8 8 0 0 1 0 11.32l-48 48a8 8 0 0 1-11.32 0l-48-48a8 8 0 0 1 11.32-11.32L128 212.69l42.34-42.35a8 8 0 0 1 11.32 0ZM85.66 85.66 128 43.31l42.34 42.35a8 8 0 0 0 11.32-11.32l-48-48a8 8 0 0 0-11.32 0l-48 48a8 8 0 0 0 11.32 11.32Z'/%3E%3C/svg%3E");
   }
   .label {
     @apply mb-2 block text-[0.9375rem] leading-5 font-semibold text-ink;
@@ -262,8 +447,8 @@ body {
     @apply font-semibold text-accent-ink;
     background-color: var(--accent);
   }
-  .btn-primary:hover, .btn-block-primary:hover { background-color: var(--accent-strong); }
-  .btn-primary:active, .btn-block-primary:active { background-color: #0f4733; }
+  .btn-primary:hover, .btn-block-primary:hover { background-color: var(--accent-hover); }
+  .btn-primary:active, .btn-block-primary:active { background-color: var(--accent-press); }
   .btn-primary:disabled, .btn-block-primary:disabled { background-color: var(--accent); }
 
   .btn-quiet { @apply text-ink; background-color: transparent; }
@@ -275,29 +460,29 @@ body {
     @apply text-danger;
     background-color: var(--danger-btn);
   }
-  .btn-danger:hover, .btn-block-danger:hover { background-color: #f2d6cf; }
-  .btn-danger:active, .btn-block-danger:active { background-color: #ecc5bc; }
+  .btn-danger:hover, .btn-block-danger:hover { background-color: var(--danger-hover); }
+  .btn-danger:active, .btn-block-danger:active { background-color: var(--danger-press); }
   .btn-danger:disabled, .btn-block-danger:disabled { background-color: var(--danger-btn); }
 
   .btn-hold, .btn-block-hold {
     @apply border-dashed border-hold-edge text-hold-ink;
     background-color: var(--hold);
   }
-  .btn-hold:hover, .btn-block-hold:hover { background-color: #efdc9e; }
-  .btn-hold:active, .btn-block-hold:active { background-color: #e7d085; }
+  .btn-hold:hover, .btn-block-hold:hover { background-color: var(--hold-hover); }
+  .btn-hold:active, .btn-block-hold:active { background-color: var(--hold-press); }
 
   .btn-on, .btn-on:hover, .btn-on:active {
-    @apply font-semibold text-white;
-    background-color: var(--ink);
+    @apply font-semibold text-on-ink;
+    background-color: var(--bar);
   }
 
-  .btn-inverse { @apply text-white; background-color: rgb(255 255 255 / 0.18); }
-  .btn-inverse:hover { background-color: rgb(255 255 255 / 0.27); }
-  .btn-inverse:active { background-color: rgb(255 255 255 / 0.36); }
+  .btn-inverse { @apply text-on-ink; background-color: color-mix(in srgb, var(--on-ink) 18%, transparent); }
+  .btn-inverse:hover { background-color: color-mix(in srgb, var(--on-ink) 27%, transparent); }
+  .btn-inverse:active { background-color: color-mix(in srgb, var(--on-ink) 36%, transparent); }
   .btn-inverse.btn-quiet { background-color: transparent; }
-  .btn-inverse.btn-quiet:active { background-color: rgb(255 255 255 / 0.2); }
-  .btn-inverse.btn-quiet:hover { background-color: rgb(255 255 255 / 0.12); }
-  .btn-inverse:focus-visible { outline-color: #ffffff; }
+  .btn-inverse.btn-quiet:active { background-color: color-mix(in srgb, var(--on-ink) 20%, transparent); }
+  .btn-inverse.btn-quiet:hover { background-color: color-mix(in srgb, var(--on-ink) 12%, transparent); }
+  .btn-inverse:focus-visible { outline-color: var(--on-ink); }
 
   /* Forms keep 44px targets and 16px type on every screen. */
   .form-area .field, .form-area .btn { @apply min-h-11 text-base lg:min-h-11 lg:text-base; }
@@ -321,10 +506,11 @@ body {
     @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-[0.9375rem] font-medium text-ink/80 lg:min-h-9;
     transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
   }
-  .seg-item:hover { @apply text-ink; background-color: rgb(255 255 255 / 0.5); }
+  .seg-item:hover { @apply text-ink; background-color: color-mix(in srgb, var(--raised) 50%, transparent); }
   .seg-item[aria-selected="true"], .seg-item[aria-current="page"], .seg-item[aria-current="step"], .seg-item[aria-pressed="true"] {
-    @apply bg-surface font-semibold text-ink;
-    box-shadow: 0 1px 2px rgb(38 31 28 / 0.14), 0 0 0 0.5px rgb(38 31 28 / 0.1);
+    @apply font-semibold text-ink;
+    background-color: var(--raised);
+    box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.14), 0 0 0 0.5px rgb(var(--shadow-rgb) / 0.1);
   }
 
   /* A group of related content: white on the canvas, hairline edge, no shadow. Never a card inside a card. */
@@ -374,7 +560,7 @@ body {
   border-radius: 6px;
   background: var(--surface);
   border: 1px solid var(--field-line);
-  box-shadow: 0 1px 3px rgb(38 31 28 / 0.2);
+  box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.2);
 }
 .zoom-range::-moz-range-track { height: 4px; border-radius: 2px; background: var(--surface-2); }
 .zoom-range::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent); }
@@ -384,7 +570,7 @@ body {
   border-radius: 6px;
   background: var(--surface);
   border: 1px solid var(--field-line);
-  box-shadow: 0 1px 3px rgb(38 31 28 / 0.2);
+  box-shadow: 0 1px 3px rgb(var(--shadow-rgb) / 0.2);
 }
 .zoom-range:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
@@ -591,4 +777,11 @@ details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-ou
   .active\:scale-95:active, .active\:scale-90:active, .active\:scale-\[0\.98\]:active, .active\:translate-y-px:active { transform: none; }
   .btn:hover { translate: none; } /* reduced motion: the hover keeps its colour and shadow, but nothing moves */
   .motion-safe\:animate-pulse { animation: none; }
+}
+
+/* In dark a solid bar (selection strip, mode banner, toasts) is only a step lighter than the canvas, so it gets a hairline of light to read as a
+   bar. Not on buttons, which keep their own focus outline. */
+:root[data-theme="dark"] :where(div, span).bg-bar {
+  outline: 1px solid rgb(var(--ink-rgb) / 0.16);
+  outline-offset: -1px;
 }

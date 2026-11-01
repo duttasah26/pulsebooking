@@ -6,7 +6,7 @@ import BookingDetails from './BookingDetails';
 //   onDone:       the form finished saving (go back to the details)
 //   onCancelEdit: leave the form without saving
 //   onClose:      the booking was deleted (close the panel or sheet)
-export default function ExistingBooking({ onPreview, editing, onCancelEdit, onDone, onClose, booking, group, rooms, isBusy, onSaved, onRemove, onConfirm, onPutOnHold, groupCount, onShowGroup, pending, onSavePending, onCancelPending }) {
+export default function ExistingBooking({ onPreview, editing, onCancelEdit, onDone, onClose, booking, group, rooms, isBusy, onSaved, onRemove, onConfirm, onPutOnHold, groupCount, onShowGroup, onShowInCalendar, pending, onSavePending, onCancelPending }) {
   // Switching between the details and the form (or to another booking) starts at the top, never halfway down.
   const top = useRef(null);
   useEffect(() => {
@@ -33,5 +33,5 @@ export default function ExistingBooking({ onPreview, editing, onCancelEdit, onDo
       </>
     );
   }
-  return <>{marker}<BookingDetails booking={booking} group={group} onSaved={onSaved} onDone={onDone} onRemoved={onClose} onRemove={onRemove} onConfirm={onConfirm} onPutOnHold={onPutOnHold} groupCount={groupCount} onShowGroup={onShowGroup} rooms={rooms} pending={pending} onSavePending={onSavePending} onCancelPending={onCancelPending} /></>;
+  return <>{marker}<BookingDetails booking={booking} group={group} onSaved={onSaved} onDone={onDone} onRemoved={onClose} onRemove={onRemove} onConfirm={onConfirm} onPutOnHold={onPutOnHold} groupCount={groupCount} onShowGroup={onShowGroup} onShowInCalendar={onShowInCalendar} rooms={rooms} pending={pending} onSavePending={onSavePending} onCancelPending={onCancelPending} /></>;
 }

@@ -100,7 +100,7 @@ export default function SelectionPanel({
                     <button
                       type="button"
                       onClick={() => onOpen(b)}
-                      className={`block w-full rounded-lg border p-4 pr-12 text-left ${b.status === 'on_hold' ? 'border-2 border-dashed' : ''}`}
+                      className={`block w-full rounded-lg border p-4 pr-14 text-left ${b.status === 'on_hold' ? 'border-2 border-dashed' : ''}`}
                       style={{ backgroundColor: c.bg, borderColor: c.border }}
                     >
                       <span className="flex items-start justify-between gap-2">
@@ -112,7 +112,7 @@ export default function SelectionPanel({
                         <span className="flex items-start gap-2">
                           <CalendarBlank size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" />
                           <span>
-                            <span className="text-accent-text">{fmtShort(b.check_in)}</span> to <span className="text-danger">{fmtShort(b.check_out)}</span>
+                            <span className="text-ok-text">{fmtShort(b.check_in)}</span> to <span className="text-danger">{fmtShort(b.check_out)}</span>
                             <span className="text-muted">, {nightsLabel(b.nights)}{times ? `, ${times}` : ''}</span>
                           </span>
                         </span>
@@ -126,7 +126,7 @@ export default function SelectionPanel({
                       onClick={() => onUnpick(b)}
                       aria-label={`Take ${b.name}, room ${b.room_number}, out of the selection`}
                       title="Take this one out of the selection"
-                      className="absolute right-2 top-2 grid size-10 place-items-center rounded-md bg-white/70 transition-colors duration-150 hover:bg-white"
+                      className="absolute right-3 top-3 grid size-8 place-items-center rounded-md bg-surface/70 transition-colors duration-150 before:absolute before:-inset-1 before:content-[''] hover:bg-surface"
                     >
                       <X size={14} weight="bold" aria-hidden="true" />
                     </button>

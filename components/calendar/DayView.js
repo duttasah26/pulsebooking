@@ -33,7 +33,7 @@ function RoomChip({ number }) {
 // A booking line. `tone` tints the whole line (arriving green, leaving red, hold yellow); `what` is the plain-words state.
 function Row({ b, tone, what, detail, onOpen }) {
   const hold = b.status === 'on_hold';
-  const bg = { arriving: 'bg-accent-soft', leaving: 'bg-danger-soft', staying: 'bg-surface', hold: 'bg-hold' }[hold ? 'hold' : tone];
+  const bg = { arriving: 'bg-ok-soft', leaving: 'bg-danger-soft', staying: 'bg-surface', hold: 'bg-hold' }[hold ? 'hold' : tone];
   return (
     <li>
       <button
@@ -46,7 +46,7 @@ function Row({ b, tone, what, detail, onOpen }) {
           <span className="block truncate text-base font-semibold">{b.name}</span>
           <span className="block text-[0.9375rem] text-muted">{detail}</span>
         </span>
-        <span className={`shrink-0 text-right text-base font-semibold ${tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-accent-text' : ''}`}>
+        <span className={`shrink-0 text-right text-base font-semibold ${tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-ok-text' : ''}`}>
           {what}
           {hold && <span className="block text-sm font-semibold text-hold-ink">On hold</span>}
         </span>
@@ -123,12 +123,12 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                     aria-label={`${fmtLong(d)}: ${c.arriving.length} arriving, ${c.leaving.length} leaving`}
                     className={`flex min-h-20 w-full flex-col items-center justify-center rounded-lg border-2 px-1 py-1 leading-tight select-none transition-[background-color,border-color] duration-150 ease-out ${
                       sel ? 'border-ink bg-surface shadow-sm' : `border-transparent ${isWeekend(d) ? 'bg-surface-2' : 'bg-surface'} hover:bg-surface-2`
-                    } ${d === todayStr ? 'ring-2 ring-accent ring-offset-2' : ''}`}
+                    }`}
                   >
                     <span className="text-sm text-muted">{fmtWeekday(d)}</span>
-                    <span className="font-mono text-lg font-semibold">{dayOfMonth(d)}</span>
+                    <span className={`font-mono text-lg font-semibold ${d === todayStr ? 'text-accent-text' : ''}`}>{dayOfMonth(d)}</span>
                     <span aria-hidden="true" className="flex gap-2 text-sm font-semibold max-sm:hidden">
-                      <span className="text-accent-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
+                      <span className="text-ok-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
                       <span className="text-danger">{c.leaving.length ? `-${c.leaving.length}` : ''}</span>
                     </span>
                   </button>
@@ -145,13 +145,8 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
 
       <div ref={bodyRef} className="space-y-4">
         <p className="sr-only" role="status" aria-live="polite">{fmtLong(date)}</p>
-      <p className="px-1 text-base text-muted">
-        <span className="font-semibold text-accent-text">{day.arriving.length} arriving</span>,{' '}
-        <span className="font-semibold text-danger">{day.leaving.length} leaving</span>, {busy.size} rooms in use, {freeRooms.length} free
-      </p>
-
       <div className="grid gap-4 lg:grid-cols-2" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: 'pan-y' }}>
-        <Section title="Arriving" count={day.arriving.length} icon={SignIn} tone="text-accent-text" empty="Nobody arrives this day.">
+        <Section title="Arriving" count={day.arriving.length} icon={SignIn} tone="text-ok-text" empty="Nobody arrives this day.">
           {day.arriving.map((b) => (
             <Row key={b.id} b={b} tone="arriving" onOpen={onOpen} what={TIME(b.check_in_time, settings.checkInTime) ? `at ${TIME(b.check_in_time, settings.checkInTime)}` : 'Arriving'} detail={`${nightsLabel(b.nights)}, leaves ${fmtDayMonth(b.check_out)}`} />
           ))}
@@ -175,12 +170,12 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                   key={r.id}
                   type="button"
                   onClick={() => onCreate({ roomIds: [r.id], checkIn: date, checkOut: addDays(date, 1) })}
-                  className="btn h-auto min-h-16 flex-col gap-1 px-1 py-2"
+                  className="btn group relative h-auto min-h-16 flex-col justify-center px-1 py-2"
                   aria-label={`Room ${r.number} is free. Hold it for tonight`}
                   title="Hold this room for tonight"
                 >
                   <span className="rounded-md px-2 font-mono text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{r.number}</span>
-                  <span className="flex items-center gap-1 text-sm font-medium text-hold-ink"><Clock size={16} aria-hidden="true" /> Hold</span>
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-1 flex items-center justify-center gap-1 text-xs font-medium text-hold-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><Clock size={12} /> Hold</span>
                 </button>
               );
             })}

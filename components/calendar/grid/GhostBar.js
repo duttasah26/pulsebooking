@@ -16,7 +16,7 @@ export default function GhostBar({ g, rows, style: placement, tone, name, onRemo
         backgroundColor: `color-mix(in srgb, ${tone.border} ${tone.fillPct ?? 18}%, transparent)`,
         borderColor: tone.border,
         // A hold is drawn hatched, as on the calendar, so a change to On hold is seen as such.
-        ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(255 255 255 / 0.55) 5px 7px)' } : {}),
+        ...(hold ? { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 5px, rgb(var(--hatch-rgb) / var(--hatch-a)) 5px 7px)' } : {}),
       }}
     >
       <span className={`min-w-0 truncate opacity-70 ${rows ? '' : '[writing-mode:vertical-rl] @min-[84px]:[writing-mode:horizontal-tb]'}`}>{name || 'New Booking'}</span>
@@ -26,7 +26,7 @@ export default function GhostBar({ g, rows, style: placement, tone, name, onRemo
           aria-label="Remove this new booking (it is not saved yet)"
           title="Remove this new booking. It is not saved yet"
           onClick={onRemove}
-          className="pointer-events-auto relative ml-auto grid size-6 shrink-0 place-items-center rounded-lg bg-transparent before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-black/10 [@media(pointer:coarse)]:before:-inset-x-3"
+          className="pointer-events-auto relative ml-auto grid size-6 shrink-0 place-items-center rounded-lg bg-transparent before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-[rgb(var(--edge-rgb)/0.1)] [@media(pointer:coarse)]:before:-inset-x-3"
         >
           <X size={14} weight="bold" />
         </button>

@@ -1,3 +1,4 @@
+import { Clock } from '@phosphor-icons/react';
 import FieldLabel from './FieldLabel';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -20,12 +21,16 @@ export default function TimeSelect({ id, name, label, icon, value, onChange, hid
   return (
     <div>
       {hideLabel ? <label htmlFor={id} className="sr-only">{label}</label> : <FieldLabel icon={icon} htmlFor={id}>{label}</FieldLabel>}
-      <select id={id} name={name ?? id} className="field" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Not set</option>
-        {options.map((t) => (
-          <option key={t} value={t}>{formatTime(t)}</option>
-        ))}
-      </select>
+      {/* A time is a form field, not a toolbar button: white with tabular numerals, and a clock at its start when there is room for it (not in the narrow boxes inside the Check-in and Check-out cards, where the whole time must fit). */}
+      <div className="relative">
+        {!hideLabel && <Clock size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />}
+        <select id={id} name={name ?? id} className={`field font-medium tabular-nums ${hideLabel ? '' : 'pl-10'}`} value={value} onChange={(e) => onChange(e.target.value)}>
+          <option value="">Not set</option>
+          {options.map((t) => (
+            <option key={t} value={t}>{formatTime(t)}</option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }

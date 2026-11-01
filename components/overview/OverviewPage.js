@@ -33,22 +33,32 @@ function Card({ className = '', children, ...rest }) {
   return <section {...rest} className={`rounded-xl border border-line bg-surface ${className}`}>{children}</section>;
 }
 
-// One of the four figures: a title, a big centred number in its colour, its name under it, and two small counts. Choosing it fills the list.
-function Figure({ title, value, name, tone, notes, active, onPick }) {
+// Each figure has its own vivid colour (tokens --pop-*), written out in full so Tailwind sees them. Chosen, a card takes its colour's edge and soft fill.
+const POP = {
+  green: { text: 'text-pop-green', on: 'border-pop-green bg-pop-green-soft shadow-[0_0_0_1px_var(--pop-green)]' },
+  red: { text: 'text-pop-red', on: 'border-pop-red bg-pop-red-soft shadow-[0_0_0_1px_var(--pop-red)]' },
+  blue: { text: 'text-pop-blue', on: 'border-pop-blue bg-pop-blue-soft shadow-[0_0_0_1px_var(--pop-blue)]' },
+  violet: { text: 'text-pop-violet', on: 'border-pop-violet bg-pop-violet-soft shadow-[0_0_0_1px_var(--pop-violet)]' },
+  amber: { text: 'text-pop-amber', on: 'border-pop-amber bg-pop-amber-soft shadow-[0_0_0_1px_var(--pop-amber)]' },
+};
+
+// One of the figures: a title, a big centred number in its colour, its name under it, and a small count. Choosing it fills the list.
+function Figure({ title, value, name, pop, notes, active, onPick }) {
+  const tone = POP[pop].text;
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onPick}
-      className={`flex flex-col rounded-xl border bg-surface p-4 text-left transition-shadow duration-150 ${active ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-line hover:shadow-md'}`}
+      className={`flex flex-col rounded-xl border p-4 text-left transition-[box-shadow,background-color] duration-150 lg:p-3 ${active ? POP[pop].on : 'border-line bg-surface hover:shadow-md'}`}
     >
       <span className="flex items-center justify-between">
         <span className="text-[0.9375rem] font-semibold">{title}</span>
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" className="text-muted" />
       </span>
-      <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none ${tone}`}>{value}</span>
+      <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none lg:mt-2 lg:text-4xl ${tone}`}>{value}</span>
       <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{name}</span>
-      <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted">
+      <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted lg:mt-2 lg:pt-2">
         {notes.map(([label, n]) => (
           <span key={label} className="flex items-baseline gap-1.5">{label} <span className="font-mono text-base font-semibold text-ink">{n}</span></span>
         ))}
@@ -59,7 +69,7 @@ function Figure({ title, value, name, tone, notes, active, onPick }) {
 
 function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = false }) {
   return (
-    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} ${tone}`}>
+    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} lg:min-h-0 ${tone}`}>
       <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{value}</p>
       <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{label}</p>
     </div>
@@ -78,7 +88,7 @@ function WeekChart({ days }) {
   const y = (n) => T + (H - T - B) * (1 - n / max);
   const summary = days.map((d) => `${fmtShort(d.day)}: ${plural(d.arriving, 'arrival')}, ${plural(d.leaving, 'departure')}`).join('. ');
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Arrivals and departures. ${summary}`} className="w-full max-w-xl overflow-visible text-[11px]">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Arrivals and departures. ${summary}`} className="w-full max-w-xl overflow-visible text-[11px] lg:h-full lg:max-w-none">
       {ticks.map((n) => (
         <g key={n}>
           <line x1={L} x2={W - R} y1={y(n)} y2={y(n)} stroke="var(--grid-line)" strokeWidth="1" strokeDasharray={n ? '3 4' : undefined} />
@@ -86,17 +96,48 @@ function WeekChart({ days }) {
         </g>
       ))}
       {days.map((d, i) => (
-        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" fill="#b9b8ae" />
+        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" style={{ fill: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />
       ))}
-      <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--muted)" strokeWidth="2" />
+      <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--pop-blue)" strokeWidth="2" />
       {days.map((d, i) => (
         <g key={d.day}>
-          <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--muted)" />
-          <text x={x(i)} y={y(d.leaving) + 4} textAnchor="middle" fill="#fff" fontWeight="600">{d.leaving}</text>
+          <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--pop-blue)" />
+          <text x={x(i)} y={y(d.leaving) + 4} textAnchor="middle" fill="var(--surface)" fontWeight="600">{d.leaving}</text>
           <text transform={`translate(${x(i) + 4} ${H - B + 14}) rotate(-45)`} textAnchor="end" fill="var(--muted)">{fmtShort(d.day)}</text>
         </g>
       ))}
     </svg>
+  );
+}
+
+// The whole page in outline, shown until every request is in, so the page appears once, complete, and never fills in piece by piece.
+function OverviewSkeleton({ panel, week }) {
+  const block = (cls, i = 0) => <div aria-hidden="true" className={`skeleton ${cls}`} style={{ animationDelay: `${i * 90}ms` }} />;
+  return (
+    <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy="true" aria-label="Loading the overview">
+      <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="flex items-center gap-4">
+            {block('size-14 shrink-0 rounded-full')}
+            <div className="space-y-2">{block('h-7 w-56 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
+          </div>
+          {block('h-11 w-44 rounded-lg')}
+        </div>
+        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl lg:h-32', i))}
+          </div>
+          {week && block('h-96 w-full rounded-xl lg:h-auto lg:flex-1', 2)}
+        </div>
+      </div>
+      {panel && (
+        <aside className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-hidden lg:border-l lg:border-t-0">
+          <div className="flex min-h-14 items-center px-4">{block('h-5 w-24 rounded-md')}</div>
+          <div className="flex gap-2 px-4 pb-3">{[0, 1, 2].map((i) => block('h-9 w-28 rounded-full', i))}</div>
+          <div className="space-y-px border-t border-line">{[0, 1, 2, 3, 4].map((i) => block('h-[4.5rem] w-full', i))}</div>
+        </aside>
+      )}
+    </div>
   );
 }
 
@@ -145,7 +186,8 @@ export default function OverviewPage() {
   const holds = holdsApi.data;
   const month = monthApi.data;
   const reload = () => { soonApi.reload(); holdsApi.reload(); monthApi.reload(); };
-  const me = (useApi('/api/me').data?.name ?? '').split('@')[0];
+  const meApi = useApi('/api/me');
+  const me = (meApi.data?.name ?? '').split('@')[0];
   const rooms = useApi('/api/rooms').data ?? [];
   const roomCount = rooms.length;
 
@@ -161,9 +203,10 @@ export default function OverviewPage() {
   const adults = inHouseList.reduce((n, b) => n + (b.adults ?? 0), 0);
   const children = inHouseList.reduce((n, b) => n + (b.children ?? 0), 0);
   const nights = live(month).reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > monthFrom ? b.check_in : monthFrom, b.check_out < monthTo ? b.check_out : monthTo)), 0);
-  const ready = Array.isArray(soon) && Array.isArray(month) && roomCount > 0;
+  const ready = Array.isArray(soon) && Array.isArray(month) && Array.isArray(holds) && meApi.data !== undefined && roomCount > 0;
   const pct = (n, of) => (of ? `${Math.round((n / of) * 100)}%` : '0%');
-  const dash = (v) => (ready ? v : '…');
+  // Until the data is in, every figure is a skeleton block the size of the number, so the page keeps its shape and nothing shows a placeholder dash.
+  const dash = (v) => (ready ? v : <span aria-hidden="true" className="skeleton inline-block h-[0.8em] w-[1.6ch] rounded-md align-baseline" />);
 
   const [ahead, setAhead] = useState(true);
   const week = range(ahead ? t : addDays(t, -7), 7).map((x) => ({
@@ -200,20 +243,21 @@ export default function OverviewPage() {
 
   // The list panel runs the full height of the page along its right edge; everything else sits in the column beside it.
   const panel = parts.cards !== false;
+  if (!ready) return <OverviewSkeleton panel={panel} week={parts.week !== false} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
-      <div className="min-w-0 space-y-6 pt-4 md:pb-4">
-        <div className="flex items-center gap-4">
+      <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
               <Bell size={16} aria-hidden="true" />
-              <span>{label}: {ready ? summary : '…'}</span>
+              {ready ? <span>{label}: {summary}</span> : <span aria-hidden="true" className="skeleton h-4 w-56 rounded-md" />}
             </p>
           </div>
         </div>
-
         <div className="flex flex-wrap items-center gap-3">
           <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[0.9375rem] font-medium">
             <CalendarBlank size={18} aria-hidden="true" className="text-muted" />
@@ -222,45 +266,46 @@ export default function OverviewPage() {
           </label>
           {d !== t && <button type="button" className="btn btn-quiet" onClick={() => setDay(t)}>Today</button>}
         </div>
+        </div>
 
-        <div className="space-y-4">
+        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} tone="text-accent-text" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
+            <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
-            <Figure title="Departures" name="Departures" value={dash(departures.length)} tone="text-danger" active={kind === 'departures'} onPick={() => pick('departures')}
+            <Figure title="Departures" name="Departures" value={dash(departures.length)} pop="red" active={kind === 'departures'} onPick={() => pick('departures')}
               notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first.status)).length)]]} />
-            <Figure title="In the house" name="Rooms in use" value={dash(inUse)} tone="text-ink" active={kind === 'house'} onPick={() => pick('house')}
+            <Figure title="In the house" name="Rooms in use" value={dash(inUse)} pop="blue" active={kind === 'house'} onPick={() => pick('house')}
               notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
-            <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} tone="text-muted" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
+            <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} pop="violet" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
               notes={[['Next 7 days', dash(thisWeek)]]} />
-            <Figure title="On hold" name="Holds" value={dash(holdRows.length)} tone="text-hold-ink" active={kind === 'holds'} onPick={() => pick('holds')}
+            <Figure title="On hold" name="Holds" value={dash(holdRows.length)} pop="amber" active={kind === 'holds'} onPick={() => pick('holds')}
               notes={[['Rooms', dash(holdRows.reduce((n, r) => n + r.rooms.length, 0))]]} />
           </div>
 
           {parts.week !== false && (
-            <Card className="p-4" aria-label="Week overview">
+            <Card className="p-4 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col" aria-label="Week overview">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-base font-semibold">Week overview</h2>
                 <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
               </div>
-              <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)]">
-                <div className="min-w-0">
+              <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:min-h-0 lg:flex-1">
+                <div className="flex min-h-0 min-w-0 flex-col">
                   <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
                     Arrivals vs. Departures
-                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm bg-[#b9b8ae]" />Arrivals</span>
-                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-muted" />Departures</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />Arrivals</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-pop-blue" />Departures</span>
                   </p>
-                  <WeekChart days={week} />
+                  <div className="min-h-0 lg:flex-1"><WeekChart days={week} /></div>
                 </div>
-                <div>
+                <div className="flex min-h-0 flex-col">
                   <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-accent-soft" text="text-accent-text" />
-                    <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-tint" />
-                    <Tile label="Available rooms" value={dash(roomCount - inUse)} />
-                    <Tile label="Occupied rooms" value={dash(inUse)} />
-                    <Tile label="Adults" value={dash(adults)} />
-                    <Tile label="Children" value={dash(children)} />
+                  <div className="grid grid-cols-2 gap-3 lg:min-h-0 lg:flex-1 lg:grid-rows-3">
+                    <Tile big label="Today" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
+                    <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
+                    <Tile label="Available rooms" tone="bg-pop-blue-soft" value={dash(roomCount - inUse)} />
+                    <Tile label="Occupied rooms" tone="bg-pop-blue-soft" value={dash(inUse)} />
+                    <Tile label="Adults" tone="bg-pop-blue-soft" value={dash(adults)} />
+                    <Tile label="Children" tone="bg-pop-blue-soft" value={dash(children)} />
                   </div>
                 </div>
               </div>
@@ -281,7 +326,11 @@ export default function OverviewPage() {
           </div>
           {pills && <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="px-4 pb-3" />}
           <div role="tabpanel" className="border-t border-line">
-            {shown.length ? (
+            {!ready ? (
+              <div aria-hidden="true" className="space-y-px">
+                {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-[4.5rem] w-full" style={{ animationDelay: `${i * 90}ms` }} />)}
+              </div>
+            ) : shown.length ? (
               <ul className="divide-y divide-line">
                 {shown.map((r, i) => (
                   <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization', 'status']} minimal onOpen={open} />

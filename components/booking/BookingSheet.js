@@ -3,8 +3,8 @@ import Sheet from '../Sheet';
 import { useLeave } from '../useLeave';
 import BookingForm from './BookingForm';
 import ExistingBooking from './ExistingBooking';
+import PinButton from '../PinButton';
 import EditButton from './EditButton';
-import { ArrowUpRight } from '@phosphor-icons/react';
 
 // The booking in a pop-up: a bottom sheet on phones, and on the Bookings and Guests tabs.
 //   mode="create": the form, to enter a new booking.
@@ -24,14 +24,11 @@ export default function BookingSheet({ onClose: closeNow, editing: editingProp, 
       onClose={onClose}
       leaving={leaving}
       locked={!existing}
+      modeless={existing}
       actions={existing && !editing ? (
         <>
-          {props.onShowInCalendar && (
-            <button type="button" className="btn btn-icon btn-quiet" aria-label="Show in calendar" title="Show in calendar" onClick={() => props.onShowInCalendar(props.booking)}>
-              <ArrowUpRight size={20} weight="bold" aria-hidden="true" />
-            </button>
-          )}
           <EditButton onClick={() => setEditing(true)} disabled={props.booking.id < 0} />
+          <PinButton booking={props.booking} />
         </>
       ) : null}
     >
@@ -51,6 +48,7 @@ export default function BookingSheet({ onClose: closeNow, editing: editingProp, 
           onPutOnHold={props.onPutOnHold}
           groupCount={props.groupCount}
           onShowGroup={props.onShowGroup}
+          onShowInCalendar={props.onShowInCalendar}
           pending={props.pending}
           onSavePending={props.onSavePending}
           onCancelPending={props.onCancelPending}

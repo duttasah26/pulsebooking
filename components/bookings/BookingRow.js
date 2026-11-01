@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Moon, Phone, User, X } from '@phosphor-icons/react';
+import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Moon, Phone, PushPin, User, X } from '@phosphor-icons/react';
+import { usePinned } from '../../lib/pinned';
 import StatusBadge from '../StatusBadge';
 import RoomNumber from '../RoomNumber';
 import { useSettings } from '../SettingsProvider';
@@ -28,6 +29,8 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
   const rooms = [...new Set(b.rooms ?? [b.room_number])].sort();
   const members = b.members?.length > 1 ? b.members : null; // the rooms of one stay, gathered on this row
   const [open, setOpen] = useState(false);
+  const { ids: pinnedIds } = usePinned();
+  const pinned = pinnedIds.includes(b.id) || Boolean(members?.some((m) => pinnedIds.includes(m.id))); // a pin beside the name, so a pinned booking is known without opening it
   const roomy = density !== 'compact';
   const chevron = !isDeleted && !members && b.status !== 'on_hold'; // its arrow sits in the same 3.5rem slot as the rooms caret, so they line up
   return (
@@ -44,6 +47,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <span className={`truncate ${minimal ? 'text-[0.9375rem]' : 'text-[1.0625rem]'} font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
+            {pinned && !isDeleted && <PushPin size={14} weight="fill" aria-label="Pinned" className="shrink-0 text-muted" />}
             {show('status') && (
               isDeleted ? (
                 <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
@@ -108,7 +112,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
-        <div className="flex shrink-0 items-center gap-2 pr-3">
+        <div className="flex shrink-0 items-center gap-3 pr-3 sm:gap-2">
           <button type="button" className="btn btn-sm" onClick={() => onConfirm(b)} aria-label={`Confirm hold, ${b.name}`}>
             <Check size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Confirm</span>
           </button>

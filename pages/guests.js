@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
-import Head from 'next/head';
 import Layout from '../components/Layout';
 import FilterDock from '../components/FilterDock';
 import SearchBox from '../components/SearchBox';
@@ -176,28 +175,36 @@ export default function Guests() {
 
   return (
     <Layout title="Guests">
-      <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
-        <div className="min-w-0 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-5 lg:h-[calc(100dvh-5.5rem-1px)]">
+          {/* One header row: the title on the left; on the right the three lists (Guests, Companies, Deleted) and the one action. */}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <h1 className="t-display">Guests</h1>
-            <button type="button" className="btn btn-primary" onClick={() => setOpen('new')}>
-              <Plus size={18} aria-hidden="true" /> New Guest
-            </button>
+            <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+              <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
+                {TABS.map(([key, label]) => (
+                  <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-9">{label}</button>
+                ))}
+              </div>
+              <button type="button" className="btn btn-primary ml-auto sm:ml-0 sm:w-40" onClick={() => setOpen('new')}>
+                <Plus size={18} aria-hidden="true" /> New Guest
+              </button>
+            </div>
           </div>
 
-          <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
-            {TABS.map(([key, label]) => (
-              <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
-            ))}
-          </div>
-          <Swap id={tab} className="space-y-4">
-          {tab === 'deleted' && <DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} />}
-          {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
+          <Swap id={tab} className="flex min-h-0 flex-col gap-5 lg:flex-1">
+          {tab === 'deleted' && <div className="min-h-0 lg:flex-1 lg:overflow-y-auto"><DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} /></div>}
+          {tab === 'companies' && <div className="min-h-0 lg:flex-1 lg:overflow-y-auto"><CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} /></div>}
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name or initials (ZB), phone, email…" />} />
-          <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+          {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
+          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
+            <div className="mx-auto w-full max-w-4xl space-y-3">
+              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name, initials (ZB), month, phone, email…" />} />
+              <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+            </div>
+          </div>
+          <div className="min-h-0 space-y-5 lg:flex-1 lg:overflow-y-auto">
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 
           {list.error && (
@@ -226,6 +233,7 @@ export default function Guests() {
               </ul>
             </>
           )}
+          </div>
           </>}
           </Swap>
         </div>

@@ -54,7 +54,7 @@ export function SegPill({ id }) {
       layoutId={id}
       aria-hidden="true"
       className="absolute inset-0 rounded-md bg-surface"
-      style={{ boxShadow: '0 1px 2px rgb(38 31 28 / 0.14), 0 0 0 0.5px rgb(38 31 28 / 0.1)' }}
+      style={{ boxShadow: '0 1px 2px rgb(var(--ink-rgb) / 0.14), 0 0 0 0.5px rgb(var(--ink-rgb) / 0.1)' }}
       transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.8 }}
     />
   );

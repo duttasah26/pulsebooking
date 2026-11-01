@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import ThemeToggle from './ThemeToggle';
 import { useRouter } from 'next/router';
 import IndiaClock from './IndiaClock';
 import GlobalSearch from './GlobalSearch';
@@ -22,7 +23,7 @@ const UTILITY = [
 // The phone's tab bar holds all six.
 const TABS = [...PLACES, ...UTILITY];
 
-// wide: the calendar uses the full screen width; the other pages stay in a readable column.
+// wide: the calendar and the Overview use the full screen width; Bookings, Guests and Settings stay in a readable, centred column.
 export default function Layout({ title, wide = false, children }) {
   const max = wide ? 'max-w-none' : 'max-w-[1280px]';
   const { pathname, query } = useRouter();
@@ -71,8 +72,10 @@ export default function Layout({ title, wide = false, children }) {
 
           {/* The header search is on the calendar page only: Bookings and Guests have their own, and Settings has nothing to search. */}
           {pathname === '/' && (
-            <div className="hidden min-w-0 flex-1 md:block short:hidden">
-              <GlobalSearch />
+            <div className="hidden min-w-0 flex-1 justify-center md:flex short:hidden">
+              <div className="w-full max-w-2xl">
+                <GlobalSearch />
+              </div>
             </div>
           )}
 
@@ -80,6 +83,7 @@ export default function Layout({ title, wide = false, children }) {
             <IndiaClock />
             <span aria-hidden="true" className="hidden h-6 w-px bg-line lg:block" />
             <div className="flex items-center gap-1">
+            <ThemeToggle />
             {UTILITY.map(({ href, label, Icon }) => (
               <Link
                 key={href}

@@ -5,6 +5,9 @@ import ExistingBooking from '../booking/ExistingBooking';
 import SelectionPanel from './SelectionPanel';
 import Sheet from '../Sheet';
 import EditButton from '../booking/EditButton';
+import PinButton from '../PinButton';
+import { useSettings } from '../SettingsProvider';
+import { colorFor } from '../../lib/colors';
 
 /*
   The booking panel of the calendar.
@@ -19,6 +22,7 @@ export default function BookingPanel({
   selection, onOpenFromSelection, onConfirmAll, onDeleteAll, onCloseSelection,
   pending, onSavePending, onCancelPending, editSelection, onEditSelection, onSaveNames, onUnpick, onEditMany, onHoldAll, onPreview, renderSide,
 }) {
+  const { settings } = useSettings();
   const setEditing = (editing) => setPanel((p) => (p ? { ...p, editing } : p));
   const title = panel ? panelBooking.name : 'New Booking';
 
@@ -101,6 +105,7 @@ export default function BookingPanel({
   const actions = (
     <>
       {panel && !panel.editing && <EditButton onClick={() => setEditing(true)} disabled={panelBooking.id < 0} />}
+      {panel && !panel.editing && <PinButton booking={panelBooking} />}
     </>
   );
 
@@ -114,6 +119,7 @@ export default function BookingPanel({
       title={title}
       actions={actions}
       tab={panel ? (panelBooking.status === 'on_hold' ? 'Hold open' : panelBooking.name) : 'New Booking'}
+      tabColor={panel ? colorFor(panelBooking, settings) : undefined}
       tabMark={Boolean(panel)}
     >
       {panel ? (

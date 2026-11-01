@@ -19,7 +19,6 @@ import HelpGuide from './HelpGuide';
 // changes size when the panel opens or closes.
 const WITH_TOOLS = { open: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]', folded: 'lg:grid-cols-[4.5rem_minmax(0,1fr)_2.75rem]' };
 import { useToast } from '../Toast';
-import Head from 'next/head';
 import Presence from '../Presence';
 import { useSettings } from '../SettingsProvider';
 import { useMediaQuery } from '../../lib/useMediaQuery';
@@ -27,6 +26,7 @@ import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
+import PinnedBookings from './PinnedBookings';
 import { useApi } from '../../lib/useApi';
 import { useShowDone } from '../../lib/devicePrefs';
 import { useBookingData } from './useBookingData';
@@ -360,7 +360,16 @@ export default function CalendarPage() {
   // room over the days on screen; a cell is that room on that day. Counted from the bookings already loaded (cancelled ones left out).
   // The plain "Today" counts come from their own request (yesterday to tomorrow), so they stay right when the calendar shows another month.
   const todayRows = useApi(mounted ? `/api/bookings?from=${addDays(today(), -1)}&to=${addDays(today(), 1)}` : null).data;
+  // Room nights sold this month (every night of every room, cancelled stays left out; the same count the Overview's month figure uses).
+  const thisMonth = monthStart(today());
+  const nextMonth = addMonths(thisMonth, 1);
+  const monthRows = useApi(mounted ? `/api/bookings?from=${thisMonth}&to=${nextMonth}` : null).data;
+  const monthNights = Array.isArray(monthRows)
+    ? monthRows.filter((b) => b.status !== 'cancelled').reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > thisMonth ? b.check_in : thisMonth, b.check_out < nextMonth ? b.check_out : nextMonth)), 0)
+    : null;
+  const summaryReady = Boolean(rooms.data) && Array.isArray(todayRows) && monthNights !== null; // until then the tile is a skeleton, never a "0 staying" that is not true
   const todaySummary = useMemo(() => {
+    if (!summaryReady) return <TodaySummary loading />;
     const room = spot?.roomId != null ? (rooms.data ?? []).find((r) => r.id === spot.roomId) : null;
     let from;
     let to;
@@ -381,6 +390,11 @@ export default function CalendarPage() {
     const source = !spot && !room && Array.isArray(todayRows) ? todayRows : bookingList;
     const live = source.filter((b) => b.status !== 'cancelled' && (!room || b.room_id === room.id));
     const stayers = live.filter((b) => b.check_in <= to && b.check_out > from);
+    // The month line follows what was picked: a room's own nights when a room is picked, the whole property's otherwise. One cell (a day in a
+    // room) answers the real question, free or who is staying, instead of a count.
+    const nightsIn = (list) => list.filter((b) => b.status !== 'cancelled').reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > thisMonth ? b.check_in : thisMonth, b.check_out < nextMonth ? b.check_out : nextMonth)), 0);
+    const monthShown = room && Array.isArray(monthRows) ? nightsIn(monthRows.filter((b) => b.room_id === room.id)) : monthNights;
+    const cell = spot?.d && room ? { free: stayers.length === 0, name: stayers[0]?.name } : null;
     return (
       <TodaySummary
         label={label}
@@ -388,9 +402,13 @@ export default function CalendarPage() {
         leaving={live.filter((b) => b.check_out >= from && b.check_out <= to).length}
         staying={room ? stayers.length : new Set(stayers.map((b) => b.room_id)).size}
         total={room ? undefined : (rooms.data ?? []).length || undefined}
+        monthNights={monthShown}
+        inRoom={Boolean(room)}
+        cell={cell}
+        monthName={fmtMonth(thisMonth).split(' ')[0]}
       />
     );
-  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view]);
+  }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, monthRows, thisMonth, nextMonth, summaryReady]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;
@@ -462,7 +480,7 @@ export default function CalendarPage() {
   // the calendar down when it appears.
   // Nothing picked yet: the Select banner below already says what to do (and has Done), so the strip waits for the first pick.
   const selectionStrip = selecting && pickedBookings.length > 0 ? (
-    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg bg-ink px-2 text-[0.9375rem] text-white">
+    <div role="status" data-below-grid className="no-scrollbar flex h-14 items-center gap-2 overflow-x-auto rounded-lg bg-bar px-2 text-[0.9375rem] text-on-ink">
       <span className="min-w-0 flex-1 shrink-0 whitespace-nowrap px-2 font-semibold">
         {pending ? 'Change not saved yet' : pickedBookings.length > 0 ? `${pickedBookings.length} selected` : 'Tap a booking to pick it'}
       </span>
@@ -501,7 +519,7 @@ export default function CalendarPage() {
         )}
         <button
           type="button"
-          className="btn btn-inverse shrink-0 max-sm:px-2.5"
+          className="btn shrink-0 bg-surface font-semibold text-ink hover:bg-surface-2 active:bg-surface-2 max-sm:px-2.5"
           onClick={() => (pickedBookings.length === 0 ? toggleMouseTool() : stopSelecting())}
           title={pickedBookings.length === 0 ? 'Leave Select' : 'Let go of everything picked (or press Esc)'}
         >
@@ -512,16 +530,11 @@ export default function CalendarPage() {
     </div>
   ) : null;
 
-  // The browser tab says what is on screen: the open booking, or the view and the days (Layout supplies the plain "Calendar").
-  const VIEW_NAMES = { timeline: 'Timeline', month: 'Month', calendar: 'Occupancy', day: 'Day' };
-  const tabTitle = panelBooking && !selection
-    ? `${panelBooking.name}, Room ${panelBooking.room_number} | Pulse Rooms`
-    : `${VIEW_NAMES[view] ?? 'Calendar'}: ${monthAligned && shift === 0 ? fmtMonth(date) : calendarTitle(view, shownDate, span)} | Pulse Rooms`;
-
   // The toolbar spans the whole width; below it the tool pane, the calendar and the booking panel all start on the same line.
   return (
-    <div className="space-y-4">
-      <Head><title>{tabTitle}</title></Head>
+    // The title row sits 16px under the navbar (the page's top padding), as far as the controls row sits under it.
+    // md:-mb-2 halves the page padding under the grid (16 to 8px); the grid's reserve in RoomGrid is 8px smaller to match.
+    <div className="space-y-4 md:-mb-2 short:mb-0">
       <div className="@container">
         <CalendarToolbar
           view={view}
@@ -677,6 +690,7 @@ export default function CalendarPage() {
         </div>
 
         <BookingPanel
+          renderSide={() => <PinnedBookings except={panel?.booking?.id} />}
           wide={wide}
           formOpen={formOpen}
           onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change

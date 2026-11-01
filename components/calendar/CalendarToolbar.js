@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react';
-import Switch from '../Switch';
-import { ArrowUUpLeft, Eye, EyeSlash, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import { useMotionBits } from '../../lib/useMotionBits';
-import FloorToggle from './FloorToggle';
 import { ZoomControl } from './ZoomBar';
 import RangePopover from './RangePopover';
+import ViewMenu from './ViewMenu';
 import { SPANS } from './useCalendarParams';
 import { daysInMonth, monthStart, today } from '../../lib/dates';
 
@@ -34,7 +33,8 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
     onResetView();
   };
   return (
-    <select aria-label="Days shown" className="field !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
+    // A pop-up button: grey like View and zoom, showing the current choice.
+    <select aria-label="Days shown" className="btn pop-btn !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
       {SPANS.map((n) => <option key={n} value={n}>{n} days</option>)}
       <option value="month">This month</option>
       {!preset && !monthAligned && <option value={span}>{span} days (custom)</option>}
@@ -77,10 +77,12 @@ export default function CalendarToolbar({
     set(n === 1 ? { date: d } : { date: d, span: n, view: 'timeline' }); // one day just jumps; more opens the timeline for those days
   };
   return (
-    <div className="space-y-4 short:flex short:items-center short:gap-2 short:space-y-0">
+    // On desktop the toolbar is a grid: the two rows on the left, and the Today tile on the right as tall as both of them together, so its top
+    // lines up with the title row's and its bottom with the controls row's.
+    <div className="space-y-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-4 md:gap-y-4 md:space-y-0 short:flex short:items-center short:gap-2 short:space-y-0">
       {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
       <div
-        className="flex flex-wrap items-center gap-2 short:shrink-0 short:flex-nowrap"
+        className="flex flex-wrap items-center gap-2 md:col-start-1 md:row-start-1 short:shrink-0 short:flex-nowrap"
         onTouchStart={phone ? onTouchStart : undefined}
         onTouchEnd={phone ? onTouchEnd : undefined}
         onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
@@ -119,21 +121,18 @@ export default function CalendarToolbar({
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
           </div>
         </div>
-        {summary && <div className="hidden shrink-0 md:block short:hidden">{summary}</div>}
       </div>
+      {summary && <div className="hidden md:col-start-2 md:row-span-2 md:row-start-1 md:flex md:items-stretch short:hidden">{summary}</div>}
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
-      <div className="no-scrollbar flex flex-wrap items-center gap-2 max-md:flex-nowrap max-md:overflow-x-auto short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
+      <div className="no-scrollbar flex flex-wrap items-center gap-2 md:gap-3 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
-        <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
-        {onToggleDone && (view === 'timeline' || view === 'month') && (
-          <label title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 px-1 text-base font-medium text-ink lg:min-h-10 lg:text-[0.9375rem]">
-            <Switch size="sm" icons OnIcon={Eye} OffIcon={EyeSlash} checked={showDone} onChange={() => onToggleDone()} />
-            Checked out
-          </label>
-        )}
-        {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
-        {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
+        <ViewMenu floorKeys={floorKeys} shownFloors={shownFloors} onToggleFloor={onToggleFloor} showDone={showDone} onToggleDone={onToggleDone && (view === 'timeline' || view === 'month') ? onToggleDone : undefined} />
+        {/* Range and zoom are one group: how much of the calendar you see. */}
+        <div className="flex items-center gap-2">
+          {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
+          {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
+        </div>
       </div>
 
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that

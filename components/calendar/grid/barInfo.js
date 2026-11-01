@@ -1,3 +1,4 @@
+import { Moon, SignIn, SignOut, User } from '@phosphor-icons/react';
 import { dayOfMonth, fmtShort, nightsLabel } from '../../../lib/dates';
 
 // What a booking bar says besides the name, packed to the room the bar really has (its measured width and height).
@@ -12,11 +13,13 @@ const GAP = 4;
 let CH = 8.4;
 const CHIP_PAD = 8;
 
+// The soft fills are see-through tints in dark, so a chip lays its tint over the page surface first and keeps its own clean colour on any bar.
+const over = (token) => `bg-surface bg-[image:linear-gradient(var(--${token}),var(--${token}))]`;
 const CHIP = {
-  in: 'bg-white/80 text-accent-text',
-  out: 'bg-white/80 text-danger',
-  confirmed: 'bg-accent-soft text-accent-text',
-  on_hold: 'bg-hold text-hold-ink',
+  in: 'bg-surface/80 text-ok-text',
+  out: 'bg-surface/80 text-danger',
+  confirmed: `${over('ok-soft')} text-ok-text`,
+  on_hold: `${over('hold')} text-hold-ink`,
   checked_in: 'bg-accent text-accent-ink',
   checked_out: 'bg-surface-2 text-muted',
   cancelled: 'bg-surface-2 text-muted',
@@ -24,9 +27,11 @@ const CHIP = {
 export const STATUS_WORD = { confirmed: 'Confirmed', on_hold: 'On hold', checked_in: 'Checked in', checked_out: 'Checked out', cancelled: 'Cancelled' };
 
 function Chip({ tone, children }) {
-  return <span className={`shrink-0 whitespace-nowrap rounded px-1 font-semibold ${CHIP[tone] ?? 'bg-white/80'}`}>{children}</span>;
+  return <span className={`shrink-0 whitespace-nowrap rounded px-1 font-semibold ${CHIP[tone] ?? 'bg-surface/80'}`}>{children}</span>;
 }
 const chipW = (text) => String(text).length * CH + CHIP_PAD;
+const ICON = 14; // an icon's width, as on the booking rows: a symbol and a number say what a word used to
+const iconW = (text) => ICON + 4 + String(text).length * CH;
 
 // Each item: variants, widest first, as { w, node }.
 function items(b, roomTone, hold) {
@@ -40,16 +45,24 @@ function items(b, roomTone, hold) {
   }
   out.push({ key: 'dates', variants: dateVariants });
 
-  const word = STATUS_WORD[b.status] ?? b.status;
-  out.push({ key: 'status', variants: [{ w: chipW(word), node: <Chip tone={b.status}>{word}</Chip> }] });
+  // A confirmed booking is the usual case, so it is not written out: a green tick beside the name says it (see BookingBar). The others keep their word.
+  if (b.status !== 'confirmed') {
+    const word = STATUS_WORD[b.status] ?? b.status;
+    out.push({ key: 'status', variants: [{ w: chipW(word), node: <Chip tone={b.status}>{word}</Chip> }] });
+  }
 
+  // Nights and guests are an icon and a number, as on the booking rows (a moon and 5, a person and 2).
   out.push({
     key: 'nights',
-    variants: [
-      { w: nightsLabel(b.nights).length * CH, node: <span className="whitespace-nowrap font-mono font-semibold">{nightsLabel(b.nights)}</span> },
-      { w: `${b.nights}n`.length * CH, node: <span className="whitespace-nowrap font-mono font-semibold">{b.nights}n</span> },
-    ],
+    variants: [{ w: iconW(b.nights), node: <span title={nightsLabel(b.nights)} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><Moon size={ICON} aria-hidden="true" />{b.nights}<span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span></span> }],
   });
+  if (b.adults != null) {
+    const guests = b.adults + (b.children ?? 0);
+    out.push({
+      key: 'guests',
+      variants: [{ w: iconW(guests), node: <span title={`${guests} ${guests === 1 ? 'guest' : 'guests'}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><User size={ICON} aria-hidden="true" />{guests}<span className="sr-only">guests</span></span> }],
+    });
+  }
 
   if (!hold) { // a hold already carries its room number at the left of the bar
     out.push({
@@ -57,8 +70,8 @@ function items(b, roomTone, hold) {
       variants: [{ w: chipW(b.room_number), node: <span className="shrink-0 rounded px-1 font-mono font-semibold" style={{ backgroundColor: roomTone.fill, boxShadow: `inset 0 0 0 1px ${roomTone.edge}` }}>{b.room_number}</span> }],
     });
   }
-  if (b.check_in_time) out.push({ key: 'tin', variants: [{ w: chipW(`in ${b.check_in_time}`), node: <Chip tone="in">in {b.check_in_time}</Chip> }, { w: chipW(b.check_in_time), node: <Chip tone="in">{b.check_in_time}</Chip> }] });
-  if (b.check_out_time) out.push({ key: 'tout', variants: [{ w: chipW(`out ${b.check_out_time}`), node: <Chip tone="out">out {b.check_out_time}</Chip> }, { w: chipW(b.check_out_time), node: <Chip tone="out">{b.check_out_time}</Chip> }] });
+  if (b.check_in_time) out.push({ key: 'tin', variants: [{ w: chipW(b.check_in_time) + ICON + 2, node: <Chip tone="in"><span className="flex items-center gap-0.5"><SignIn size={ICON} aria-hidden="true" /><span className="sr-only">in </span>{b.check_in_time}</span></Chip> }, { w: chipW(b.check_in_time), node: <Chip tone="in">{b.check_in_time}</Chip> }] });
+  if (b.check_out_time) out.push({ key: 'tout', variants: [{ w: chipW(b.check_out_time) + ICON + 2, node: <Chip tone="out"><span className="flex items-center gap-0.5"><SignOut size={ICON} aria-hidden="true" /><span className="sr-only">out </span>{b.check_out_time}</span></Chip> }, { w: chipW(b.check_out_time), node: <Chip tone="out">{b.check_out_time}</Chip> }] });
   return out;
 }
 
