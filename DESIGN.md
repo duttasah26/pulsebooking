@@ -68,8 +68,8 @@ components:
 
 A front desk tool, not a showcase. One person, often older, often on a phone, often mid-conversation with a guest. The
 thesis is **the register**: ink on paper, every room number, date and count set in hyperlegible figures, one green action
-per screen, and every state told in words and shape as well as colour. The thing it is remembered by is its type: Atkinson
-Hyperlegible, drawn by the Braille Institute for low vision readers, which is who works this desk.
+per screen, and every state told in words and shape as well as colour. The thing it is remembered by is its type: one round,
+open typeface (Outfit) for every word and every number.
 
 ## Colors
 
@@ -145,7 +145,7 @@ Status is told by shape too: on hold is dashed and hatched.
   Search comes before Filter & Sort. Switching between a booking's details and its form starts at the top.
 - **Labels**: title case, verb first, the same name through the whole flow (Save Changes on bookings and guests, Put
   on Hold everywhere). An ellipsis only when the button opens more choices (Go to…, Custom range…).
-- **Icons**: Phosphor only, **bold** by default (its stroke matches Atkinson), **fill** for the chosen tab or tool. A
+- **Icons**: Phosphor only, **bold** by default (its stroke matches the sturdy letters), **fill** for the chosen tab or tool. A
   text button carries no icon unless the icon carries meaning: add (plus), delete (trash), hold (clock), help (question).
   Cancel, Save, Confirm, Back, Retry, Edit and View are words alone. Field labels are words alone. Card titles in the booking
   forms carry a small muted icon, and Check-in and Check-out carry their symbols (green, brick), so stacked cards can be told apart.
@@ -168,9 +168,24 @@ Status is told by shape too: on hold is dashed and hatched.
   (Occupancy's 3/18, the Day strip's +1 and -1) are left to the screen reader label and the line below.
 - **Today line**: beside the title, one line of counts (arriving, leaving, staying), each a symbol, a figure and a word.
   No tiles.
-- **Lists** (bookings, guests): one white card of rows with hairline dividers. A booking row starts with a small square in
-  its colour (no side stripe), then the name in headline type, the room as a floor coloured key tag in figures, the dates
-  (check-in green, check-out brick) and the status tag. A guest row starts with the guest's initials in a tinted square.
+- **Lists** (bookings, guests): one white card of rows with hairline dividers. A booking row has two lines. The first:
+  a small square in the booking's colour (no side stripe), the name in headline type and the status tag. The second: the
+  rooms, the dates (plain bold ink, no green or red), the nights with a moon and the guests with a person, then
+  organization and contact when the view shows them. A chevron at the right edge says the row opens; a stay in several
+  rooms has a caret in the same fixed slot instead, so the two line up. Rooms are floor coloured chips in figures, the
+  same chip as in the booking forms (`components/RoomNumber.js`); a stay in several rooms says "N rooms" and then one
+  chip per floor holding that floor's count. The nights and guests stay together when the line wraps. A guest row
+  starts with the guest's initials in a tinted square. The search results show bookings the same way.
+  The quiet form (`minimal`, used in the Overview panel): name, then the room, dates, nights and guests in small plain
+  text, no status tag.
+- **Overview page** (its own tab after Guests, full screen width): a greeting with the signed-in name (the part before
+  any @) and a bell line of the day's counts; a day picker (today to 7 days back, up to 59 ahead); five figure cards
+  (Arrivals, Departures, In the house, Upcoming, On hold), each with a large number in its colour that also chooses the
+  list; a Week overview card (past or next 7 days) with arrivals as grey bars and departures as a line with boxed
+  numbers, plus occupancy tiles; and a full-height list panel along the right edge with filter pills (arrivals: all, not
+  checked in, checked in; departures: all, still in, checked out). A row opens the booking in a sheet on the same page,
+  with an arrow button that shows it on the calendar. The same arrow is in the Bookings tab's details.
+- **Checked-out bars** on the calendar are faded and crossed by thin, light diagonal lines.
 - **Filter panel**: Show is a list where the chosen filter is solid ink; folded sections are plain rows divided by
   hairlines, with an ink count when something inside is on.
 - **Cards**: white on the canvas, a hairline edge, 20px inside (24px for settings groups), no shadow. A card holds one
