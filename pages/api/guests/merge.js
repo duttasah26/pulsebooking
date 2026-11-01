@@ -16,7 +16,7 @@ async function merge(req, res) {
   const today = new Date().toISOString().slice(0, 10);
 
   const result = await sql.begin(async (tx) => {
-    const rows = await tx`SELECT id, name, phone, email, notes, organization, color FROM guests WHERE id IN (${keepId}, ${goneId}) FOR UPDATE`;
+    const rows = await tx`SELECT id, name, phone, email, notes, organization, color FROM guests WHERE id IN (${keepId}, ${goneId}) AND deleted_at IS NULL FOR UPDATE`;
     const keep = rows.find((g) => g.id === keepId);
     const gone = rows.find((g) => g.id === goneId);
     if (!keep || !gone) throw new HttpError(404, 'Guest not found');

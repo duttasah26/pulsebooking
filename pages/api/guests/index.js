@@ -32,7 +32,8 @@ async function list(req, res) {
     if (floors.length) stayed.push(sql`x.room_id IN (SELECT id FROM rooms WHERE left(number, 1) IN ${sql(floors)})`);
   }
   if (from || to) stayed.push(sql`x.stay && daterange(${from ? parseDate(from, 'from') : '-infinity'}::date, ${to ? parseDate(to, 'to') : 'infinity'}::date, '[)')`);
-  const conditions = [];
+  // Deleted guests stay out of every list; deleted=1 lists only them (the Deleted tab, each with Restore).
+  const conditions = [req.query.deleted === '1' ? sql`g.deleted_at IS NOT NULL` : sql`g.deleted_at IS NULL`];
   if (req.query.org) {
     const orgLike = `%${String(req.query.org).trim().slice(0, 60).replace(/[\\%_]/g, (c) => '\\' + c)}%`;
     conditions.push(sql`g.organization ILIKE ${orgLike}`);
@@ -64,7 +65,7 @@ async function list(req, res) {
   if (stays_max) having.push(sql`count(b.id) FILTER (WHERE b.deleted_at IS NULL) <= ${Number(stays_max) || 0}`);
   const havingSql = having.length ? sql`HAVING ${having.reduce((acc, c, i) => (i === 0 ? c : sql`${acc} AND ${c}`))}` : sql``;
   const rows = await sql`
-    SELECT g.id, g.name, g.phone, g.email, g.notes, g.organization, g.color,
+    SELECT g.id, g.name, g.phone, g.email, g.notes, g.organization, g.color, g.deleted_at, g.deleted_by,
            count(b.id) FILTER (WHERE b.deleted_at IS NULL) AS stays,
            max(lower(b.stay))::text AS last_check_in
     FROM guests g
