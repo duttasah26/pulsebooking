@@ -80,7 +80,7 @@
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
   --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-text), ui-sans-serif, system-ui, sans-serif; /* figures use the text face, set to line up in columns */
+  --font-mono: var(--font-figures), var(--font-text), ui-sans-serif, system-ui, sans-serif; /* figures: Outfit, set to line up in columns */
   /* One corner everywhere; rounded-md is the same corner, for small things inside a control. */
   --radius-sm: 4px;
   --radius-md: 6px;
