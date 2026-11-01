@@ -13,12 +13,13 @@ import { addDays } from '../../lib/dates';
 function Pin({ pin }) {
   const router = useRouter();
   const { settings } = useSettings();
-  const { remove } = usePinned();
+  const { remove, refresh } = usePinned();
   const { id } = pin;
   const { data, error } = useApi(`/api/bookings/${id}`);
   useEffect(() => {
     if (data?.deleted_at || error?.message === 'Booking not found') remove(id);
-  }, [data, error, id, remove]);
+    else if (data) refresh(data); // save the snapshot, so the next time this tab is instant
+  }, [data, error, id, remove, refresh]);
   const b = data && !data.deleted_at ? data : pin.snap;
   if (!b) return null;
   const c = colorFor(b, settings);
