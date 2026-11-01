@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -17,6 +17,15 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [show, setShow] = useState(false);
   const [configured, setConfigured] = useState(true);
+  // Click or tap on the empty page and the logo is stamped down there, like a date stamp on the register (a few at most, each one
+  // at its own slight angle). Only the bare background does it: the card and form are left alone.
+  const [stamps, setStamps] = useState([]);
+  const nextStamp = useRef(0);
+  const stamp = (e) => {
+    if (e.target !== e.currentTarget) return;
+    const id = nextStamp.current++;
+    setStamps((list) => [...list.slice(-5), { id, x: e.clientX, y: e.clientY, tilt: Math.round(Math.random() * 28 - 14) }]);
+  };
 
   useEffect(() => {
     api('/api/login').then((d) => setConfigured(d.configured)).catch(() => {});
@@ -43,7 +52,7 @@ export default function Login() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
-      <main className="grid min-h-[100dvh] place-items-center px-4 py-10">
+      <main onPointerDown={stamp} className="grid min-h-[100dvh] place-items-center px-4 py-10">
         <div className="card login-rise w-full max-w-md space-y-8 p-6 sm:p-10">
           <div className="flex flex-col items-center gap-2 text-center">
             <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority style={{ '--i': 1 }} className="login-rise h-12 w-auto" />
@@ -72,11 +81,29 @@ export default function Login() {
             </div>
             {error && <p key={error} role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}
             <button type="submit" style={{ '--i': 5 }} className="btn btn-primary btn-block login-rise" disabled={busy}>
-              {busy ? 'Signing in…' : <>Sign In</>}
+              {busy ? (
+                <span className="inline-flex items-center gap-2" role="status">
+                  Signing in
+                  <span aria-hidden="true" className="inline-flex items-end gap-1 pb-0.5">
+                    {[0, 1, 2].map((i) => <span key={i} style={{ '--i': i }} className="dot-bounce size-1.5 rounded-full bg-current" />)}
+                  </span>
+                </span>
+              ) : 'Sign In'}
             </button>
           </form>
         </div>
 
+        {stamps.map((s) => (
+          <span
+            key={s.id}
+            aria-hidden="true"
+            onAnimationEnd={() => setStamps((list) => list.filter((x) => x.id !== s.id))}
+            style={{ left: s.x, top: s.y, '--tilt': `${s.tilt}deg` }}
+            className="logo-stamp pointer-events-none fixed z-10"
+          >
+            <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} className="h-12 w-auto" />
+          </span>
+        ))}
       </main>
     </>
   );
