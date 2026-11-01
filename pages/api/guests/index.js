@@ -1,6 +1,6 @@
 import sql from '../../../lib/db';
 import { HttpError, parseColor, parseDate, parseId, route } from '../../../lib/api';
-import { nameMatch } from '../../../lib/search';
+import { monthMatch, nameMatch, parseMonth } from '../../../lib/search';
 
 // sort=name (default, A to Z), stays (most stays first) or recent (latest stay first). dir=asc|desc overrides the order.
 const SORTS = {
@@ -45,7 +45,10 @@ async function list(req, res) {
   else if (contact === 'any') conditions.push(sql`(g.phone IS NOT NULL OR g.email IS NOT NULL)`);
   else if (contact === 'none') conditions.push(sql`g.phone IS NULL AND g.email IS NULL`);
   else if (contact) throw new HttpError(400, 'contact must be phone, email, both, any or none');
-  if (like) conditions.push(sql`(${nameMatch(q, [sql`g.name`, sql`g.organization`])} OR g.phone ILIKE ${like} OR g.email ILIKE ${like})`);
+  // Typing a month ("nov", "november 2026") also finds guests who stay in that month; matching names, phones and emails are still found.
+  const month = q ? parseMonth(q) : null;
+  const inMonth = month ? sql` OR EXISTS (SELECT 1 FROM bookings bm WHERE bm.guest_id = g.id AND bm.deleted_at IS NULL AND bm.status <> 'cancelled' AND ${monthMatch(month, sql`bm.stay`)})` : sql``;
+  if (like) conditions.push(sql`(${nameMatch(q, [sql`g.name`, sql`g.organization`])} OR g.phone ILIKE ${like} OR g.email ILIKE ${like}${inMonth})`);
   if (stayed.length) {
     const all = stayed.reduce((acc, c, i) => (i === 0 ? c : sql`${acc} AND ${c}`));
     conditions.push(sql`EXISTS (SELECT 1 FROM bookings x WHERE x.guest_id = g.id AND x.deleted_at IS NULL AND ${all})`);

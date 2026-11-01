@@ -1,4 +1,4 @@
-import { nameMatch } from '../../../lib/search';
+import { monthMatch, nameMatch, parseMonth } from '../../../lib/search';
 import sql from '../../../lib/db';
 import { bookingColumns, bookingJoins } from '../../../lib/bookings';
 import { autoCheckout } from '../../../lib/autoCheckout';
@@ -89,7 +89,10 @@ async function list(req, res) {
   }
   if (guest_id) where.push(sql`b.guest_id = ${parseId(guest_id, 'guest_id')}`);
   if (q) {
-    where.push(sql`(${nameMatch(q, [sql`g.name`, sql`b.organization`, sql`b.label`])})`);
+    // Typing a month ("nov", "november 2026") also finds the stays in that month; names that match are still found.
+    const month = parseMonth(q);
+    const byName = nameMatch(q, [sql`g.name`, sql`b.organization`, sql`b.label`]);
+    where.push(month ? sql`(${byName} OR ${monthMatch(month, sql`b.stay`)})` : sql`(${byName})`);
   }
 
   const orderBy = SORTS[sort];

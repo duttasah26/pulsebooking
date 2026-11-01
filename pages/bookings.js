@@ -344,7 +344,7 @@ export default function Bookings() {
           {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
           <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
-              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name or initials (ZB)…" />} />
+              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name, initials (ZB) or month…" />} />
               <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
             </div>
           </div>
