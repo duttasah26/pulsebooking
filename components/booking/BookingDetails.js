@@ -119,21 +119,20 @@ export default function BookingDetails({
       </ul>
 
       {/* One button to a line, full width, so the words always fit (the side panel is narrow). */}
-      <div className="sticky bottom-0 -mx-4 mt-auto grid grid-cols-2 gap-x-3 gap-y-4 border-t border-line bg-surface px-4 pb-3 pt-3">
+      <div className="sticky bottom-0 -mx-4 mt-auto grid grid-cols-2 gap-3 border-t border-line bg-surface px-4 pb-3 pt-3">
         {b.status === 'on_hold' && onConfirm && (
           <button type="button" className="btn btn-block btn-primary col-span-2" onClick={() => onConfirm(b)} disabled={b.id < 0}>
             Confirm Booking
           </button>
         )}
-        {/* A confirmed booking can go back on hold (the guest stays on it). It has its own row: the frequent, reversible action is kept a clear gap
-          away from Delete, so a slipping thumb never lands on the risky one. */}
+        {/* A confirmed booking can go back on hold (the guest stays on it): right beside Delete. */}
         {(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold && (
-          <button type="button" className="btn btn-block btn-hold col-span-2" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
+          <button type="button" className="btn btn-block btn-hold" onClick={() => onPutOnHold(b)} disabled={b.id < 0}>
             <Clock size={18} aria-hidden="true" /> Put on Hold
           </button>
         )}
         <HoldButton
-          className="btn btn-block btn-danger col-span-2"
+          className={`btn btn-block btn-danger ${(b.status === 'confirmed' || b.status === 'checked_in') && onPutOnHold ? '' : 'col-span-2'}`}
           title={b.status === 'on_hold' ? 'Hold to cancel this hold' : 'Hold to delete'}
           onConfirm={remove}
           disabled={removing || b.id < 0}
