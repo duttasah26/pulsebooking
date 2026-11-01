@@ -22,29 +22,29 @@ colors:
   tint: "rgb(38 31 28 / 0.06)"
 typography:
   display:
-    fontFamily: "Atkinson Hyperlegible Next"
+    fontFamily: "Outfit"
     fontSize: "28px"
     fontWeight: 600
     lineHeight: 1.2
   title:
-    fontFamily: "Atkinson Hyperlegible Next"
+    fontFamily: "Outfit"
     fontSize: "20px"
     fontWeight: 600
   headline:
-    fontFamily: "Atkinson Hyperlegible Next"
+    fontFamily: "Outfit"
     fontSize: "17px"
     fontWeight: 600
   body:
-    fontFamily: "Atkinson Hyperlegible Next"
+    fontFamily: "Outfit"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.5
   footnote:
-    fontFamily: "Atkinson Hyperlegible Next"
+    fontFamily: "Outfit"
     fontSize: "15px"
     fontWeight: 400
   figures:
-    fontFamily: "Atkinson Hyperlegible Mono"
+    fontFamily: "Outfit"
     fontWeight: 600
 rounded:
   md: "6px"
@@ -92,9 +92,8 @@ tab bar, check-in. Never decoration. Golden and peru accents were rejected and m
 
 ## Typography
 
-**Atkinson Hyperlegible Next** for every word, **Atkinson Hyperlegible Mono** for every number that identifies
-something: room numbers, dates in the grid, times, counts, the clock. Words beside a number stay in Next ("Room" is Next,
-"301" is Mono). Its 0 is slashed and its 1, l and I are distinct, on purpose.
+**Outfit** for every word and every number, one typeface throughout. Numbers that identify something (room numbers,
+dates in the grid, times, counts, the clock) are set tabular so columns line up.
 
 | Style | Size | Weight | Use |
 |---|---|---|---|

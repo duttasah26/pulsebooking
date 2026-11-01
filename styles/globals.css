@@ -3,9 +3,9 @@
 /*
   Pulse Rooms: the front desk register.
 
-  Type: Atkinson Hyperlegible Next for every word, Atkinson Hyperlegible Mono for every number that identifies something
-  (room numbers, dates, times, counts). Both were drawn by the Braille Institute for low vision readers, which is who
-  works this desk. Weights: 400 reading, 500 controls, 600 labels, names and titles. Nothing lighter than 400.
+  Type: Outfit for every word and every number, one typeface everywhere. Numbers that identify something (room numbers,
+  dates, times, counts) are set tabular so columns line up. Weights: 400 reading, 500 controls, 600 labels, names and titles.
+  Nothing lighter than 400.
 
   Colour: warm neutrals from the brand palette, one ledger green accent for the one action that matters on a screen and for
   "chosen". Straw yellow means on hold and nothing else. Red means delete or cancel. Everything else is ink on paper.
@@ -80,7 +80,7 @@
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
   --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-figures), var(--font-text), ui-sans-serif, system-ui, sans-serif; /* figures: Outfit, set to line up in columns */
+  --font-mono: var(--font-text), ui-sans-serif, system-ui, sans-serif; /* one typeface everywhere; figures are only set to line up in columns */
   /* One corner everywhere; rounded-md is the same corner, for small things inside a control. */
   --radius-sm: 4px;
   --radius-md: 6px;

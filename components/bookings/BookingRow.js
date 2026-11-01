@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Moon, Phone, User, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import RoomNumber from '../RoomNumber';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
 import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
@@ -51,26 +52,8 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
           </span>
           <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-[0.9375rem] text-muted">
             {show('room') && (
-              <span className="flex items-center gap-1.5" title={`Room${rooms.length > 1 ? 's' : ''} ${rooms.join(', ')}`}>
-                {members ? (
-                  <>
-                    <span className="font-semibold text-ink">{rooms.length} rooms</span>
-                    {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => {
-                      const shade = roomShade({ number: `${f}01` }, settings);
-                      return (
-                        <span key={f} className="flex items-center gap-1" aria-hidden="true">
-                          <span className="size-2.5 rounded-full" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }} />
-                          <span className="font-mono">{count}</span>
-                        </span>
-                      );
-                    })}
-                  </>
-                ) : (
-                  <>
-                    <span aria-hidden="true" className="size-2.5 rounded-full" style={{ backgroundColor: roomShade({ number: rooms[0] }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: rooms[0] }, settings).edge}` }} />
-                    <span>Room <span className="font-mono font-semibold text-ink">{rooms[0]}</span></span>
-                  </>
-                )}
+              <span className="flex flex-wrap items-center gap-1">
+                {rooms.map((n) => <RoomNumber key={n} number={n} />)}
               </span>
             )}
             {show('dates') && (
@@ -109,7 +92,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
           </span>
         </span>
-        {!isDeleted && !members && b.status !== 'on_hold' && <CaretRight size={18} aria-hidden="true" className="shrink-0 text-muted" />}
+        {!isDeleted && !members && b.status !== 'on_hold' && <span className="flex w-10 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
         <div className="flex shrink-0 items-center gap-2 pr-3">
@@ -122,11 +105,10 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         </div>
       )}
       {members && !isDeleted && (
-        <button type="button" className="btn btn-icon btn-quiet m-3 shrink-0 self-center" aria-expanded={open} aria-label={`${open ? 'Hide' : 'Show'} the ${members.length} rooms of ${b.name}`} onClick={() => setOpen((v) => !v)}>
+        <button type="button" className="btn btn-icon btn-quiet mx-1 shrink-0 self-center" aria-expanded={open} aria-label={`${open ? 'Hide' : 'Show'} the ${members.length} rooms of ${b.name}`} onClick={() => setOpen((v) => !v)}>
           <CaretDown size={18} aria-hidden="true" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </button>
       )}
-      {!members && !isDeleted && b.status !== 'on_hold' && b.members && <span aria-hidden="true" className="w-16 shrink-0" />}
       {isDeleted && (
         <button type="button" className="btn btn-sm m-3 self-center" onClick={() => onRestore(b)}>
           Restore

@@ -1,25 +1,23 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { roomShade } from '../../lib/colors';
 import { addDays, daysInMonth, diffDays, fmtLong, fmtShort, fmtWeekday, monthStart, range, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
 import { useOverviewParts } from '../../lib/devicePrefs';
 import { tabKeys } from '../../lib/tabKeys';
-import { useSettings } from '../SettingsProvider';
-import { formatTime } from '../TimeSelect';
+import BookingRow from '../bookings/BookingRow';
 
 // The Overview page: today's four figures, the week ahead, and the lists behind them. It reads its own data (the next 60 days, the holds,
 // this month), so it is right whatever the calendar was last showing. A booking in several rooms is one row with its rooms. A row opens
 // the booking on the calendar. Cancelled bookings are left out everywhere.
 const live = (list) => (Array.isArray(list) ? list : []).filter((b) => b.status !== 'cancelled');
-const atTime = (value) => (value ? formatTime(value) : '');
 
 function groupRows(list) {
   const map = new Map();
   for (const b of list) {
     const key = b.group_id ?? `b${b.id}`;
-    const row = map.get(key) ?? { key, first: b, rooms: [] };
+    const row = map.get(key) ?? { key, first: b, rooms: [], list: [] };
     row.rooms.push(b.room_number);
+    row.list.push(b);
     map.set(key, row);
   }
   return [...map.values()].map((r) => ({ ...r, rooms: [...new Set(r.rooms)].sort() }));
@@ -50,7 +48,12 @@ function Tile({ label, value, tone = 'bg-surface-2' }) {
 // Arrivals and departures for each of the next seven days, as paired bars.
 function WeekChart({ days }) {
   const top = Math.max(1, ...days.flatMap((d) => [d.arriving, d.leaving]));
-  const bar = (n, fill) => <span className={`w-3 rounded-t-sm ${fill}`} style={{ height: `${(n / top) * 100}%`, minHeight: n ? 4 : 0 }} />;
+  const bar = (n, fill) => (
+    <span className="flex h-full flex-col items-center justify-end gap-0.5">
+      {n > 0 && <span className="text-[0.75rem] font-semibold leading-none text-muted">{n}</span>}
+      <span className={`w-3 rounded-t-sm ${fill}`} style={{ height: `${(n / top) * 90}%`, minHeight: n ? 4 : 0 }} />
+    </span>
+  );
   return (
     <div className="grid grid-cols-7 gap-2">
       {days.map((d) => (
@@ -66,30 +69,20 @@ function WeekChart({ days }) {
   );
 }
 
-function Rows({ rows, onOpen, detail, empty }) {
-  const { settings } = useSettings();
+// The same row as the Bookings page, without the contact line.
+function Rows({ rows, onOpen, empty }) {
   if (!rows.length) return <p className="t-footnote p-4">{empty}</p>;
   return (
     <ul className="divide-y divide-line">
-      {rows.map((r) => {
-        const note = detail?.(r.first);
-        return (
-          <li key={r.key}>
-            <button type="button" onClick={() => onOpen(r.first)} className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 text-left transition-colors duration-150 hover:bg-surface-2">
-              <span className="min-w-32 flex-1">
-                <span className="block truncate text-base font-semibold">{r.first.name || 'On hold'}</span>
-                {note && <span className="block text-[0.9375rem] text-muted">{note}</span>}
-              </span>
-              <span className="flex flex-wrap gap-1">
-                {r.rooms.map((n) => {
-                  const shade = roomShade({ number: n }, settings);
-                  return <span key={n} className="rounded-md px-2 font-mono text-[0.9375rem] font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>;
-                })}
-              </span>
-            </button>
-          </li>
-        );
-      })}
+      {rows.map((r, i) => (
+        <BookingRow
+          key={r.key}
+          index={i}
+          b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }}
+          hidden={['contact', 'organization']}
+          onOpen={(row) => onOpen(row)}
+        />
+      ))}
     </ul>
   );
 }
@@ -100,10 +93,11 @@ export default function OverviewPage() {
   const monthFrom = monthStart(t);
   const monthDays = daysInMonth(monthFrom);
   const monthTo = addDays(monthFrom, monthDays);
-  // From yesterday, so a guest who arrived before today and leaves today is in the lists too.
-  const soon = useApi(`/api/bookings?from=${addDays(t, -1)}&to=${addDays(t, 60)}&sort=check_in&dir=asc`).data;
+  // From a week back: the week chart can look back, and a guest who arrived before today and leaves today is in the lists too.
+  const soon = useApi(`/api/bookings?from=${addDays(t, -7)}&to=${addDays(t, 60)}&sort=check_in&dir=asc`).data;
   const holds = useApi('/api/bookings?when=upcoming&status=on_hold&sort=check_in&dir=asc').data;
   const month = useApi(`/api/bookings?from=${monthFrom}&to=${monthTo}`).data;
+  const name = (useApi('/api/me').data?.name ?? '').split('@')[0];
   const roomCount = (useApi('/api/rooms').data ?? []).length;
 
   const pool = live(soon);
@@ -113,7 +107,8 @@ export default function OverviewPage() {
   const inUse = new Set(pool.filter((b) => b.check_in <= t && b.check_out > t).map((b) => b.room_id)).size;
   const holdRows = groupRows(live(holds));
   const coming = groupRows(pool.filter((b) => b.check_in > t));
-  const week = range(t, 7).map((day) => ({
+  const [ahead, setAhead] = useState(true);
+  const week = range(ahead ? t : addDays(t, -7), 7).map((day) => ({
     day,
     arriving: groupRows(pool.filter((b) => b.check_in === day)).length,
     leaving: groupRows(pool.filter((b) => b.check_out === day)).length,
@@ -126,11 +121,11 @@ export default function OverviewPage() {
   const [parts] = useOverviewParts();
   const show = (key) => parts[key] !== false;
   const tabs = [
-    show('today') && { key: 'arriving', label: 'Arriving', rows: arriving, empty: 'Nobody arriving today.', detail: (b) => atTime(b.check_in_time) },
-    show('today') && { key: 'leaving', label: 'Leaving', rows: leaving, empty: 'Nobody leaving today.', detail: (b) => atTime(b.check_out_time) },
+    show('today') && { key: 'arriving', label: 'Arriving', rows: arriving, empty: 'Nobody arriving today.'  },
+    show('today') && { key: 'leaving', label: 'Leaving', rows: leaving, empty: 'Nobody leaving today.'  },
     show('today') && { key: 'staying', label: 'Staying', rows: staying, empty: 'Nobody staying over.' },
-    show('holds') && { key: 'holds', label: 'On hold', rows: holdRows, empty: 'No holds to confirm.', detail: (b) => `${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}` },
-    show('coming') && { key: 'coming', label: 'Coming up', rows: coming, empty: 'Nothing booked ahead.', detail: (b) => `${fmtShort(b.check_in)}${b.check_in_time ? `, ${atTime(b.check_in_time)}` : ''}` },
+    show('holds') && { key: 'holds', label: 'On hold', rows: holdRows, empty: 'No holds to confirm.' },
+    show('coming') && { key: 'coming', label: 'Coming up', rows: coming, empty: 'Nothing booked ahead.' },
   ].filter(Boolean);
   const [picked, setPicked] = useState('arriving');
   const current = tabs.find((x) => x.key === picked) ?? tabs[0];
@@ -140,7 +135,10 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="t-title">{fmtLong(t)}</h1>
+      <div>
+        <h1 className="t-title">{name ? `Hello again, ${name[0].toUpperCase()}${name.slice(1)}` : 'Hello again'}</h1>
+        <p className="t-footnote">{fmtLong(t)}</p>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
         {show('figures') && (
@@ -152,13 +150,18 @@ export default function OverviewPage() {
               <Stat label="On hold" value={dash(holdRows.length)} tone="text-hold-ink" />
             </div>
 
-            <Card className="p-4" aria-label="The week ahead">
+            <Card className="p-4" aria-label="Week overview">
               <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]">
                 <div>
                   <h2 className="t-headline mb-4 flex flex-wrap items-center gap-x-4 gap-y-1">
-                    Week ahead
+                    Week overview
                     <span className="inline-flex items-center gap-1.5 text-[0.9375rem] font-normal text-muted"><span className="size-2.5 rounded-sm bg-accent" />Arriving</span>
                     <span className="inline-flex items-center gap-1.5 text-[0.9375rem] font-normal text-muted"><span className="size-2.5 rounded-sm bg-danger" />Leaving</span>
+                    <span role="group" aria-label="Which week" className="ml-auto flex gap-1">
+                      {[[false, 'Past 7 days'], [true, 'Next 7 days']].map(([v, label]) => (
+                        <button key={label} type="button" aria-pressed={ahead === v} onClick={() => setAhead(v)} className={`min-h-9 rounded-md px-3 text-[0.9375rem] ${ahead === v ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'}`}>{label}</button>
+                      ))}
+                    </span>
                   </h2>
                   <WeekChart days={week} />
                 </div>
@@ -191,7 +194,7 @@ export default function OverviewPage() {
               ))}
             </div>
             <div role="tabpanel">
-              <Rows rows={current.rows} onOpen={open} detail={current.detail} empty={current.empty} />
+              <Rows rows={current.rows} onOpen={open} empty={current.empty} />
             </div>
           </Card>
         )}
