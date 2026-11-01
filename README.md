@@ -13,7 +13,7 @@ It is not a channel manager or a multi-property suite. Product intent lives in `
 - **Guests tab**: guest list with stays, companies, duplicate detection and merge. Deleting a guest only marks them deleted (Undo in the toast, and a Deleted tab with Restore); their old stays stay attached.
 - **Overview tab** (after Guests, full screen width): a greeting with the signed-in name, a day picker, five figure cards (Arrivals, Departures, In the house, Upcoming, On hold), a week overview (arrivals as bars, departures as a line, occupancy tiles, past or next 7 days), and a full-height list panel on the right. A row opens the booking in a sheet on the same page; the diagonal arrow shows it on the calendar. The same arrow is in the Bookings tab's details.
 - **Search**: header search on the calendar (press `/` or Ctrl+K). Booking results use the same row design as the Bookings tab.
-- **Settings**: Appearance (System, Light, Dark), floor and status colours, default check-in and check-out times, automatic check-out, what the Overview shows, first calendar view, row density.
+- **Settings**: floor and status colours, default check-in and check-out times, automatic check-out, what the Overview shows, first calendar view, row density.
 - **Assistant**: an optional chat that answers questions about rooms and bookings, can make a booking or hold, change dates or room, and bring back an accidentally deleted booking (`restore_booking`). Every write is summary first, then only after a yes (Gemini).
 - **History and Undo**: every insert, update, delete and restore of a booking is recorded by a trigger with who and when. Bookings and guests are soft-deleted and can be restored. The only hard delete is a removed on-hold booking (a hold), which is meant to be disposable.
 
@@ -31,7 +31,7 @@ It is not a channel manager or a multi-property suite. Product intent lives in `
 | Auth | Signed cookie sessions, scrypt password hashes, enforced by `middleware.js` |
 | Assistant | Google Gemini API with read-only tools plus one `book_stay` write tool |
 
-Light and dark themes (Settings, Appearance: System, Light or Dark, kept per device; a Light/Dark button sits in the navbar). Times are India local time (IST).
+Light and dark themes, chosen with the one button in the navbar (each press goes to Light, Dark, then System, which follows the device; kept per device). The device's Increase Contrast setting is honoured. Times are India local time (IST).
 
 ## Getting started
 
@@ -153,6 +153,15 @@ NEXT_DIST_DIR=.next-test npx next start -p 3111
 Open it at `http://127.0.0.1:3111` (not `localhost`, which would share cookies with the dev server). Use a throwaway database, not the real one.
 
 ## Recent changes
+
+- **Design review pass** (after an Apple HIG review; all on the `apple-pass` branch, started from the tag `pre-apple-pass`):
+  - The calendar controls row is three groups: the view tabs, a **View** menu (floors, checked-out stays, with a count of what is hidden), and range with zoom.
+  - Appearance is one navbar control (Light, Dark, System); the Settings copy is gone.
+  - Status green (`--ok`, teal-leaning: Confirmed, arriving, check-in) is separate from the button green (`--accent`: do this, chosen).
+  - A booking's details open as a side panel that is **not modal** on tablet and desktop (`Sheet` with `modeless`): no scrim, the page behind stays usable, focus is not trapped. Phones keep the bottom sheet.
+  - `prefers-contrast: more` gives firmer text, lines and field edges.
+  - Text size stays capped at 125%: the calendar grid (fixed pixel cells) does not survive 150% or 200% text, so use browser zoom for more.
+  - To undo this whole pass in one command: `git checkout dev && git branch -D apple-pass` (or, if already merged, `git reset --hard pre-apple-pass`).
 
 - **Dark mode.** Tokens in `styles/globals.css` have a light set (`:root`) and a dark set (`:root[data-theme="dark"]`). `pages/_document.js` applies the saved choice before first paint; `lib/theme.js` and `components/ThemeToggle.js` switch it. Tints and shadows come from `--ink-rgb` and `--shadow-rgb`; booking colours (`lib/colors.js`) keep their pastel in light and become deep tints of their own hue in dark (`--tone-light`); solid bars use `bg-bar` and `text-on-ink`. Use the `dark:` variant for the few things that differ. Light mode values are unchanged.
 - Hold-to-delete keeps its fill full while the action runs instead of draining back; the Today tile on the calendar shows the room nights sold this month; Bookings and Guests use the full page width with a centred search and filter column; the Overview figures have their own vivid colours.
