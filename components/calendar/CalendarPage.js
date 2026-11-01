@@ -27,7 +27,6 @@ import { clearBookingDraft } from '../booking/useBookingForm';
 import { useStoredState } from '../../lib/useStoredState';
 import { useCalendarParams } from './useCalendarParams';
 import TodaySummary from './TodaySummary';
-import OverviewPanel from './OverviewPanel';
 import { useApi } from '../../lib/useApi';
 import { useShowDone } from '../../lib/devicePrefs';
 import { useBookingData } from './useBookingData';
@@ -74,10 +73,7 @@ export default function CalendarPage() {
   const [editSelection, setEditSelection] = useState(false); // the selected bookings' names as editable cells
   const [viewPicked, setViewPicked] = useState(false); // show the details of everything picked, side by side
   const [panel, setPanel] = useState(null); // { booking, key?, editing } while a booking or hold is open
-  const [todayOpen, setTodayOpen] = useState(false); // the Today panel, lying over the calendar's right edge like the booking panel
   const [formOpen, setFormOpen] = useStoredState('pulse.formOpen', true, { parse: (raw) => raw !== '0', serialize: (v) => (v ? '1' : '0') });
-  useEffect(() => { if (formOpen) setTodayOpen(false); }, [formOpen]); // opening the booking panel closes the Today panel
-  useEffect(() => { setTodayOpen(false); }, [view]); // and so does changing the view (it would cover the new one)
   const [showDone, setShowDone] = useShowDone(); // show or hide stays that have checked out (also a choice in Settings)
   const [zoom, setZoom] = useStoredState('pulse.zoom', 1, { parse: (raw) => { const z = Number(raw); return z >= 0.6 && z <= 1.6 ? z : undefined; } });
 
@@ -680,22 +676,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {wide && todayOpen && !formOpen && (
-          <div className="absolute inset-y-0 right-0 z-30 w-[23rem] max-w-full">
-            <OverviewPanel bookings={bookingList} roomCount={roomList.length} day={spot?.d} onOpen={(b) => {
-              setTodayOpen(false);
-              // A booking outside the days on screen: take the calendar to it first (the address then opens it, as the header search does).
-              if (bookingList.some((x) => x.id === b.id)) openEdit(b);
-              else set({ view: 'timeline', date: addDays(b.check_in, -3), span: 21, open: b.id });
-            }} onClose={() => setTodayOpen(false)} />
-          </div>
-        )}
         <BookingPanel
-          renderSide={() => (
-            <button type="button" aria-expanded={todayOpen} onClick={() => setTodayOpen((o) => !o)} title="Overview: rooms in use, coming up, holds and today" className="animate-fade flex h-32 w-11 flex-col items-center rounded-lg border border-line bg-surface py-4 text-[0.9375rem] font-semibold transition-colors duration-150 hover:bg-surface-2">
-              <span className="[writing-mode:vertical-rl]">Overview</span>
-            </button>
-          )}
           wide={wide}
           formOpen={formOpen}
           onToggle={(open) => { if (!open) setPending(null); setFormOpen(open); }} // folding the panel hides its Save, so it also drops the unsaved change

@@ -5,20 +5,21 @@ import { useRouter } from 'next/router';
 import IndiaClock from './IndiaClock';
 import GlobalSearch from './GlobalSearch';
 import { OPEN_ASSISTANT } from './Assistant';
-import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, UserCircle, Users } from '@phosphor-icons/react';
+import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, SquaresFour, UserCircle, Users } from '@phosphor-icons/react';
 
-// The three places staff work in, named in words on every screen wide enough for them.
+// The four places staff work in, named in words on every screen wide enough for them.
 const PLACES = [
   { href: '/', label: 'Calendar', Icon: CalendarBlank },
   { href: '/bookings', label: 'Bookings', Icon: ListBullets },
   { href: '/guests', label: 'Guests', Icon: Users },
+  { href: '/overview', label: 'Overview', Icon: SquaresFour },
 ];
 // Settings and the signed-in account sit apart, at the far right, as they are visited rarely.
 const UTILITY = [
   { href: '/settings', label: 'Settings', Icon: GearSix },
   { href: '/settings?tab=account', label: 'Account', Icon: UserCircle },
 ];
-// The phone's tab bar holds all five.
+// The phone's tab bar holds all six.
 const TABS = [...PLACES, ...UTILITY];
 
 // wide: the calendar uses the full screen width; the other pages stay in a readable column.
@@ -102,10 +103,10 @@ export default function Layout({ title, wide = false, children }) {
 
       <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-28 pt-4 outline-none md:px-6 md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
-      {/* Phone tab bar: five places, a filled symbol and an emerald label for the one you are on. */}
+      {/* Phone tab bar: six places, a filled symbol and an emerald label for the one you are on. */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
           const active = here === href;
@@ -114,7 +115,7 @@ export default function Layout({ title, wide = false, children }) {
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
-              className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[0.8125rem] leading-4 ${active ? 'font-semibold text-accent-text' : 'font-medium text-muted'}`}
+              className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[0.75rem] leading-4 ${active ? 'font-semibold text-accent-text' : 'font-medium text-muted'}`}
             >
               <Icon size={24} weight={active ? 'fill' : 'bold'} />
               {label}
