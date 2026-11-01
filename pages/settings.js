@@ -19,7 +19,7 @@ import { OVERVIEW_PARTS, useFirstView, useOverviewParts, useRowSize, useShowDone
   Settings, in tabs. On a wide screen the tabs are listed on the left; on a phone they are a row of buttons under the header.
   Each tab is its own screen, and the tab you are on is in the address (?tab=account), so it survives a reload:
     Look and feel   the text size of this device, and the colours
-    Calendar        how the calendar opens and looks on this device, and the Overview panel
+    Calendar        how the calendar opens and looks on this device, and the Overview page
     Bookings        usual times and automatic check-out
     Calendar        what it opens with
     Rooms           which rooms are on
@@ -293,13 +293,13 @@ export default function Settings() {
                   />
                 </Group>
 
-                <Group id="overview" icon={SlidersHorizontal} title="Overview panel" scope="This device only" hint="What the Overview tab on the calendar shows.">
+                <Group id="overview" icon={SlidersHorizontal} title="Overview" scope="This device only" hint="What the Overview page shows.">
                   {OVERVIEW_PARTS.map(([key, label]) => (
                     <SwitchRow
                       key={key}
                       label={label}
                       checked={overview[key] !== false}
-                      onChange={(on) => { setOverview({ ...overview, [key]: on }); setSaved('Overview panel changed on this device'); }}
+                      onChange={(on) => { setOverview({ ...overview, [key]: on }); setSaved('Overview changed on this device'); }}
                     />
                   ))}
                 </Group>

@@ -20,9 +20,12 @@ CREATE TABLE guests (
   notes       text,
   organization text,                       -- default organization for this guest
   color       text,                        -- palette key or #hex; shown on this guest's bookings
-  created_at  timestamptz NOT NULL DEFAULT now()
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  deleted_at  timestamptz,                 -- soft delete: kept so it can be restored
+  deleted_by  text
 );
 CREATE INDEX guests_name_idx ON guests (lower(name));
+CREATE INDEX guests_live_idx ON guests (lower(name)) WHERE deleted_at IS NULL;
 
 -- App settings as JSON under the key 'app' (floor colours, status colours, default times).
 CREATE TABLE settings (

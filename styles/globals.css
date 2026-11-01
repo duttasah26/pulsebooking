@@ -3,9 +3,9 @@
 /*
   Pulse Rooms: the front desk register.
 
-  Type: Atkinson Hyperlegible Next for every word, Atkinson Hyperlegible Mono for every number that identifies something
-  (room numbers, dates, times, counts). Both were drawn by the Braille Institute for low vision readers, which is who
-  works this desk. Weights: 400 reading, 500 controls, 600 labels, names and titles. Nothing lighter than 400.
+  Type: Outfit for every word and every number, one typeface everywhere. Numbers that identify something (room numbers,
+  dates, times, counts) are set tabular so columns line up. Weights: 400 reading, 500 controls, 600 labels, names and titles.
+  Nothing lighter than 400.
 
   Colour: warm neutrals from the brand palette, one ledger green accent for the one action that matters on a screen and for
   "chosen". Straw yellow means on hold and nothing else. Red means delete or cancel. Everything else is ink on paper.
@@ -80,7 +80,7 @@
   --color-hold-ink: var(--hold-ink);
   --color-tint: var(--tint);
   --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-figures), ui-monospace, monospace;
+  --font-mono: var(--font-text), ui-sans-serif, system-ui, sans-serif; /* one typeface everywhere; figures are only set to line up in columns */
   /* One corner everywhere; rounded-md is the same corner, for small things inside a control. */
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -441,6 +441,22 @@ body {
   100% { transform: none; }
 }
 .animate-boing { animation: boing 360ms cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+/* The sign-in page: the card and what is in it rise into focus one after another (--i). */
+@keyframes login-rise {
+  from { opacity: 0; transform: translateY(0.75rem); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.login-rise { animation: login-rise 560ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
+/* A small ring turns beside "Signing in" while the sign-in is on its way. Reduced motion: it holds still and breathes instead. */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spinner-breathe { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+.spinner { animation: spin 700ms linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: spinner-breathe 1400ms ease-in-out infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-rise { animation-name: fade-in; animation-duration: var(--dur-base); }
+}
 @media (prefers-reduced-motion: reduce) {
   .animate-boing { animation: none; }
   .row-in, .chip-in, .tray-in, .cell-in { animation: none; }

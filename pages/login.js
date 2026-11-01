@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -17,6 +17,35 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [show, setShow] = useState(false);
   const [configured, setConfigured] = useState(true);
+  // The Swell background (asciify-engine): small gold symbols that keep changing as slow waves roll through them, quiet round the
+  // card, lit under the pointer. Loaded after the page so sign-in never waits for it; if it cannot load or draw (no WebGL2) the page is just plain. It
+  // pauses off screen and holds a still frame with reduced motion by itself, and is torn down when the page goes.
+  const page = useRef(null);
+  const card = useRef(null);
+  useEffect(() => {
+    let bg;
+    let gone = false;
+    import('asciify-engine/kit')
+      .then(({ background, swell }) => {
+        if (gone || !page.current) return;
+        bg = background(page.current, {
+          preset: swell,
+          clear: card.current ?? false,
+          palette: '#b8923a', // the logo's gold
+          mark: 'glyph',
+          charset: ' .:+*x=#%@', // real symbols, swapping as the waves roll
+          cellSize: 8,
+          speed: 1,
+          opacity: 0.7,
+          cursor: 'lantern',
+        });
+      })
+      .catch(() => {});
+    return () => {
+      gone = true;
+      bg?.destroy();
+    };
+  }, []);
 
   useEffect(() => {
     api('/api/login').then((d) => setConfigured(d.configured)).catch(() => {});
@@ -43,11 +72,11 @@ export default function Login() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
-      <main className="grid min-h-[100dvh] place-items-center px-4 py-10">
-        <div className="card w-full max-w-md space-y-8 p-6 sm:p-10">
+      <main ref={page} className="relative grid min-h-[100dvh] place-items-center px-4 py-10">
+        <div ref={card} className="card login-rise relative w-full max-w-md space-y-8 !rounded-3xl border-white/70 p-6 shadow-md sm:p-10">
           <div className="flex flex-col items-center gap-2 text-center">
-            <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority className="h-12 w-auto" />
-            <h1 className="t-display">Sign in</h1>
+            <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority style={{ '--i': 1 }} className="login-rise h-12 w-auto" />
+            <h1 style={{ '--i': 2 }} className="t-display login-rise">Sign in</h1>
           </div>
 
           {!configured && (
@@ -57,11 +86,11 @@ export default function Login() {
           )}
 
           <form onSubmit={submit} className="form-area space-y-4" noValidate>
-            <div>
+            <div style={{ '--i': 3 }} className="login-rise">
               <FieldLabel icon={User} htmlFor="login-name">Your name</FieldLabel>
               <input id="login-name" name="username" className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} autoFocus />
             </div>
-            <div>
+            <div style={{ '--i': 4 }} className="login-rise">
               <FieldLabel icon={LockKey} htmlFor="login-password">Password</FieldLabel>
               <div className="relative">
                 <input id="login-password" name="password" type={show ? 'text' : 'password'} className="field pr-14" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
@@ -71,11 +100,17 @@ export default function Login() {
               </div>
             </div>
             {error && <p key={error} role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}
-            <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-              {busy ? 'Signing in…' : <>Sign In</>}
+            <button type="submit" style={{ '--i': 5 }} className="btn btn-primary btn-block login-rise" disabled={busy}>
+              {busy ? (
+                <span className="inline-flex items-center gap-2" role="status">
+                  Signing in
+                  <span aria-hidden="true" className="spinner size-4 rounded-full border-2 border-current border-t-transparent" />
+                </span>
+              ) : 'Sign In'}
             </button>
           </form>
         </div>
+
       </main>
     </>
   );

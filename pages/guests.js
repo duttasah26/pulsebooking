@@ -14,6 +14,7 @@ import GuestRow, { GUEST_COLUMNS } from '../components/guests/GuestRow';
 import GuestSheet from '../components/guests/GuestSheet';
 import { Swap } from '../components/Motion';
 import CompanyList from '../components/guests/CompanyList';
+import DeletedGuests from '../components/guests/DeletedGuests';
 import DuplicatesPanel from '../components/guests/DuplicatesPanel';
 import MergeSheet from '../components/guests/MergeSheet';
 import { useApi } from '../lib/useApi';
@@ -40,7 +41,7 @@ const NATURAL_DIR = { name: 'asc', stays: 'desc', recent: 'desc' };
 const URL_DEFAULTS = {
   tab: 'guests', sort: 'name', dir: '', sort2: '', dir2: '', room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '', cols: '',
 };
-const TABS = [['guests', 'Guests'], ['companies', 'Companies']];
+const TABS = [['guests', 'Guests'], ['companies', 'Companies'], ['deleted', 'Deleted']];
 const CLEAR_FILTERS = { room: '', floor: '', from: '', to: '', org: '', contact: '', smin: '', smax: '' };
 
 export default function Guests() {
@@ -185,12 +186,13 @@ export default function Guests() {
             </button>
           </div>
 
-          <div role="tablist" aria-label="Guests or companies" onKeyDown={tabKeys} className="seg">
+          <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
             {TABS.map(([key, label]) => (
               <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-8">{label}</button>
             ))}
           </div>
           <Swap id={tab} className="space-y-4">
+          {tab === 'deleted' && <DeletedGuests onRestored={() => { list.reload(); dupes.reload(); }} />}
           {tab === 'companies' && <CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} />}
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}

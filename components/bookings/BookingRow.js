@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Buildings, CaretDown, Check, Phone, X } from '@phosphor-icons/react';
+import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Moon, Phone, User, X } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import RoomNumber from '../RoomNumber';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
 import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
@@ -14,9 +15,11 @@ export const BOOKING_COLUMNS = [
   ['status', 'Status'],
 ];
 
-// One booking in the list: its colour as a small square before the name, guest and contact, room, dates and status (each can be switched off in a view).
+// One booking in the list, in two lines: its colour and the guest's name with the status, then a row of small facts, each with its icon
+// (room, dates, nights, guests, organization, contact; each can be switched off in a view). A chevron at the end says the row opens.
+// minimal: the quiet form for a narrow list (the Overview): the name, then room, dates, nights and guests in small plain text, no badge or chip.
 // A deleted booking offers Restore; a hold offers Confirm and Cancel in one click. Checked-out and cancelled stays are faded.
-export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy' }) {
+export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy', minimal = false }) {
   const { settings } = useSettings();
   const isDeleted = Boolean(b.deleted_at);
   const finished = !isDeleted && (b.status === 'checked_out' || b.status === 'cancelled');
@@ -26,11 +29,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
   const members = b.members?.length > 1 ? b.members : null; // the rooms of one stay, gathered on this row
   const [open, setOpen] = useState(false);
   const roomy = density !== 'compact';
-  // Columns on a wide screen: the guest, then whichever of room, dates and status are on.
-  // minmax(0, ...) lets the wide columns shrink and wrap their text instead of running into the next column; room and status
-  // are sized to their content.
-  const cols = ['minmax(0, 1.4fr)', show('room') && 'auto', show('dates') && 'minmax(0, 1.6fr)', show('status') && 'auto'].filter(Boolean).join(' ');
-  const showLine2 = (show('organization') && b.organization) || show('contact');
+  const chevron = !isDeleted && !members && b.status !== 'on_hold'; // its arrow sits in the same 3.5rem slot as the rooms caret, so they line up
   return (
     // content-visibility keeps long lists cheap: rows far off screen are not painted
     <li style={{ '--i': index }} className={`row-in [content-visibility:auto] ${roomy ? '[contain-intrinsic-size:auto_4rem]' : '[contain-intrinsic-size:auto_2.5rem]'}`}>
@@ -39,75 +38,74 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         type="button"
         disabled={isDeleted}
         onClick={() => onOpen(b, members)}
-        style={{ '--cols': cols }}
-        className={`grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center gap-x-6 gap-y-1 px-4 text-left transition-colors duration-150 md:[grid-template-columns:var(--cols)] md:px-5 ${
-          roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'
-        } ${finished ? 'text-ink/75' : ''}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 pl-4 text-left ${chevron ? 'pr-0' : 'pr-4'} ${minimal ? 'min-h-14 py-2.5' : `md:pl-5 ${chevron ? '' : 'md:pr-5'} ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'}`} ${finished ? 'text-ink/75' : ''}`}
       >
-        <span className="min-w-0">
-          <span className="flex min-w-0 items-center gap-2">
-            <span aria-hidden="true" className="size-3 shrink-0 rounded-sm" style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
-            <span className={`truncate text-[1.0625rem] font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
-          </span>
-          {showLine2 && (
-            <span className="mt-1 flex min-w-0 items-center gap-4 pl-5 text-[0.9375rem] text-muted">
-              {show('organization') && b.organization && (
-                <span className="flex min-w-0 items-center gap-1">
-                  <Buildings size={14} aria-hidden="true" className="shrink-0" />
-                  <span className="truncate">{b.organization}</span>
-                </span>
-              )}
-              {show('contact') && (
-                <span className="flex min-w-0 items-center gap-1">
-                  {contact && <Phone size={14} aria-hidden="true" className="shrink-0" />}
-                  <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
-                </span>
-              )}
-            </span>
-          )}
-        </span>
-        {show('room') && (
-          members ? (
-            // A stay in several rooms: how many, and how many on each floor in the floor's colour. The rooms themselves open below.
-            <span className="flex w-52 items-center gap-3" title={`Rooms ${rooms.join(', ')}`}>
-              <span className="text-base font-semibold">{rooms.length} rooms</span>
-              <span className="flex items-center gap-2" aria-hidden="true">
-                {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => {
-                  const shade = roomShade({ number: `${f}01` }, settings);
-                  return (
-                    <span key={f} className="flex items-center gap-1">
-                      <span className="size-3 rounded-sm" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }} />
-                      <span className="font-mono text-[0.9375rem] text-muted">{count}</span>
-                    </span>
-                  );
-                })}
-              </span>
-            </span>
-          ) : (
-            <span className="flex w-52 items-center" title={`Room ${rooms[0]}`}>
-              <span className="sr-only">Room </span>
-              <span className="rounded-md px-2 py-1 font-mono text-base font-semibold" style={{ backgroundColor: roomShade({ number: rooms[0] }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: rooms[0] }, settings).edge}` }}>{rooms[0]}</span>
-            </span>
-          )
-        )}
-        {show('dates') && (
-          <span className="col-span-2 flex min-w-0 items-start pl-5 text-[0.9375rem] md:col-span-1 md:pl-0">
-            <span className="min-w-0">
-              <span className="font-semibold text-accent-text">{fmtShort(b.check_in)}</span> to{' '}
-              <span className="font-semibold text-danger">{fmtShort(b.check_out)}</span>
-              <span className="text-muted">, {nightsLabel(b.nights)}</span>
-            </span>
-          </span>
-        )}
-        {show('status') && (
-          <span className="col-span-2 min-w-0 pl-5 md:col-span-1 md:justify-self-start md:pl-0">
-            {isDeleted ? (
-              <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
-            ) : (
-              <StatusBadge status={b.status} />
+        <span aria-hidden="true" className={`shrink-0 rounded-md ${minimal ? 'size-3.5' : 'size-4'}`} style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
+        <span className="min-w-0 flex-1">
+          <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <span className={`truncate ${minimal ? 'text-[0.9375rem]' : 'text-[1.0625rem]'} font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
+            {show('status') && (
+              isDeleted ? (
+                <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
+              ) : (
+                <StatusBadge status={b.status} />
+              )
             )}
           </span>
-        )}
+          <span className={`mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 ${minimal ? 'text-[0.8125rem]' : 'text-[0.9375rem]'} text-muted`}>
+            {show('room') && (
+              <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
+                {rooms.length > 1 ? (
+                  <>
+                    <span className="font-semibold text-ink">{rooms.length} rooms</span>
+                    {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => (
+                      <RoomNumber key={f} number={count} shadeOf={`${f}01`} label="" />
+                    ))}
+                  </>
+                ) : (
+                  <RoomNumber number={rooms[0]} />
+                )}
+              </span>
+            )}
+            {show('dates') && (
+              <span className="flex items-center gap-1.5">
+                <CalendarBlank size={minimal ? 14 : 16} aria-hidden="true" className="shrink-0" />
+                <span>
+                  <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_in)}</span> to <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_out)}</span>
+                </span>
+              </span>
+            )}
+            <span className="flex items-center gap-4">
+            {show('dates') && (
+              <span className="flex items-center gap-1" title={nightsLabel(b.nights)}>
+                <Moon size={minimal ? 14 : 16} aria-hidden="true" />
+                <span className="font-mono">{b.nights}</span>
+                <span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span>
+              </span>
+            )}
+            {b.adults != null && (
+              <span className="flex items-center gap-1" title={`${b.adults} adult${b.adults === 1 ? '' : 's'}${b.children ? `, ${b.children} child${b.children === 1 ? '' : 'ren'}` : ''}`}>
+                <User size={minimal ? 14 : 16} aria-hidden="true" />
+                <span className="font-mono">{b.adults + (b.children ?? 0)}</span>
+                <span className="sr-only">guests</span>
+              </span>
+            )}
+            </span>
+            {show('organization') && b.organization && (
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Buildings size={16} aria-hidden="true" className="shrink-0" />
+                <span className="truncate">{b.organization}</span>
+              </span>
+            )}
+            {show('contact') && (
+              <span className="flex min-w-0 items-center gap-1.5">
+                {contact && <Phone size={16} aria-hidden="true" className="shrink-0" />}
+                <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
+              </span>
+            )}
+          </span>
+        </span>
+        {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
         <div className="flex shrink-0 items-center gap-2 pr-3">
@@ -120,11 +118,12 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         </div>
       )}
       {members && !isDeleted && (
-        <button type="button" className="btn btn-icon btn-quiet m-3 shrink-0 self-center" aria-expanded={open} aria-label={`${open ? 'Hide' : 'Show'} the ${members.length} rooms of ${b.name}`} onClick={() => setOpen((v) => !v)}>
-          <CaretDown size={18} aria-hidden="true" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-        </button>
+        <span className="flex w-14 shrink-0 items-center justify-center">
+          <button type="button" className="btn btn-icon btn-quiet" aria-expanded={open} aria-label={`${open ? 'Hide' : 'Show'} the ${members.length} rooms of ${b.name}`} onClick={() => setOpen((v) => !v)}>
+            <CaretDown size={18} aria-hidden="true" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+          </button>
+        </span>
       )}
-      {!members && !isDeleted && b.status !== 'on_hold' && b.members && <span aria-hidden="true" className="w-16 shrink-0" />}
       {isDeleted && (
         <button type="button" className="btn btn-sm m-3 self-center" onClick={() => onRestore(b)}>
           Restore

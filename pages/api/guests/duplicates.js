@@ -13,7 +13,7 @@ async function list(req, res) {
       SELECT g.id, g.name, g.phone, g.email, g.organization,
              lower(regexp_replace(g.name, ${'[^a-zA-Z0-9]'}::text, '', 'g')) AS key,
              (SELECT count(*) FROM bookings b WHERE b.guest_id = g.id AND b.deleted_at IS NULL)::int AS stays
-      FROM guests g
+      FROM guests g WHERE g.deleted_at IS NULL
     ) t
     WHERE key <> ''
     GROUP BY key

@@ -23,7 +23,7 @@ async function list(req, res) {
   const [rows, colors] = await Promise.all([
     sql`
       WITH org AS (
-        SELECT regexp_replace(trim(organization), '\\s+', ' ', 'g') AS name, id AS guest_id, NULL::int AS booking_id FROM guests WHERE trim(coalesce(organization, '')) <> ''
+        SELECT regexp_replace(trim(organization), '\\s+', ' ', 'g') AS name, id AS guest_id, NULL::int AS booking_id FROM guests WHERE deleted_at IS NULL AND trim(coalesce(organization, '')) <> ''
         UNION ALL
         SELECT regexp_replace(trim(organization), '\\s+', ' ', 'g'), guest_id, id FROM bookings WHERE deleted_at IS NULL AND trim(coalesce(organization, '')) <> ''
       )
