@@ -402,9 +402,11 @@ export default function Bookings() {
             <p className={search || activeCount ? 't-group pt-2' : 'sr-only'} role="status" aria-live="polite">{search || activeCount ? 'Showing ' : ''}{rows.length} {rows.length === 1 ? 'booking' : 'bookings'}</p>
             {pinnedSec && (
               // The pinned bookings stay at the top of the scrolling list while everything else scrolls under them (its own scroll if there are many).
-              <ul className="sticky top-0 z-10 mb-3 max-h-72 divide-y divide-line overflow-y-auto rounded-lg border border-line bg-surface shadow-sm">
-                {renderSection(pinnedSec, -1)}
-              </ul>
+              <div className="sticky top-0 z-10 bg-canvas pb-3">
+                <ul className="max-h-72 divide-y divide-line overflow-y-auto rounded-lg border border-line bg-surface">
+                  {renderSection(pinnedSec, -1)}
+                </ul>
+              </div>
             )}
             <ul className={`animate-settle divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface transition-opacity ${list.loading ? 'opacity-70' : ''}`}>
               {restSections.map(renderSection)}
