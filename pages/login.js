@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -17,6 +17,36 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [show, setShow] = useState(false);
   const [configured, setConfigured] = useState(true);
+  // The background (asciify-engine): the letters of PULSE, in small gold type that keeps changing,, quiet round the card, lit under the
+  // pointer. Loaded after the page so sign-in never waits for it; if it cannot load or draw (no WebGL2) the page is just plain. It
+  // pauses off screen and holds a still frame with reduced motion by itself, and is torn down when the page goes.
+  const page = useRef(null);
+  const card = useRef(null);
+  useEffect(() => {
+    let bg;
+    let gone = false;
+    import('asciify-engine/kit')
+      .then(({ background, wordField }) => {
+        if (gone || !page.current) return;
+        bg = background(page.current, {
+          preset: wordField,
+          text: 'PULSE',
+          clear: card.current ?? false,
+          palette: '#b8923a', // the logo's gold
+          cellSize: 9,
+          speed: 1,
+          opacity: 0.75,
+          look: { glyphOrder: 'text', charset: ' PULSE ' }, // the field is written in the letters of the name, which keep changing
+          cursor: 'lantern',
+        });
+      })
+      .catch(() => {});
+    return () => {
+      gone = true;
+      bg?.destroy();
+    };
+  }, []);
+
   useEffect(() => {
     api('/api/login').then((d) => setConfigured(d.configured)).catch(() => {});
   }, []);
@@ -42,8 +72,8 @@ export default function Login() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="icon" href="/icon.png" type="image/png" />
       </Head>
-      <main className="grid min-h-[100dvh] place-items-center px-4 py-10">
-        <div className="card login-rise w-full max-w-md space-y-8 !rounded-3xl border-white/70 p-6 shadow-md sm:p-10">
+      <main ref={page} className="relative grid min-h-[100dvh] place-items-center px-4 py-10">
+        <div ref={card} className="card login-rise relative w-full max-w-md space-y-8 !rounded-3xl border-white/70 p-6 shadow-md sm:p-10">
           <div className="flex flex-col items-center gap-2 text-center">
             <Image src="/Pulse-Logo_Final.webp" alt="The Pulse Newtown" width={744} height={380} priority style={{ '--i': 1 }} className="login-rise h-12 w-auto" />
             <h1 style={{ '--i': 2 }} className="t-display login-rise">Sign in</h1>
@@ -70,7 +100,7 @@ export default function Login() {
               </div>
             </div>
             {error && <p key={error} role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}
-            <button type="submit" style={{ '--i': 5 }} className="btn btn-primary btn-block login-rise" disabled={busy}>
+            <button type="submit" style={{ '--i': 5 }} className="btn btn-primary btn-block login-rise !bg-[#0e7490] !text-white hover:!bg-[#155e75] active:!bg-[#164e63] disabled:!bg-[#0e7490]" disabled={busy}>
               {busy ? (
                 <span className="inline-flex items-center gap-2" role="status">
                   Signing in
