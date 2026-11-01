@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import BookingSheet from '../components/booking/BookingSheet';
 import BookingRow, { BOOKING_COLUMNS } from '../components/bookings/BookingRow';
@@ -54,6 +55,7 @@ const CLEAR_FILTERS = { room: '', floor: '', status: '', org: '', contact: '', n
 
 export default function Bookings() {
   const toast = useToast();
+  const router = useRouter();
   const { settings } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
 
@@ -193,6 +195,8 @@ export default function Bookings() {
       toast({ message: err.message });
     }
   };
+  // The booking on the calendar: the address names the view, the days and the booking, and the calendar opens it.
+  const showInCalendar = (b) => router.push({ pathname: '/', query: { view: 'timeline', date: addDays(b.check_in, -3), span: 21, open: b.id } });
   const saved = (message) => {
     list.reload();
     if (message) toast({ message, duration: 3000 });
@@ -395,6 +399,7 @@ export default function Bookings() {
           rooms={rooms.data ?? []}
           onClose={() => setSheet(null)}
           onSaved={saved}
+          onShowInCalendar={showInCalendar}
           onConfirm={(b) => { setSheet(null); confirmHold(b); }}
         />
       )}
