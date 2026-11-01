@@ -154,7 +154,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
               <button
                 key={d}
                 type="button"
-                style={{ '--i': i }}
+                style={{ '--i': i, ...(counts[i] > 0 && total > 0 ? { backgroundColor: `color-mix(in srgb, var(--accent) ${Math.round((counts[i] / total) * 70)}%, transparent)` } : null) }} // the fuller the day, the deeper the tint, so a busy day stands out at a glance
                 onClick={() => onPickDay(d)}
                 aria-label={`${fmtDayMonth(d)}: ${counts[i]} of ${total} rooms taken, ${Math.max(0, total - counts[i])} free`}
                 className={`cell cell-in flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
