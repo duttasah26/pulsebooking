@@ -1,3 +1,5 @@
+import { PushPin } from '@phosphor-icons/react';
+import { useIsPinned } from '../../../lib/pinned';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Clock, SignIn, X } from '@phosphor-icons/react';
 import { useSettings } from '../../SettingsProvider';
@@ -42,6 +44,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const c = colorFor(b, settings);
   const hold = b.status === 'on_hold';
   const finished = b.status === 'checked_out';
+  const pinned = useIsPinned(b.id);
   // A finger has no Ctrl key: on phones the Select tool makes a tap pick a booking; pressing and holding one for half a
   // second also picks it (then taps pick or unpick). With the Hold tool a finger drags the bar (touch-none stops the page scrolling instead).
   const press = useRef({ timer: null, fired: false });
@@ -126,6 +129,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const content = (
     <>
       {picked && <MarchingDashes color={c.border} />}
+      {pinned && <PushPin size={11} weight="fill" aria-label="Pinned" className="pointer-events-none absolute right-1 top-1 hidden text-ink/60 @min-[56px]:block" />}
       {b.status === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
       {hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
       {hold && (

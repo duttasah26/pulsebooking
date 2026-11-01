@@ -24,6 +24,7 @@ import { useStoredState } from '../lib/useStoredState';
 import { useUrlSearch } from '../lib/useUrlSearch';
 import { changedParams, csvList, toggleCsv, useSavedViews } from '../lib/viewState';
 import { useSettings } from '../components/SettingsProvider';
+import { usePinned } from '../lib/pinned';
 import { colorFor, roomShade, stayColor } from '../lib/colors';
 import { addDays, diffDays, fmtMonth, fmtShort, today } from '../lib/dates';
 
@@ -54,6 +55,7 @@ const URL_DEFAULTS = {
 const CLEAR_FILTERS = { room: '', floor: '', status: '', org: '', contact: '', nmin: '', nmax: '', rby: '', df: '', dt: '', holds: '' };
 
 export default function Bookings() {
+  const { ids: pinnedIds } = usePinned();
   const toast = useToast();
   const router = useRouter();
   const { settings } = useSettings();
@@ -132,11 +134,16 @@ export default function Bookings() {
     arrival: (b) => arrivalGroup(b.check_in),
   };
   const groupMode = groupBy === 'none' ? null : groupBy || (sort === 'check_in' && !sort2 ? 'arrival' : null);
+  // Pinned bookings (a pin button sits beside Edit in a booking's details) come first, in their own group, then the rest as the list is grouped.
+  const isPinned = (b) => pinnedIds.includes(b.id) || Boolean(b.members?.some((m) => pinnedIds.includes(m.id)));
+  const pinnedRows = tab === 'deleted' ? [] : rows.filter(isPinned);
   const sections = (() => {
-    if (!groupMode) return [{ label: null, items: rows }];
-    const out = [];
+    const rest = pinnedRows.length ? rows.filter((b) => !isPinned(b)) : rows;
+    const head = pinnedRows.length ? [{ label: 'Pinned', items: pinnedRows }] : [];
+    if (!groupMode) return [...head, ...(rest.length ? [{ label: null, items: rest }] : [])];
+    const out = [...head];
     const seen = new Map();
-    rows.forEach((b) => {
+    rest.forEach((b) => {
       const label = groupLabel[groupMode](b);
       const at = groupMode === 'arrival' ? out.length - 1 : seen.get(label) ?? -1;
       if (at >= 0 && out[at].label === label) out[at].items.push(b);
