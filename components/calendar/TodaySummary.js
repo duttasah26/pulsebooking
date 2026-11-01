@@ -16,7 +16,12 @@ export default function TodaySummary({ label, arriving, leaving, staying, total,
   );
   return (
     <div className="inline-flex items-center gap-4 rounded-lg bg-surface-2 px-4 py-2 text-[0.9375rem] text-muted">
-      <span className="shrink-0 self-stretch whitespace-nowrap border-r border-line pr-4 flex items-center font-semibold text-ink">{label}</span>
+      {/* The label: "Today", or the day you clicked, with the room on the next line ("Tue 10 Nov" over "Room 201"), in a cell with a minimum
+          width, so the tile keeps about the same size whatever is chosen. */}
+      <span className="flex min-w-24 shrink-0 flex-col items-start justify-center self-stretch whitespace-nowrap border-r border-line pr-4 font-semibold text-ink">
+        {label.split(', ')[0]}
+        {label.includes(', ') && <span className="text-[0.8125rem] font-medium text-muted">{label.split(', ').slice(1).join(', ')}</span>}
+      </span>
       <div className="space-y-1">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
           {part(Bed, 'text-muted', total ? <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> of {total} rooms in use</> : <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> staying</>)}
