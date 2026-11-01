@@ -83,6 +83,9 @@ export default function BookingDetails({
           {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
           {!b.guest_id && <li>No guest name yet</li>}
           <Line icon={Users}>{partyText(partyOf(targets))}</Line>
+          {/* How it was booked and on which rate plan belong with who is staying: in the card, with their icons. */}
+          <Line icon={Megaphone}>Booked via {b.channel}</Line>
+          <Line icon={Receipt}>{b.rate_plan}</Line>
         </ul>
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-3">
           <Bed size={20} aria-hidden="true" className="shrink-0 text-muted dark:text-ink/70" />
@@ -111,8 +114,6 @@ export default function BookingDetails({
       </section>
 
       <ul className="space-y-2 px-1 text-base">
-        <Line icon={Megaphone}>Booked via {b.channel}</Line>
-        <Line icon={Receipt}>{b.rate_plan}</Line>
         {b.notes && <Line icon={Note}>{b.notes}</Line>}
         {b.created_at && (
           <Line icon={Clock}>
