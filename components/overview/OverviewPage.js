@@ -300,7 +300,7 @@ export default function OverviewPage() {
                 <div className="flex min-h-0 flex-col">
                   <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
                   <div className="grid grid-cols-2 gap-3 lg:min-h-0 lg:flex-1 lg:grid-rows-3">
-                    <Tile big label="Room occupancy" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
+                    <Tile big label="Today" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
                     <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
                     <Tile label="Available rooms" tone="bg-pop-blue-soft" value={dash(roomCount - inUse)} />
                     <Tile label="Occupied rooms" tone="bg-pop-blue-soft" value={dash(inUse)} />
