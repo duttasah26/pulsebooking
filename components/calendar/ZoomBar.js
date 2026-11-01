@@ -1,4 +1,4 @@
-import { Minus, Plus, Question } from '@phosphor-icons/react';
+import { MagnifyingGlassMinus, MagnifyingGlassPlus, Question } from '@phosphor-icons/react';
 import { MousePill, PencilPill } from './InlineIcons';
 
 const MIN = 0.6;
@@ -41,13 +41,15 @@ function HoldSteps() {
 // The zoom control, in the top toolbar beside the month: one segmented control, minus, the percentage and plus, as in map and
 // design tools. The percentage is a button too: it is the way back to 100% (quiet at 100%, green when zoomed). Smaller shows more
 // of the calendar; larger makes the cells easier to hit. Steps are 10%, the limits 60% and 160%.
+// A magnifier with a plus or minus (not a bare + or -, which is also the New Booking tool's symbol on this screen); Shift-click steps by 50%
+// (steppers.md, Desktop: Shift-click for larger changes). The middle shows the value and puts it back to 100%.
 export function ZoomControl({ zoom, onChange }) {
   const pct = Math.round(zoom * 100);
   const step = 'seg-item shrink-0 disabled:pointer-events-none disabled:opacity-40';
   return (
     <div role="group" aria-label="Zoom" className="seg">
-      <button type="button" className={`${step} min-w-10 px-2`} aria-label="Zoom out, show more" title="Zoom out: show more" disabled={zoom <= MIN} onClick={() => onChange(clampZoom(zoom - 0.1))}>
-        <Minus size={16} weight="bold" aria-hidden="true" />
+      <button type="button" className={`${step} min-w-10 px-2`} aria-label="Zoom out, show more" title="Zoom out: show more (hold Shift for bigger steps)" disabled={zoom <= MIN} onClick={(e) => onChange(clampZoom(zoom - (e.shiftKey ? 0.5 : 0.1)))}>
+        <MagnifyingGlassMinus size={18} weight="bold" aria-hidden="true" />
       </button>
       <button
         type="button"
@@ -59,8 +61,8 @@ export function ZoomControl({ zoom, onChange }) {
       >
         {pct}%
       </button>
-      <button type="button" className={`${step} min-w-10 px-2`} aria-label="Zoom in, make bigger" title="Zoom in: make bigger" disabled={zoom >= MAX} onClick={() => onChange(clampZoom(zoom + 0.1))}>
-        <Plus size={16} weight="bold" aria-hidden="true" />
+      <button type="button" className={`${step} min-w-10 px-2`} aria-label="Zoom in, make bigger" title="Zoom in: make bigger (hold Shift for bigger steps)" disabled={zoom >= MAX} onClick={(e) => onChange(clampZoom(zoom + (e.shiftKey ? 0.5 : 0.1)))}>
+        <MagnifyingGlassPlus size={18} weight="bold" aria-hidden="true" />
       </button>
     </div>
   );

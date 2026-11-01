@@ -147,7 +147,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
         <p className="sr-only" role="status" aria-live="polite">{fmtLong(date)}</p>
       <p className="px-1 text-base text-muted">
         <span className="font-semibold text-ok-text">{day.arriving.length} arriving</span>,{' '}
-        <span className="font-semibold text-danger">{day.leaving.length} leaving</span>, {busy.size} rooms in use, {freeRooms.length} free
+        <span className="font-semibold text-danger">{day.leaving.length} leaving</span>, {busy.size} {busy.size === 1 ? 'room' : 'rooms'} in use, {freeRooms.length} free
       </p>
 
       <div className="grid gap-4 lg:grid-cols-2" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: 'pan-y' }}>
