@@ -175,7 +175,7 @@ export default function Guests() {
   const summary = `${SORTS.find(([v]) => v === sort)?.[1] ?? ''}${activeCount ? `, ${activeCount} ${activeCount === 1 ? 'filter' : 'filters'}` : ''}`;
 
   return (
-    <Layout title="Guests">
+    <Layout title="Guests" wide>
       <Head><title>{`Guests${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide && tab === 'guests' ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-4">

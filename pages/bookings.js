@@ -329,7 +329,7 @@ export default function Bookings() {
   const summary = `${active.label}${activeCount ? `, ${activeCount} ${activeCount === 1 ? 'filter' : 'filters'}` : ''}, ${SORTS.find(([v]) => v === sort)?.[1] ?? ''}`;
 
   return (
-    <Layout title="Bookings">
+    <Layout title="Bookings" wide>
       <Head><title>{`${active.label} Bookings${search ? `: ${search}` : ''} | Pulse Rooms`}</title></Head>
       <div className={`lg:grid lg:items-start lg:gap-4 ${wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''}`}>
         <div className="min-w-0 space-y-4">
