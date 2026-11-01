@@ -416,7 +416,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <input id="b-label" name="label" className="field" placeholder="For example, Sharma wedding party…" value={f.label} onChange={(e) => f.setLabel(e.target.value)} autoComplete="off" />
           </div>
         )}
-        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-4" style={{ backgroundColor: tone.bg, borderColor: tone.border }}>
+        <section aria-label="Booking summary" className="space-y-4 rounded-lg border p-4" style={{ backgroundColor: tone.soft ?? tone.bg, borderColor: tone.border }}>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="t-title break-words">{guestName ?? 'No guest yet'}</h3>

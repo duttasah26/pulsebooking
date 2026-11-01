@@ -65,7 +65,10 @@
   --pop-amber: #b86e00;
   --pop-amber-soft: #fbf0d6;
   --raised: #ffffff;        /* the chosen segment and a switch handle: lifted off its track */
-  --edge-keep: 100%;        /* how much of a booking colour's edge is kept (dark softens it) */
+  --edge-keep: 100%;        /* how much of a booking colour's edge is kept */
+  --edge-lift: 0%;          /* how far a booking colour's edge is lifted toward white (dark does) */
+  --soft-tint: 22%;         /* how much of its colour a large panel takes (dark only; light keeps the pastel) */
+  --fill-tint: 50%;         /* how much of its edge colour fills a booking bar (only dark uses it) */
   --tone-light: 100%;       /* how much of a booking colour's light pastel is kept; in dark the colour's edge tints the dark surface instead */
   --tint: rgb(var(--ink-rgb) / 0.06);
   --tint-hover: rgb(var(--ink-rgb) / 0.1);
@@ -99,48 +102,51 @@
   --surface-2: #211e1b;
   --surface-3: #2a2622;
   --line: #2b2723;
-  --ink: #ddd7ce;
-  --muted: #9a9187;        /* 6.5:1 on --surface */
-  --accent: #23765a;       /* white on it 5.6:1; calmer than light mode's green so it sits in the dark instead of glowing */
-  --accent-strong: #68b494; /* green words on a green tint */
+  --ink: #efeae2;
+  --muted: #aaa196;        /* 6.5:1 on --surface */
+  --accent: #2b8a66;       /* white on it 5.6:1; calmer than light mode's green so it sits in the dark instead of glowing */
+  --accent-strong: #7bd6b0; /* green words on a green tint */
   --accent-ink: #ffffff;
-  --accent-soft: rgb(82 177 132 / 0.14);
-  --accent-text: #58a585;
-  --accent-hover: #2b8666;
-  --accent-press: #1d6249;
+  --accent-soft: rgb(82 190 140 / 0.17);
+  --accent-text: #6ccaa2;
+  --accent-hover: #35a077;
+  --accent-press: #2b8a66;
   --chrome: #211e1b;
   --chrome-line: #2b2723;
   --grid-line: #332e29;
   --field-line: #7a7167;   /* 3.9:1 on --surface */
-  --danger: #f0937f;       /* 7.6:1 on --surface */
-  --danger-soft: rgb(240 120 100 / 0.12);
-  --hold: rgb(222 170 60 / 0.13);
-  --hold-edge: #c9a23a;
-  --hold-ink: #f0cf7c;
-  --ink-rgb: 221 215 206;
+  --danger: #ff9a86;       /* 7.6:1 on --surface */
+  --danger-soft: rgb(255 130 110 / 0.15);
+  --hold: rgb(240 190 70 / 0.16);
+  --hold-edge: #d9b04a;
+  --hold-ink: #f5d98a;
+  --ink-rgb: 239 234 226;
   --shadow-rgb: 0 0 0;
-  --edge-rgb: 221 215 206;
+  --edge-rgb: 239 234 226;
   --shadow-k: 3;
   --ring-a: 0.12;
   --hatch-rgb: 242 237 230;
   --hatch-a: 0.12;
   --bar: #3a352f;
-  --on-ink: #ddd7ce;
-  --on-ink-warn: #e3c673;
-  --on-ink-ok: #86c8a8;
+  --on-ink: #efeae2;
+  --on-ink-warn: #f0d27a;
+  --on-ink-ok: #8fd3b4;
   --raised: #35302b;
-  --pop-green: #52b184;
-  --pop-green-soft: rgb(82 177 132 / 0.12);
-  --pop-red: #e27f6b;
-  --pop-red-soft: rgb(226 127 107 / 0.12);
-  --pop-blue: #7c9ee0;
-  --pop-blue-soft: rgb(124 158 224 / 0.13);
-  --pop-violet: #a595e6;
-  --pop-violet-soft: rgb(165 149 230 / 0.13);
-  --pop-amber: #d4a043;
-  --pop-amber-soft: rgb(212 160 67 / 0.13);
+  --pop-green: #62d39c;
+  --pop-green-soft: rgb(82 190 140 / 0.15);
+  --pop-red: #ff8f7b;
+  --pop-red-soft: rgb(255 130 110 / 0.15);
+  --pop-blue: #8db0ff;
+  --pop-blue-soft: rgb(124 166 255 / 0.16);
+  --pop-violet: #b4a3ff;
+  --pop-violet-soft: rgb(170 150 255 / 0.16);
+  --pop-amber: #f0b94f;
+  --pop-amber-soft: rgb(240 190 70 / 0.15);
   --tone-light: 0%;
-  --edge-keep: 58%;
+  --edge-keep: 100%;
+  --edge-lift: 24%;
+  --fill-tint: 58%;
+  --soft-tint: 20%;
   --tint: rgb(var(--ink-rgb) / 0.05);
   --tint-hover: rgb(var(--ink-rgb) / 0.08);
   --tint-press: rgb(var(--ink-rgb) / 0.12);
@@ -148,11 +154,11 @@
   --btn-hover: rgb(var(--ink-rgb) / 0.12);
   --btn-press: rgb(var(--ink-rgb) / 0.17);
   --btn-sm: rgb(var(--ink-rgb) / 0.06);
-  --danger-btn: rgb(240 120 100 / 0.12);
-  --danger-hover: rgb(240 120 100 / 0.2);
-  --danger-press: rgb(240 120 100 / 0.28);
-  --hold-hover: rgb(222 170 60 / 0.2);
-  --hold-press: rgb(222 170 60 / 0.28);
+  --danger-btn: rgb(255 130 110 / 0.15);
+  --danger-hover: rgb(255 130 110 / 0.23);
+  --danger-press: rgb(255 130 110 / 0.31);
+  --hold-hover: rgb(240 190 70 / 0.24);
+  --hold-press: rgb(240 190 70 / 0.32);
 }
 
 /* A phone held sideways: wide enough for the tablet layout, but only about 400px tall. Used as `short:` in class names. */

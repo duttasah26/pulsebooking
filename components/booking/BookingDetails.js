@@ -29,7 +29,7 @@ function Moment({ icon: Icon, tone, label, date, time, fallback }) {
 function Line({ icon: Icon, children }) {
   return (
     <li className="flex items-start gap-2">
-      <Icon size={16} aria-hidden="true" className="mt-1 shrink-0 text-muted" />
+      <Icon size={16} aria-hidden="true" className="mt-1 shrink-0 text-muted dark:text-ink/70" />
       <span className="min-w-0 break-words">{children}</span>
     </li>
   );
@@ -56,13 +56,13 @@ export default function BookingDetails({
 
       {/* Who and where, in the booking's own colour (it matches its bar on the calendar): the status as a tag (dashed
           when on hold, so it reads without colour), the name, how to reach them, and the room or rooms as key tags. */}
-      <section aria-label="Guest and room" className="rounded-lg border p-4" style={{ backgroundColor: c.bg, borderColor: c.border }}>
+      <section aria-label="Guest and room" className="rounded-lg border p-4" style={{ backgroundColor: c.soft ?? c.bg, borderColor: c.border }}>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <StatusBadge status={b.status} />
           {b.status === 'on_hold' && <span className="text-[0.9375rem]">Not confirmed yet</span>}
         </div>
         <p className="t-title mt-3 flex min-w-0 items-center gap-2 break-words">
-          <User size={20} aria-hidden="true" className="shrink-0 text-muted" />
+          <User size={20} aria-hidden="true" className="shrink-0 text-muted dark:text-ink/70" />
           {b.name}
         </p>
         <ul className="mt-3 space-y-2 text-base">
@@ -73,7 +73,7 @@ export default function BookingDetails({
           <Line icon={Users}>{partyText(partyOf(targets))}</Line>
         </ul>
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-3">
-          <Bed size={20} aria-hidden="true" className="shrink-0 text-muted" />
+          <Bed size={20} aria-hidden="true" className="shrink-0 text-muted dark:text-ink/70" />
           <span className="sr-only">{targets.length > 1 ? 'Rooms' : 'Room'}</span>
           {[...new Set(targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number])].sort().map((n) => {
             const shade = roomShade({ number: n }, settings);
@@ -82,7 +82,7 @@ export default function BookingDetails({
             );
           })}
           {groupCount > 1 && onShowGroup && (
-            <button type="button" className="btn btn-sm ml-auto bg-surface/60 hover:bg-surface" onClick={onShowGroup}>
+            <button type="button" className="btn btn-sm ml-auto bg-surface/60 hover:bg-surface dark:bg-ink/10 dark:hover:bg-ink/15" onClick={onShowGroup}>
               <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
             </button>
           )}

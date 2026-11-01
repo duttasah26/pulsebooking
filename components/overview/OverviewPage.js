@@ -110,6 +110,35 @@ function WeekChart({ days }) {
   );
 }
 
+// The whole page in outline, shown until every request is in, so the page appears once, complete, and never fills in piece by piece.
+function OverviewSkeleton({ panel, week }) {
+  const block = (cls, i = 0) => <div aria-hidden="true" className={`skeleton ${cls}`} style={{ animationDelay: `${i * 90}ms` }} />;
+  return (
+    <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy="true" aria-label="Loading the overview">
+      <div className="min-w-0 space-y-6 pt-4 md:pb-4">
+        <div className="flex items-center gap-4">
+          {block('size-14 shrink-0 rounded-full')}
+          <div className="space-y-2">{block('h-7 w-56 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
+        </div>
+        {block('h-11 w-44 rounded-lg')}
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl', i))}
+          </div>
+          {week && block('h-96 w-full rounded-xl', 2)}
+        </div>
+      </div>
+      {panel && (
+        <aside className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-hidden lg:border-l lg:border-t-0">
+          <div className="flex min-h-14 items-center px-4">{block('h-5 w-24 rounded-md')}</div>
+          <div className="flex gap-2 px-4 pb-3">{[0, 1, 2].map((i) => block('h-9 w-28 rounded-full', i))}</div>
+          <div className="space-y-px border-t border-line">{[0, 1, 2, 3, 4].map((i) => block('h-[4.5rem] w-full', i))}</div>
+        </aside>
+      )}
+    </div>
+  );
+}
+
 function Pills({ label, items, value, onPick, className = '' }) {
   return (
     <div role="tablist" aria-label={label} onKeyDown={tabKeys} className={`no-scrollbar flex gap-2 overflow-x-auto ${className}`}>
@@ -155,7 +184,8 @@ export default function OverviewPage() {
   const holds = holdsApi.data;
   const month = monthApi.data;
   const reload = () => { soonApi.reload(); holdsApi.reload(); monthApi.reload(); };
-  const me = (useApi('/api/me').data?.name ?? '').split('@')[0];
+  const meApi = useApi('/api/me');
+  const me = (meApi.data?.name ?? '').split('@')[0];
   const rooms = useApi('/api/rooms').data ?? [];
   const roomCount = rooms.length;
 
@@ -171,9 +201,10 @@ export default function OverviewPage() {
   const adults = inHouseList.reduce((n, b) => n + (b.adults ?? 0), 0);
   const children = inHouseList.reduce((n, b) => n + (b.children ?? 0), 0);
   const nights = live(month).reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > monthFrom ? b.check_in : monthFrom, b.check_out < monthTo ? b.check_out : monthTo)), 0);
-  const ready = Array.isArray(soon) && Array.isArray(month) && roomCount > 0;
+  const ready = Array.isArray(soon) && Array.isArray(month) && Array.isArray(holds) && meApi.data !== undefined && roomCount > 0;
   const pct = (n, of) => (of ? `${Math.round((n / of) * 100)}%` : '0%');
-  const dash = (v) => (ready ? v : '…');
+  // Until the data is in, every figure is a skeleton block the size of the number, so the page keeps its shape and nothing shows a placeholder dash.
+  const dash = (v) => (ready ? v : <span aria-hidden="true" className="skeleton inline-block h-[0.8em] w-[1.6ch] rounded-md align-baseline" />);
 
   const [ahead, setAhead] = useState(true);
   const week = range(ahead ? t : addDays(t, -7), 7).map((x) => ({
@@ -210,6 +241,7 @@ export default function OverviewPage() {
 
   // The list panel runs the full height of the page along its right edge; everything else sits in the column beside it.
   const panel = parts.cards !== false;
+  if (!ready) return <OverviewSkeleton panel={panel} week={parts.week !== false} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
       <div className="min-w-0 space-y-6 pt-4 md:pb-4">
@@ -219,7 +251,7 @@ export default function OverviewPage() {
             <h1 className="truncate text-2xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
               <Bell size={16} aria-hidden="true" />
-              <span>{label}: {ready ? summary : '…'}</span>
+              {ready ? <span>{label}: {summary}</span> : <span aria-hidden="true" className="skeleton h-4 w-56 rounded-md" />}
             </p>
           </div>
         </div>
@@ -260,7 +292,7 @@ export default function OverviewPage() {
                     <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />Arrivals</span>
                     <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-pop-blue" />Departures</span>
                   </p>
-                  <WeekChart days={week} />
+                  {ready ? <WeekChart days={week} /> : <div aria-hidden="true" className="skeleton h-56 w-full max-w-xl rounded-lg" />}
                 </div>
                 <div>
                   <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
@@ -291,7 +323,11 @@ export default function OverviewPage() {
           </div>
           {pills && <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="px-4 pb-3" />}
           <div role="tabpanel" className="border-t border-line">
-            {shown.length ? (
+            {!ready ? (
+              <div aria-hidden="true" className="space-y-px">
+                {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-[4.5rem] w-full" style={{ animationDelay: `${i * 90}ms` }} />)}
+              </div>
+            ) : shown.length ? (
               <ul className="divide-y divide-line">
                 {shown.map((r, i) => (
                   <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization', 'status']} minimal onOpen={open} />

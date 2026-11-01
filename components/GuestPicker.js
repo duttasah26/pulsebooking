@@ -44,7 +44,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
         <FieldLabel icon={User} as="span" hidden>Guest</FieldLabel>
         <div
           className="flex items-center gap-3 rounded-lg border border-line bg-surface p-4"
-          style={(tone ?? resolveColor(selected.color)) ? { backgroundColor: (tone ?? resolveColor(selected.color)).bg, borderColor: (tone ?? resolveColor(selected.color)).border } : undefined}
+          style={(tone ?? resolveColor(selected.color)) ? { backgroundColor: (tone ?? resolveColor(selected.color)).soft ?? (tone ?? resolveColor(selected.color)).bg, borderColor: (tone ?? resolveColor(selected.color)).border } : undefined}
         >
           
           <div className="min-w-0 flex-1">
