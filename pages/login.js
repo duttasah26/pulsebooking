@@ -17,8 +17,8 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [show, setShow] = useState(false);
   const [configured, setConfigured] = useState(true);
-  // The background (asciify-engine): the letters of PULSE, in small gold type that keeps changing,, quiet round the card, lit under the
-  // pointer. Loaded after the page so sign-in never waits for it; if it cannot load or draw (no WebGL2) the page is just plain. It
+  // The Swell background (asciify-engine): small gold symbols that keep changing as slow waves roll through them, quiet round the
+  // card, lit under the  // pointer. Loaded after the page so sign-in never waits for it; if it cannot load or draw (no WebGL2) the page is just plain. It
   // pauses off screen and holds a still frame with reduced motion by itself, and is torn down when the page goes.
   const page = useRef(null);
   const card = useRef(null);
@@ -26,17 +26,17 @@ export default function Login() {
     let bg;
     let gone = false;
     import('asciify-engine/kit')
-      .then(({ background, wordField }) => {
+      .then(({ background, swell }) => {
         if (gone || !page.current) return;
         bg = background(page.current, {
-          preset: wordField,
-          text: 'PULSE',
+          preset: swell,
           clear: card.current ?? false,
           palette: '#b8923a', // the logo's gold
-          cellSize: 9,
+          mark: 'glyph',
+          charset: ' .:+*x=#%@', // real symbols, swapping as the waves roll
+          cellSize: 8,
           speed: 1,
-          opacity: 0.75,
-          look: { glyphOrder: 'text', charset: ' PULSE ' }, // the field is written in the letters of the name, which keep changing
+          opacity: 0.7,
           cursor: 'lantern',
         });
       })
@@ -100,7 +100,7 @@ export default function Login() {
               </div>
             </div>
             {error && <p key={error} role="alert" className="animate-shake rounded-lg bg-danger-soft px-4 py-3 text-base font-medium text-danger">{error}</p>}
-            <button type="submit" style={{ '--i': 5 }} className="btn btn-primary btn-block login-rise !bg-[#0e7490] !text-white hover:!bg-[#155e75] active:!bg-[#164e63] disabled:!bg-[#0e7490]" disabled={busy}>
+            <button type="submit" style={{ '--i': 5 }} className="btn btn-primary btn-block login-rise" disabled={busy}>
               {busy ? (
                 <span className="inline-flex items-center gap-2" role="status">
                   Signing in
