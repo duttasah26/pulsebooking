@@ -52,8 +52,17 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
           </span>
           <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-[0.9375rem] text-muted">
             {show('room') && (
-              <span className="flex flex-wrap items-center gap-1">
-                {rooms.map((n) => <RoomNumber key={n} number={n} />)}
+              <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
+                {rooms.length > 1 ? (
+                  <>
+                    <span className="font-semibold text-ink">{rooms.length} rooms</span>
+                    {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => (
+                      <RoomNumber key={f} number={count} shadeOf={`${f}01`} label="" />
+                    ))}
+                  </>
+                ) : (
+                  <RoomNumber number={rooms[0]} />
+                )}
               </span>
             )}
             {show('dates') && (
