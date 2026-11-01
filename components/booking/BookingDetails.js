@@ -26,9 +26,9 @@ function Moment({ icon: Icon, tone, label, date, time, fallback }) {
   );
 }
 
-function Line({ icon: Icon, children }) {
+function Line({ icon: Icon, children, className = '', title }) {
   return (
-    <li className="flex items-start gap-2">
+    <li title={title} className={`flex items-start gap-2 ${className}`}>
       <Icon size={16} aria-hidden="true" className="mt-1 shrink-0 text-muted dark:text-ink/70" />
       <span className="min-w-0 break-words">{children}</span>
     </li>
@@ -91,22 +91,26 @@ export default function BookingDetails({
             <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
           </button>
         )}
-        {/* How to reach them, then the other facts side by side (two columns when there is room), so the card stays short. */}
-        <div className="mt-3 space-y-3 border-t border-ink/10 pt-3 text-base">
-          {(b.phone || b.email || b.organization || !b.guest_id) && (
-            <ul className="space-y-2">
-              {b.phone && <Line icon={Phone}><a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a></Line>}
-              {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
-              {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
-              {!b.guest_id && <li>No guest name yet</li>}
+        {/* The facts, on one strict grid of two columns so everything lines up: the long lines (email, company) take the full width, then phone, guests,
+            how it was booked and the plan fill the columns in pairs. An odd one out takes the full width instead of leaving a hole. */}
+        {(() => {
+          const facts = [
+            b.phone && { key: 'phone', icon: Phone, node: <a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a> },
+            { key: 'party', icon: Users, node: partyText(partyOf(targets)) },
+            { key: 'via', icon: Megaphone, node: `via ${b.channel}`, title: `Booked via ${b.channel}` },
+            { key: 'plan', icon: Receipt, node: `Plan ${b.rate_plan}` },
+          ].filter(Boolean);
+          return (
+            <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-ink/10 pt-3 text-base">
+              {b.email && <Line icon={Envelope} className="col-span-2"><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
+              {b.organization && <Line icon={Buildings} className="col-span-2">{b.organization}</Line>}
+              {!b.guest_id && <li className="col-span-2">No guest name yet</li>}
+              {facts.map((f, i) => (
+                <Line key={f.key} icon={f.icon} title={f.title} className={facts.length % 2 === 1 && i === facts.length - 1 ? 'col-span-2' : ''}>{f.node}</Line>
+              ))}
             </ul>
-          )}
-          <ul className="grid grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-x-3 gap-y-2">
-            <Line icon={Users}>{partyText(partyOf(targets))}</Line>
-            <Line icon={Megaphone}>Booked via {b.channel}</Line>
-            <Line icon={Receipt}>Plan {b.rate_plan}</Line>
-          </ul>
-        </div>
+          );
+        })()}
       </section>
 
       {/* When: the two moments that matter most, large, with the length of the stay inside the same card. */}
