@@ -69,7 +69,7 @@ export default function RoomGrid({
       // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
       const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
-      const base = short ? 8 : window.innerWidth < 768 ? 84 : 36; // 36: the page padding under the grid (16) and the day bar being a little taller than counted, so the page itself does not scroll
+      const base = short ? 8 : window.innerWidth < 768 ? 84 : 22; // 22: the page padding under the grid (8 on the calendar) and a little for the day bar being taller than counted, so the page itself does not scroll (measured: it overflowed by 5px at 16 and had 12px of slack at 28)
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
       setAvail(Math.max(short ? 130 : window.innerWidth < 768 ? 180 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));

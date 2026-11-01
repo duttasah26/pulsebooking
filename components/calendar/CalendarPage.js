@@ -529,7 +529,10 @@ export default function CalendarPage() {
 
   // The toolbar spans the whole width; below it the tool pane, the calendar and the booking panel all start on the same line.
   return (
-    <div className="space-y-4">
+    // md:-mt-4 cancels the page's 16px top padding on desktop: the tall summary tile in the toolbar already puts about 14px above the buttons,
+    // so the title row sits as far under the navbar (about 15px) as the controls row sits under the title row.
+    // md:-mb-2 halves the page padding under the grid (16 to 8px); the grid's reserve in RoomGrid is 8px smaller to match.
+    <div className="space-y-4 md:-mb-2 md:-mt-4 short:mb-0 short:mt-0">
       <Head><title>{tabTitle}</title></Head>
       <div className="@container">
         <CalendarToolbar
