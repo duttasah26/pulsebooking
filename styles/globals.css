@@ -447,19 +447,6 @@ body {
   to { opacity: 1; transform: none; filter: none; }
 }
 .login-rise { animation: login-rise 560ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
-/* A logo stamped on the sign-in page's background: it comes down big and a little crooked, lands with a small thump at its own
-   angle (--tilt), rests, then fades. Reduced motion: it only fades in and out where it was clicked. */
-@keyframes logo-stamp {
-  0% { opacity: 0; transform: translate(-50%, -50%) rotate(calc(var(--tilt) + 10deg)) scale(1.7); }
-  18% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(0.93); }
-  30% { transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.02); }
-  42%, 75% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1); }
-}
-@keyframes logo-stamp-calm {
-  0% { opacity: 0; } 25%, 70% { opacity: 1; } 100% { opacity: 0; }
-}
-.logo-stamp { transform: translate(-50%, -50%); animation: logo-stamp 1700ms var(--ease-out) forwards; }
 /* Three dots bounce in turn beside "Signing in" while the sign-in is on its way. Reduced motion: they fade in turn instead. */
 @keyframes dot-bounce {
   0%, 60%, 100% { transform: none; }
@@ -472,9 +459,6 @@ body {
 .dot-bounce { animation: dot-bounce 900ms var(--ease-out) infinite; animation-delay: calc(var(--i, 0) * 130ms); }
 @media (prefers-reduced-motion: reduce) {
   .dot-bounce { animation-name: dot-fade; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .logo-stamp { animation-name: logo-stamp-calm; }
 }
 @media (prefers-reduced-motion: reduce) {
   .login-rise { animation-name: fade-in; animation-duration: var(--dur-base); }
