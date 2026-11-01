@@ -4,7 +4,8 @@ import { MAX_PINS, usePinned } from '../lib/pinned';
 
 // Pins a booking (to the side of the calendar and the top of the Bookings list), or lets it go. Sits beside Edit in a booking's details.
 // Switched on, it is the solid "on" button with a filled pin.
-export default function PinButton({ id }) {
+export default function PinButton({ booking }) {
+  const id = booking.id;
   const toast = useToast();
   const { isPinned, toggle } = usePinned();
   const on = isPinned(id);
@@ -18,7 +19,7 @@ export default function PinButton({ id }) {
       title={label}
       disabled={!(id > 0)}
       onClick={() => {
-        if (toggle(id) === 'full') toast({ message: `You can pin up to ${MAX_PINS} bookings. Unpin one first`, important: true });
+        if (toggle(booking) === 'full') toast({ message: `You can pin up to ${MAX_PINS} bookings. Unpin one first`, important: true });
       }}
     >
       <PushPin size={20} weight={on ? 'fill' : 'bold'} aria-hidden="true" />

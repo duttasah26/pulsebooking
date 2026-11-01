@@ -27,7 +27,7 @@ export default function BookingSheet({ onClose: closeNow, editing: editingProp, 
       actions={existing && !editing ? (
         <>
           <EditButton onClick={() => setEditing(true)} disabled={props.booking.id < 0} />
-          <PinButton id={props.booking.id} />
+          <PinButton booking={props.booking} />
         </>
       ) : null}
     >

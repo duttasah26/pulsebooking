@@ -8,20 +8,23 @@ import { colorFor } from '../../lib/colors';
 import { addDays } from '../../lib/dates';
 
 // The bookings pinned to the side: slim vertical tabs under the folded "New Booking" tab, each in its booking's colour with the guest's name
-// running down it. Pressing one shows that booking on the calendar and opens it. A pinned booking that has been deleted lets itself go.
-function Pin({ id }) {
+// running down it. Pressing one shows that booking on the calendar and opens it. A tab is drawn at once from the snapshot saved with the pin,
+// and the live booking (fetched in the background) takes over; a pinned booking that has been deleted lets itself go.
+function Pin({ pin }) {
   const router = useRouter();
   const { settings } = useSettings();
   const { remove } = usePinned();
+  const { id } = pin;
   const { data, error } = useApi(`/api/bookings/${id}`);
   useEffect(() => {
     if (data?.deleted_at || error?.message === 'Booking not found') remove(id);
   }, [data, error, id, remove]);
-  if (!data || data.deleted_at) return null;
-  const c = colorFor(data, settings);
-  const show = () => router.push({ pathname: '/', query: { view: 'timeline', date: addDays(data.check_in, -3), span: 21, open: data.id } });
-  const name = data.name || 'On hold';
-  const label = `${name}, room ${data.room_number}. Show on the calendar`;
+  const b = data && !data.deleted_at ? data : pin.snap;
+  if (!b) return null;
+  const c = colorFor(b, settings);
+  const show = () => router.push({ pathname: '/', query: { view: 'timeline', date: addDays(b.check_in ?? data?.check_in, -3), span: 21, open: id } });
+  const name = b.name || 'On hold';
+  const label = `${name}${b.room_number ? `, room ${b.room_number}` : ''}. Show on the calendar`;
   return (
     <li className="flex h-44 min-h-24 shrink">
       <button
@@ -40,13 +43,13 @@ function Pin({ id }) {
 }
 
 export default function PinnedBookings({ except }) {
-  const { ids: all } = usePinned();
-  const ids = all.filter((id) => id !== except); // the open booking already has its own tab
-  if (ids.length === 0) return null;
+  const { pins } = usePinned();
+  const shown = pins.filter((p) => p.id !== except); // the open booking already has its own tab
+  if (shown.length === 0) return null;
   // display: contents, so each pinned tab is a direct item of the rail: the same size as the main tab, shrinking with it only when they do not fit.
   return (
     <ul role="list" aria-label="Pinned bookings" className="contents">
-      {ids.map((id) => <Pin key={id} id={id} />)}
+      {shown.map((p) => <Pin key={p.id} pin={p} />)}
     </ul>
   );
 }

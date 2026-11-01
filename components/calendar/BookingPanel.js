@@ -105,7 +105,7 @@ export default function BookingPanel({
   const actions = (
     <>
       {panel && !panel.editing && <EditButton onClick={() => setEditing(true)} disabled={panelBooking.id < 0} />}
-      {panel && !panel.editing && <PinButton id={panelBooking.id} />}
+      {panel && !panel.editing && <PinButton booking={panelBooking} />}
     </>
   );
 
