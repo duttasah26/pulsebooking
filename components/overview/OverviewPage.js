@@ -7,7 +7,7 @@ import { useOverviewParts } from '../../lib/devicePrefs';
 import { tabKeys } from '../../lib/tabKeys';
 import BookingRow from '../bookings/BookingRow';
 
-// The Overview page. Left: the day's four figures (they also choose the list), the week overview with its chart and occupancy tiles.
+// The Overview page. Left: the day's figures (they also choose the list), the week overview with its chart and occupancy tiles.
 // Right: the list behind the chosen figure, with filter pills. It reads its own data (a week back to 60 days ahead, the holds, this
 // month). A booking in several rooms is one row with its rooms. A row opens the booking on the calendar. Cancelled bookings are left out.
 const live = (list) => (Array.isArray(list) ? list : []).filter((b) => b.status !== 'cancelled');
@@ -146,6 +146,8 @@ export default function OverviewPage() {
   const inHouse = groupRows(inHouseList);
   const inUse = new Set(inHouseList.map((b) => b.room_id)).size;
   const holdRows = groupRows(live(holds));
+  const upcoming = groupRows(pool.filter((b) => b.check_in > d));
+  const thisWeek = upcoming.filter((r) => r.first.check_in < addDays(d, 8)).length;
   const adults = inHouseList.reduce((n, b) => n + (b.adults ?? 0), 0);
   const children = inHouseList.reduce((n, b) => n + (b.children ?? 0), 0);
   const nights = live(month).reduce((sum, b) => sum + Math.max(0, diffDays(b.check_in > monthFrom ? b.check_in : monthFrom, b.check_out < monthTo ? b.check_out : monthTo)), 0);
@@ -167,6 +169,7 @@ export default function OverviewPage() {
     arrivals: { title: 'Arrivals', rows: arrivals, empty: 'Nobody arriving.' },
     departures: { title: 'Departures', rows: departures, empty: 'Nobody leaving.' },
     house: { title: 'In the house', rows: inHouse, empty: 'Nobody staying.' },
+    upcoming: { title: 'Upcoming', rows: upcoming, empty: 'Nothing booked ahead.' },
     holds: { title: 'On hold', rows: holdRows, empty: 'No holds to confirm.' },
   };
   const list = lists[kind];
@@ -209,13 +212,15 @@ export default function OverviewPage() {
       {parts.cards !== false && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
           <div className="min-w-0 space-y-4">
-            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
               <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} tone="text-accent-text" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
                 notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
               <Figure title="Departures" name="Departures" value={dash(departures.length)} tone="text-danger" active={kind === 'departures'} onPick={() => pick('departures')}
                 notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first.status)).length)]]} />
               <Figure title="In the house" name="Rooms in use" value={dash(inUse)} tone="text-ink" active={kind === 'house'} onPick={() => pick('house')}
                 notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
+              <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} tone="text-muted" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
+                notes={[['Next 7 days', dash(thisWeek)]]} />
               <Figure title="On hold" name="Holds" value={dash(holdRows.length)} tone="text-hold-ink" active={kind === 'holds'} onPick={() => pick('holds')}
                 notes={[['Rooms', dash(holdRows.reduce((n, r) => n + r.rooms.length, 0))]]} />
             </div>
