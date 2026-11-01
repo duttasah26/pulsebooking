@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
-import { MagnifyingGlass, User, X } from '@phosphor-icons/react';
+import { CalendarBlank, CaretRight, MagnifyingGlass, Moon, User, X } from '@phosphor-icons/react';
 import { useApi, useDebounced } from '../lib/useApi';
 import { addDays, diffDays, fmtShort, nightsLabel, today } from '../lib/dates';
-import { STATUS_LABEL } from '../lib/status';
-import { roomShade } from '../lib/colors';
+import { colorFor } from '../lib/colors';
+import StatusBadge from './StatusBadge';
+import RoomNumber from './RoomNumber';
 import { useSettings } from './SettingsProvider';
 
 // One search box in the header, on the calendar page: type a guest, a company or a phone number and jump to their booking on the
@@ -96,40 +97,55 @@ export default function GlobalSearch() {
   };
   const row = (on) => `row-in flex min-h-14 w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-2 ${on ? 'bg-surface-2' : ''}`;
   // The results are a panel of their own, as wide as a booking line needs, over a dimmed calendar; the box in the header stays put.
-  const panel = 'animate-pop fixed inset-x-4 top-14 z-40 mx-auto flex max-h-[min(34rem,calc(100dvh-4.5rem))] max-w-[40rem] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg';
+  const panel = 'animate-pop fixed inset-x-4 top-14 z-40 mx-auto flex max-h-[min(34rem,calc(100dvh-4.5rem))] max-w-[44rem] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg';
   const heading = (text, first) => <p aria-hidden="true" className={`t-group px-2 pb-1 ${first ? 'pt-1' : 'pt-3'}`}>{text}</p>;
-  const RoomTag = ({ n }) => {
-    const shade = roomShade({ number: n }, settings);
-    return (
-      <span className="rounded-md px-2 py-0.5 font-mono text-[0.9375rem] font-semibold leading-5 text-ink" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
-        {n}
-      </span>
-    );
-  };
+  // A booking as everywhere else: its colour and name with the status, then the rooms, dates, nights and guests with their icons.
   const stayRow = (b, i) => {
-    const hold = b.status === 'on_hold';
     const done = b.status === 'cancelled' || b.status === 'checked_out';
     const nights = diffDays(b.check_in, b.check_out);
     const rooms = [...new Set(b.rooms)].sort();
+    const colour = colorFor(b, settings);
+    const floors = Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {}));
     return (
       <button key={b.group_id ?? b.id} style={{ '--i': i }} id={`gs-opt-${i}`} type="button" role="option" aria-selected={mark === i} tabIndex={-1} className={row(mark === i)} onClick={() => toStay(b)}>
-        <span className="min-w-0 flex-1 px-1">
-          <span className={`block truncate text-base font-semibold ${done ? 'text-muted' : ''}`}>
-            {b.name || 'On hold'}{b.organization && b.organization !== b.name ? <span className="ml-2 font-normal text-muted">{b.organization}</span> : null}
+        <span aria-hidden="true" className="size-4 shrink-0 rounded-md" style={{ backgroundColor: colour.bg, boxShadow: `inset 0 0 0 1.5px ${colour.border}` }} />
+        <span className={`min-w-0 flex-1 ${done ? 'text-ink/75' : ''}`}>
+          <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="truncate text-[1.0625rem] font-semibold">{b.name || 'On hold'}</span>
+            <StatusBadge status={b.status} />
           </span>
-          <span className="block text-[0.9375rem] text-muted">
-            {fmtShort(b.check_in)} to {fmtShort(b.check_out)}, {nightsLabel(nights)}
-          </span>
-          <span className="mt-1 flex flex-wrap items-center gap-1">
-            {rooms.slice(0, 6).map((n) => <RoomTag key={n} n={n} />)}
-            {rooms.length > 6 && <span className="px-1 font-mono text-[0.9375rem] text-muted">+{rooms.length - 6}</span>}
+          <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-[0.9375rem] text-muted">
+            <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
+              {rooms.length > 1 ? (
+                <>
+                  <span className="font-semibold text-ink">{rooms.length} rooms</span>
+                  {floors.map(([f, count]) => <RoomNumber key={f} number={count} shadeOf={`${f}01`} label="" />)}
+                </>
+              ) : (
+                <RoomNumber number={rooms[0]} />
+              )}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CalendarBlank size={16} aria-hidden="true" className="shrink-0" />
+              <span><span className="font-semibold text-ink">{fmtShort(b.check_in)}</span> to <span className="font-semibold text-ink">{fmtShort(b.check_out)}</span></span>
+            </span>
+            <span className="flex items-center gap-4">
+              <span className="flex items-center gap-1" title={nightsLabel(nights)}>
+                <Moon size={16} aria-hidden="true" />
+                <span className="font-mono">{nights}</span>
+                <span className="sr-only">{nights === 1 ? 'night' : 'nights'}</span>
+              </span>
+              {b.adults != null && (
+                <span className="flex items-center gap-1">
+                  <User size={16} aria-hidden="true" />
+                  <span className="font-mono">{b.adults + (b.children ?? 0)}</span>
+                  <span className="sr-only">guests</span>
+                </span>
+              )}
+            </span>
           </span>
         </span>
-        {b.status !== 'confirmed' && (
-          <span className={`shrink-0 text-[0.9375rem] ${hold ? 'rounded-md border border-dashed border-hold-edge bg-hold px-2 py-0.5 font-semibold text-hold-ink' : 'text-muted'}`}>
-            {STATUS_LABEL[b.status] ?? b.status}
-          </span>
-        )}
+        <CaretRight size={18} aria-hidden="true" className="mx-2 shrink-0 text-muted" />
       </button>
     );
   };
