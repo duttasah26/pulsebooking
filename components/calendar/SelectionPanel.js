@@ -112,7 +112,7 @@ export default function SelectionPanel({
                         <span className="flex items-start gap-2">
                           <CalendarBlank size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-muted" />
                           <span>
-                            <span className="text-accent-text">{fmtShort(b.check_in)}</span> to <span className="text-danger">{fmtShort(b.check_out)}</span>
+                            <span className="text-ok-text">{fmtShort(b.check_in)}</span> to <span className="text-danger">{fmtShort(b.check_out)}</span>
                             <span className="text-muted">, {nightsLabel(b.nights)}{times ? `, ${times}` : ''}</span>
                           </span>
                         </span>

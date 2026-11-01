@@ -33,6 +33,9 @@
   --accent-soft: #e6f0ea;
   --accent-text: #1d6b50;   /* 6.4:1 on white, 5.7:1 on the canvas */
   --accent-hover: #155a43;  /* the green button when pointed at, and when pressed */
+  --ok: #117a68;            /* status: confirmed, arriving, checked in. A teal-leaning green, so it never reads as the button green (--accent), which means do this / chosen */
+  --ok-soft: #e1f2ee;
+  --ok-text: #117a68;       /* 5.4:1 on white */
   --accent-press: #0f4733;
   --chrome: #ebe9e3;        /* the track of a segmented control */
   --chrome-line: #e3e1d9;
@@ -54,8 +57,8 @@
   --on-ink: #ffffff;        /* words on that bar */
   --on-ink-warn: #f0d27a;   /* a warning icon and a green action on that bar */
   --on-ink-ok: #8fd3b4;
-  --pop-green: #178a55;     /* the Overview's figures: vivid number colours and their soft fills (they are for numbers and tiles, not for buttons) */
-  --pop-green-soft: #e4f4ea;
+  --pop-green: #12806c;     /* the Overview's figures: vivid number colours and their soft fills (they are for numbers and tiles, not for buttons) */
+  --pop-green-soft: #e1f3ef;
   --pop-red: #d03d27;
   --pop-red-soft: #fcebe7;
   --pop-blue: #2b62d4;
@@ -110,6 +113,9 @@
   --accent-soft: rgb(82 190 140 / 0.17);
   --accent-text: #6ccaa2;
   --accent-hover: #35a077;
+  --ok: #3fb8a5;
+  --ok-soft: rgb(70 200 185 / 0.15);
+  --ok-text: #62d3c1;
   --accent-press: #2b8a66;
   --chrome: #211e1b;
   --chrome-line: #2b2723;
@@ -132,8 +138,8 @@
   --on-ink-warn: #f0d27a;
   --on-ink-ok: #8fd3b4;
   --raised: #35302b;
-  --pop-green: #62d39c;
-  --pop-green-soft: rgb(82 190 140 / 0.15);
+  --pop-green: #5fd2c0;
+  --pop-green-soft: rgb(80 200 185 / 0.14);
   --pop-red: #ff8f7b;
   --pop-red-soft: rgb(255 130 110 / 0.15);
   --pop-blue: #8db0ff;
@@ -205,6 +211,9 @@
   --color-on-ink-warn: var(--on-ink-warn);
   --color-on-ink-ok: var(--on-ink-ok);
   --color-accent-hover: var(--accent-hover);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-text: var(--ok-text);
   --color-raised: var(--raised);
   --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-text), ui-sans-serif, system-ui, sans-serif; /* one typeface everywhere; figures are only set to line up in columns */

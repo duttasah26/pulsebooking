@@ -228,11 +228,11 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
                       <>
                         <span className="text-muted line-through">{fmtShort(b.check_in)} to {fmtShort(b.check_out)}</span>
                         <ArrowRight size={14} weight="bold" aria-hidden="true" />
-                        <span><span className="font-semibold text-accent-text">{fmtShort(d.checkIn)}</span> to <span className="font-semibold text-danger">{fmtShort(d.checkOut)}</span></span>
+                        <span><span className="font-semibold text-ok-text">{fmtShort(d.checkIn)}</span> to <span className="font-semibold text-danger">{fmtShort(d.checkOut)}</span></span>
                         {!d.valid && <strong>ends before it starts</strong>}
                       </>
                     ) : (
-                      <span><span className="text-accent-text">{fmtShort(b.check_in)}</span> to <span className="text-danger">{fmtShort(b.check_out)}</span></span>
+                      <span><span className="text-ok-text">{fmtShort(b.check_in)}</span> to <span className="text-danger">{fmtShort(b.check_out)}</span></span>
                     )}
                   </span>
                 </li>

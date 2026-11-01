@@ -8,7 +8,7 @@ export const STATUS_ICON = { confirmed: Check, on_hold: Clock, checked_in: SignI
 // the badge keeps its own clean colour whatever is under it (in light the fills are solid, so nothing changes).
 const over = (token) => `bg-surface dark:bg-surface/70 bg-[image:linear-gradient(var(--${token}),var(--${token}))]`;
 const TONE = {
-  confirmed: `border-transparent ${over('accent-soft')} text-accent-strong`,
+  confirmed: `border-transparent ${over('ok-soft')} text-ok-text`,
   on_hold: `border-dashed border-hold-edge ${over('hold')} text-hold-ink`,
   checked_in: 'border-transparent bg-accent text-accent-ink',
   checked_out: 'border-transparent bg-surface-2 text-muted',

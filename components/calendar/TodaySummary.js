@@ -26,7 +26,7 @@ export default function TodaySummary({ label, arriving, leaving, staying, total,
       <div className="flex flex-col justify-between gap-1">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
           {part(Bed, 'text-muted', total ? <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> of {total} rooms in use</> : <><span className="font-mono text-base font-semibold text-ink"><CountTo value={staying} /></span> staying</>)}
-          {arriving > 0 && part(SignIn, 'text-accent-text', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={arriving} /></span> arriving</>)}
+          {arriving > 0 && part(SignIn, 'text-ok-text', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={arriving} /></span> arriving</>)}
           {leaving > 0 && part(SignOut, 'text-danger', <><span className="font-mono text-base font-semibold text-ink"><CountTo value={leaving} /></span> leaving</>)}
         </p>
         {monthNights != null && (

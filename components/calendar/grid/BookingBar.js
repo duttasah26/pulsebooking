@@ -127,7 +127,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const pin = rows ? { left: LABEL + 6 } : { top: MONTH_HEAD + 6 };
 
   // Only on a bar big enough for the detail lines (zoomed in): a compact bar is just the name.
-  const tick = b.status === 'confirmed' && <Check size={14} weight="bold" aria-label="Confirmed" className="ml-1 inline-block shrink-0 align-[-2px] text-accent-text" />;
+  const tick = b.status === 'confirmed' && <Check size={14} weight="bold" aria-label="Confirmed" className="ml-1 inline-block shrink-0 align-[-2px] text-ok-text" />;
   const content = (
     <>
       {picked && <MarchingDashes color={c.border} />}

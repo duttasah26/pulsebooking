@@ -16,9 +16,9 @@ const CHIP_PAD = 8;
 // The soft fills are see-through tints in dark, so a chip lays its tint over the page surface first and keeps its own clean colour on any bar.
 const over = (token) => `bg-surface bg-[image:linear-gradient(var(--${token}),var(--${token}))]`;
 const CHIP = {
-  in: 'bg-surface/80 text-accent-text',
+  in: 'bg-surface/80 text-ok-text',
   out: 'bg-surface/80 text-danger',
-  confirmed: `${over('accent-soft')} text-accent-text`,
+  confirmed: `${over('ok-soft')} text-ok-text`,
   on_hold: `${over('hold')} text-hold-ink`,
   checked_in: 'bg-accent text-accent-ink',
   checked_out: 'bg-surface-2 text-muted',
