@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react';
-import Switch from '../Switch';
-import { ArrowUUpLeft, Eye, EyeSlash, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
+import { ArrowUUpLeft, ArrowUUpRight, CalendarBlank, CaretLeft, CaretRight, CheckSquare, Clock, Cursor, Hand, Plus } from '@phosphor-icons/react';
 import ToolButton from './ToolButton';
 import ViewTabs from './ViewTabs';
 import { useMotionBits } from '../../lib/useMotionBits';
-import FloorToggle from './FloorToggle';
 import { ZoomControl } from './ZoomBar';
 import RangePopover from './RangePopover';
+import ViewMenu from './ViewMenu';
 import { SPANS } from './useCalendarParams';
 import { daysInMonth, monthStart, today } from '../../lib/dates';
 
@@ -125,17 +124,14 @@ export default function CalendarToolbar({
       {summary && <div className="hidden md:col-start-2 md:row-span-2 md:row-start-1 md:flex md:items-stretch short:hidden">{summary}</div>}
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
-      <div className="no-scrollbar flex flex-wrap items-center gap-2 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
+      <div className="no-scrollbar flex flex-wrap items-center gap-2 md:gap-3 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
-        <FloorToggle floorKeys={floorKeys} shownFloors={shownFloors} onToggle={onToggleFloor} />
-        {onToggleDone && (view === 'timeline' || view === 'month') && (
-          <label title={showDone ? 'Hide stays that have checked out' : 'Show stays that have checked out'} className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 px-1 text-base font-medium text-ink lg:min-h-10 lg:text-[0.9375rem]">
-            <Switch size="sm" icons OnIcon={Eye} OffIcon={EyeSlash} checked={showDone} onChange={() => onToggleDone()} />
-            Checked out
-          </label>
-        )}
-        {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
-        {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
+        <ViewMenu floorKeys={floorKeys} shownFloors={shownFloors} onToggleFloor={onToggleFloor} showDone={showDone} onToggleDone={onToggleDone && (view === 'timeline' || view === 'month') ? onToggleDone : undefined} />
+        {/* Range and zoom are one group: how much of the calendar you see. */}
+        <div className="flex items-center gap-2">
+          {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
+          {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
+        </div>
       </div>
 
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that
