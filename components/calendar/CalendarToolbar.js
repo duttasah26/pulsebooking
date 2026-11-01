@@ -33,7 +33,8 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
     onResetView();
   };
   return (
-    <select aria-label="Days shown" className="field !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
+    // A pop-up button: grey like View and zoom, showing the current choice.
+    <select aria-label="Days shown" className="btn pop-btn !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
       {SPANS.map((n) => <option key={n} value={n}>{n} days</option>)}
       <option value="month">This month</option>
       {!preset && !monthAligned && <option value={span}>{span} days (custom)</option>}

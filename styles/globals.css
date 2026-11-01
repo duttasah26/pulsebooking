@@ -379,6 +379,23 @@ body {
   :root[data-theme="dark"] select.field {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23f2ede6' d='M213.7 101.7l-80 80a8 8 0 0 1-11.4 0l-80-80a8 8 0 0 1 11.4-11.4L128 164.7l74.3-74.4a8 8 0 0 1 11.4 11.4Z'/%3E%3C/svg%3E");
   }
+  /* A pop-up button: a toolbar control that shows the current choice and opens the list of the others. The same grey as the other toolbar
+     buttons (not a white field), with up-down chevrons that say "pick one". Put it on a native <select>, so the list is the system's. */
+  select.pop-btn {
+    appearance: none;
+    background-color: var(--chrome);
+    padding-right: 2.25rem;
+    font-weight: 500;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23261f1c' d='M181.66 170.34a8 8 0 0 1 0 11.32l-48 48a8 8 0 0 1-11.32 0l-48-48a8 8 0 0 1 11.32-11.32L128 212.69l42.34-42.35a8 8 0 0 1 11.32 0ZM85.66 85.66 128 43.31l42.34 42.35a8 8 0 0 0 11.32-11.32l-48-48a8 8 0 0 0-11.32 0l-48 48a8 8 0 0 0 11.32 11.32Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+  select.pop-btn:hover { background-color: var(--surface-3); }
+  /* A list you have just chosen from keeps the focus: no green ring each time. Keyboard focus still shows, as a plain ink edge. */
+  select.field:focus-visible, select.pop-btn:focus-visible { outline: none; border-color: var(--ink); box-shadow: none; }
+  :root[data-theme="dark"] select.pop-btn {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 256 256'%3E%3Cpath fill='%23f2ede6' d='M181.66 170.34a8 8 0 0 1 0 11.32l-48 48a8 8 0 0 1-11.32 0l-48-48a8 8 0 0 1 11.32-11.32L128 212.69l42.34-42.35a8 8 0 0 1 11.32 0ZM85.66 85.66 128 43.31l42.34 42.35a8 8 0 0 0 11.32-11.32l-48-48a8 8 0 0 0-11.32 0l-48 48a8 8 0 0 0 11.32 11.32Z'/%3E%3C/svg%3E");
+  }
   .label {
     @apply mb-2 block text-[0.9375rem] leading-5 font-semibold text-ink;
   }
