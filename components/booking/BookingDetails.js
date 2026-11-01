@@ -35,7 +35,7 @@ function Line({ icon: Icon, children }) {
   );
 }
 
-// A booking as plain details. The contact card takes the booking's colour, so it matches its bar on the calendar.
+// A booking as plain details. The first card takes the booking's colour, so it matches its bar on the calendar.
 // The pencil in the panel header switches to the form.
 export default function BookingDetails({
   booking: b, group, rooms = [], onRemove, onSaved, onDone, onRemoved, onConfirm, onPutOnHold, groupCount = 0, onShowGroup, onShowInCalendar, pending, onSavePending, onCancelPending,
@@ -69,38 +69,43 @@ export default function BookingDetails({
             <ArrowUpRight size={18} weight="bold" aria-hidden="true" />
           </button>
         )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pr-10">
-          <StatusBadge status={b.status} />
-          {b.status === 'on_hold' && <span className="text-[0.9375rem]">Not confirmed yet</span>}
-        </div>
-        <p className="t-title mt-3 flex min-w-0 items-center gap-2 break-words">
-          <User size={20} aria-hidden="true" className="shrink-0 text-muted dark:text-ink/70" />
-          {b.name}
-        </p>
-        <ul className="mt-3 space-y-2 text-base">
-          {b.phone && <Line icon={Phone}><a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a></Line>}
-          {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
-          {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
-          {!b.guest_id && <li>No guest name yet</li>}
-          <Line icon={Users}>{partyText(partyOf(targets))}</Line>
-          {/* How it was booked and on which rate plan belong with who is staying: in the card, with their icons. */}
-          <Line icon={Megaphone}>Booked via {b.channel}</Line>
-          <Line icon={Receipt}>{b.rate_plan}</Line>
-        </ul>
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-3">
-          <Bed size={20} aria-hidden="true" className="shrink-0 text-muted dark:text-ink/70" />
+        {/* The headline: where (the room tags, in their floor colours), who, and the status. A confirmed booking is a green tick beside the name, as on
+            the calendar bar; any other status keeps its word (dashed when on hold, so it reads without colour). */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 pr-10">
           <span className="sr-only">{targets.length > 1 ? 'Rooms' : 'Room'}</span>
           {[...new Set(targets.length > 1 ? targets.map((t) => t.room_number) : [b.room_number])].sort().map((n) => {
             const shade = roomShade({ number: n }, settings);
             return (
-              <span key={n} className="rounded-md px-2 py-1 font-mono text-lg font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>
+              <span key={n} className="rounded-md px-2 py-0.5 font-mono text-lg font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>{n}</span>
             );
           })}
-          {groupCount > 1 && onShowGroup && (
-            <button type="button" className="btn btn-sm ml-auto bg-surface/60 hover:bg-surface dark:bg-ink/10 dark:hover:bg-ink/15" onClick={onShowGroup}>
-              <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
-            </button>
+          <h3 className="t-title flex min-w-0 items-center gap-1.5 break-words">
+            {b.name}
+            {b.status === 'confirmed' && <Check size={20} weight="bold" aria-label="Confirmed" className="shrink-0 text-ok-text" />}
+          </h3>
+          {b.status !== 'confirmed' && <StatusBadge status={b.status} />}
+        </div>
+        {b.status === 'on_hold' && <p className="mt-1 text-[0.9375rem]">Not confirmed yet</p>}
+        {groupCount > 1 && onShowGroup && (
+          <button type="button" className="btn btn-sm mt-2 bg-surface/60 hover:bg-surface dark:bg-ink/10 dark:hover:bg-ink/15" onClick={onShowGroup}>
+            <Stack size={16} aria-hidden="true" /> {groupCount - 1} more {groupCount === 2 ? 'room' : 'rooms'}
+          </button>
+        )}
+        {/* How to reach them, then the other facts side by side (two columns when there is room), so the card stays short. */}
+        <div className="mt-3 space-y-3 border-t border-ink/10 pt-3 text-base">
+          {(b.phone || b.email || b.organization || !b.guest_id) && (
+            <ul className="space-y-2">
+              {b.phone && <Line icon={Phone}><a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a></Line>}
+              {b.email && <Line icon={Envelope}><a href={`mailto:${b.email}`} className="break-all underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.email}</a></Line>}
+              {b.organization && <Line icon={Buildings}>{b.organization}</Line>}
+              {!b.guest_id && <li>No guest name yet</li>}
+            </ul>
           )}
+          <ul className="grid grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-x-3 gap-y-2">
+            <Line icon={Users}>{partyText(partyOf(targets))}</Line>
+            <Line icon={Megaphone}>Booked via {b.channel}</Line>
+            <Line icon={Receipt}>Plan {b.rate_plan}</Line>
+          </ul>
         </div>
       </section>
 
