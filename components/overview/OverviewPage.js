@@ -40,14 +40,14 @@ function Figure({ title, value, name, tone, notes, active, onPick }) {
       type="button"
       aria-pressed={active}
       onClick={onPick}
-      className={`flex flex-col rounded-xl border bg-surface p-3.5 text-left transition-shadow duration-150 ${active ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-line hover:shadow-md'}`}
+      className={`flex flex-col rounded-xl border bg-surface p-4 text-left transition-shadow duration-150 ${active ? 'border-accent shadow-[0_0_0_1px_var(--accent)]' : 'border-line hover:shadow-md'}`}
     >
       <span className="flex items-center justify-between">
         <span className="text-[0.9375rem] font-semibold">{title}</span>
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" className="text-muted" />
       </span>
-      <span className={`mt-3 text-center font-mono text-4xl font-medium leading-none ${tone}`}>{value}</span>
-      <span className={`mt-1.5 text-center text-[0.9375rem] font-semibold ${tone}`}>{name}</span>
+      <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none ${tone}`}>{value}</span>
+      <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{name}</span>
       <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted">
         {notes.map(([label, n]) => (
           <span key={label} className="flex items-baseline gap-1.5">{label} <span className="font-mono text-base font-semibold text-ink">{n}</span></span>
@@ -59,8 +59,8 @@ function Figure({ title, value, name, tone, notes, active, onPick }) {
 
 function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = false }) {
   return (
-    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-24' : 'min-h-20'} ${tone}`}>
-      <p className={`font-mono font-medium leading-none ${big ? 'text-3xl' : 'text-2xl'} ${text}`}>{value}</p>
+    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} ${tone}`}>
+      <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{value}</p>
       <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{label}</p>
     </div>
   );
@@ -201,7 +201,7 @@ export default function OverviewPage() {
   // The list panel runs the full height of the page along its right edge; everything else sits in the column beside it.
   const panel = parts.cards !== false;
   return (
-    <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : ''}`} aria-busy={!ready}>
+    <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
       <div className="min-w-0 space-y-6 pt-4 md:pb-4">
         <div className="flex items-center gap-4">
           <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>

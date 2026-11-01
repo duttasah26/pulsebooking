@@ -54,12 +54,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
           <span className={`mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 ${minimal ? 'text-[0.8125rem]' : 'text-[0.9375rem]'} text-muted`}>
             {show('room') && (
               <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
-                {minimal ? (
-                  <>
-                    <span aria-hidden="true" className="size-2.5 rounded-full" style={{ backgroundColor: roomShade({ number: rooms[0] }, settings).fill, boxShadow: `inset 0 0 0 1px ${roomShade({ number: rooms[0] }, settings).edge}` }} />
-                    <span>{rooms.length > 1 ? `${rooms.length} rooms` : <>Room <span className="font-mono font-semibold text-ink">{rooms[0]}</span></>}</span>
-                  </>
-                ) : rooms.length > 1 ? (
+                {rooms.length > 1 ? (
                   <>
                     <span className="font-semibold text-ink">{rooms.length} rooms</span>
                     {Object.entries(rooms.reduce((acc, n) => ({ ...acc, [String(n)[0]]: (acc[String(n)[0]] ?? 0) + 1 }), {})).map(([f, count]) => (
@@ -79,6 +74,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
                 </span>
               </span>
             )}
+            <span className="flex items-center gap-4">
             {show('dates') && (
               <span className="flex items-center gap-1" title={nightsLabel(b.nights)}>
                 <Moon size={minimal ? 14 : 16} aria-hidden="true" />
@@ -93,6 +89,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
                 <span className="sr-only">guests</span>
               </span>
             )}
+            </span>
             {show('organization') && b.organization && (
               <span className="flex min-w-0 items-center gap-1.5">
                 <Buildings size={16} aria-hidden="true" className="shrink-0" />
