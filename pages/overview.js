@@ -3,7 +3,7 @@ import OverviewPage from '../components/overview/OverviewPage';
 
 export default function Overview() {
   return (
-    <Layout title="Overview">
+    <Layout title="Overview" wide>
       <OverviewPage />
     </Layout>
   );

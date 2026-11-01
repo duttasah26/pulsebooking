@@ -69,7 +69,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
               <span className="flex items-center gap-1.5">
                 <CalendarBlank size={16} aria-hidden="true" className="shrink-0" />
                 <span>
-                  <span className="font-semibold text-accent-text">{fmtShort(b.check_in)}</span> to <span className="font-semibold text-danger">{fmtShort(b.check_out)}</span>
+                  <span className="font-semibold text-ink">{fmtShort(b.check_in)}</span> to <span className="font-semibold text-ink">{fmtShort(b.check_out)}</span>
                 </span>
               </span>
             )}
