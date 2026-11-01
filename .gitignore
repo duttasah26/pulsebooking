@@ -44,3 +44,4 @@ next-env.d.ts
 
 # Impeccable product context (local only)
 PRODUCT.md
+/.next-test-dev/
