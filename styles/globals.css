@@ -633,6 +633,52 @@ body {
   100% { transform: none; }
 }
 .animate-boing { animation: boing 360ms cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+/* A card that leans toward the pointer and catches the light (see ShineCard). Two layers on top of the card, both drawn only while it is hovered:
+   a soft white glare under the pointer, and a faint foil whose colours move with the pointer. */
+.shine-card {
+  position: relative;
+  transform: perspective(900px) translateY(0) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  will-change: transform;
+}
+.shine-card[data-hover] {
+  transform: perspective(900px) translateY(-2px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  box-shadow: 0 14px 28px -14px rgb(var(--shadow-rgb) / 0.32), 0 2px 6px rgb(var(--shadow-rgb) / 0.08);
+}
+.shine-card::before, .shine-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms var(--ease-out);
+}
+/* The glare: light on the surface right where the pointer is. */
+.shine-card::before {
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.5), transparent 52%);
+  mix-blend-mode: soft-light;
+}
+/* The foil: bands of colour whose phase follows the pointer, kept faint so the card stays readable. */
+.shine-card::after {
+  background: linear-gradient(115deg, transparent 20%, rgb(255 120 170 / 0.5), rgb(255 210 110 / 0.5), rgb(120 230 170 / 0.5), rgb(110 170 255 / 0.5), transparent 80%);
+  background-size: 260% 260%;
+  background-position: var(--mx, 50%) var(--my, 50%);
+  mix-blend-mode: soft-light;
+}
+.shine-card[data-hover]::before { opacity: 1; }
+.shine-card[data-hover]::after { opacity: 0.6; }
+:root[data-theme="dark"] .shine-card::before { background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.2), transparent 52%); mix-blend-mode: screen; }
+:root[data-theme="dark"] .shine-card::after { mix-blend-mode: screen; }
+:root[data-theme="dark"] .shine-card[data-hover]::after { opacity: 0.22; }
+@media (prefers-reduced-motion: no-preference) {
+  .shine-card { animation: shine-in 600ms var(--ease-out) backwards; }
+}
+@keyframes shine-in { from { opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) {
+  .shine-card, .shine-card[data-hover] { transform: none; transition: box-shadow 220ms var(--ease-out); }
+}
+
 /* The sign-in page: the card and what is in it rise into focus one after another (--i). */
 @keyframes login-rise {
   from { opacity: 0; transform: translateY(0.75rem); filter: blur(4px); }

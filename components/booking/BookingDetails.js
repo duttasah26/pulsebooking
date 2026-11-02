@@ -1,5 +1,6 @@
 import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User, ArrowUpRight } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import ShineCard from '../ShineCard';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
 import { partyOf, partyText } from '../../lib/party';
@@ -56,7 +57,7 @@ export default function BookingDetails({
 
       {/* Who and where, in the booking's own colour (it matches its bar on the calendar): the status as a tag (dashed
           when on hold, so it reads without colour), the name, how to reach them, and the room or rooms as key tags. */}
-      <section aria-label="Guest and room" className="relative rounded-lg border p-4" style={{ backgroundColor: c.soft ?? c.bg, borderColor: c.border }}>
+      <ShineCard aria-label="Guest and room" className="relative rounded-lg border p-4" style={{ backgroundColor: c.soft ?? c.bg, borderColor: c.border }}>
         {/* Show this booking on the calendar: in the card's top right corner, out of the crowded header. */}
         {onShowInCalendar && (
           <button
@@ -114,16 +115,16 @@ export default function BookingDetails({
             </ul>
           );
         })()}
-      </section>
+      </ShineCard>
 
       {/* When: the two moments that matter most, large, with the length of the stay inside the same card. */}
-      <section aria-label="Dates" className="overflow-hidden rounded-lg border border-line bg-surface">
+      <ShineCard aria-label="Dates" className="overflow-hidden rounded-lg border border-line bg-surface">
         <div className="grid grid-cols-2 divide-x divide-line">
           <Moment icon={SignIn} tone="text-ok-text" label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
           <Moment icon={SignOut} tone="text-danger" label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
         </div>
         <p className="border-t border-line px-4 py-3 text-center text-[0.9375rem] font-semibold text-muted">{nightsLabel(b.nights)}</p>
-      </section>
+      </ShineCard>
 
       <ul className="space-y-2 px-1 text-base">
         {b.notes && <Line icon={Note}>{b.notes}</Line>}
