@@ -10,7 +10,7 @@ export default function Count({ kind, n, size = 16, title, className = '' }) {
   const words = `${n} ${n === 1 ? one : many}`;
   return (
     <span title={title ?? words} className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap ${className}`}>
-      <Icon size={size} aria-hidden="true" />
+      <Icon size={size} weight="fill" aria-hidden="true" />
       <span aria-hidden="true" className="font-mono">{n}x</span>
       <span className="sr-only">{words}</span>
     </span>

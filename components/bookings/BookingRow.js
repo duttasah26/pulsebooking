@@ -74,7 +74,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
             {show('dates') && (
               <span className="flex items-center gap-1.5">
-                <CalendarBlank size={minimal ? 14 : 16} aria-hidden="true" className="shrink-0" />
+                <CalendarBlank size={minimal ? 14 : 16} weight="fill" aria-hidden="true" className="shrink-0" />
                 <span>
                   <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_in)}</span> to <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_out)}</span>
                 </span>
@@ -90,13 +90,13 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             </span>
             {show('organization') && b.organization && (
               <span className="flex min-w-0 items-center gap-1.5">
-                <Buildings size={16} aria-hidden="true" className="shrink-0" />
+                <Buildings size={16} weight="fill" aria-hidden="true" className="shrink-0" />
                 <span className="truncate">{b.organization}</span>
               </span>
             )}
             {show('contact') && (
               <span className="flex min-w-0 items-center gap-1.5">
-                {contact && <Phone size={16} aria-hidden="true" className="shrink-0" />}
+                {contact && <Phone size={16} weight="fill" aria-hidden="true" className="shrink-0" />}
                 <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
               </span>
             )}

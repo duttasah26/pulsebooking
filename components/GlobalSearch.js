@@ -127,7 +127,7 @@ export default function GlobalSearch() {
               )}
             </span>
             <span className="flex items-center gap-1.5">
-              <CalendarBlank size={16} aria-hidden="true" className="shrink-0" />
+              <CalendarBlank size={16} weight="fill" aria-hidden="true" className="shrink-0" />
               <span><span className="font-semibold text-ink">{fmtShort(b.check_in)}</span> to <span className="font-semibold text-ink">{fmtShort(b.check_out)}</span></span>
             </span>
             <span className="flex items-center gap-4">

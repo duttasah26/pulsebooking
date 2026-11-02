@@ -1,6 +1,5 @@
 import { Moon, SignIn, SignOut, User } from '@phosphor-icons/react';
 import { dayOfMonth, fmtShort, nightsLabel } from '../../../lib/dates';
-import { shownStatus } from '../../../lib/status';
 
 // What a booking bar says besides the name, packed to the room the bar really has (its measured width and height).
 // Items are tried in order of importance and laid into lines like words in a paragraph: each goes on the current line if it
@@ -47,22 +46,21 @@ function items(b, roomTone, hold) {
   out.push({ key: 'dates', variants: dateVariants });
 
   // A confirmed booking is the usual case, so it is not written out: a green tick beside the name says it (see BookingBar). The others keep their word.
-  const shown = shownStatus(b);
-  if (shown !== 'confirmed') {
-    const word = STATUS_WORD[shown] ?? shown;
-    out.push({ key: 'status', variants: [{ w: chipW(word), node: <Chip tone={shown}>{word}</Chip> }] });
+  if (b.status !== 'confirmed') {
+    const word = STATUS_WORD[b.status] ?? b.status;
+    out.push({ key: 'status', variants: [{ w: chipW(word), node: <Chip tone={b.status}>{word}</Chip> }] });
   }
 
   // Nights and guests are an icon and a number, as on the booking rows (a moon and 5, a person and 2).
   out.push({
     key: 'nights',
-    variants: [{ w: iconW(b.nights), node: <span title={nightsLabel(b.nights)} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><Moon size={ICON} aria-hidden="true" />{b.nights}x<span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span></span> }],
+    variants: [{ w: iconW(b.nights), node: <span title={nightsLabel(b.nights)} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><Moon size={ICON} weight="fill" aria-hidden="true" />{b.nights}x<span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span></span> }],
   });
   if (b.adults != null) {
     const guests = b.adults + (b.children ?? 0);
     out.push({
       key: 'guests',
-      variants: [{ w: iconW(guests), node: <span title={`${guests} ${guests === 1 ? 'guest' : 'guests'}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><User size={ICON} aria-hidden="true" />{guests}x<span className="sr-only">guests</span></span> }],
+      variants: [{ w: iconW(guests), node: <span title={`${guests} ${guests === 1 ? 'guest' : 'guests'}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><User size={ICON} weight="fill" aria-hidden="true" />{guests}x<span className="sr-only">guests</span></span> }],
     });
   }
 
