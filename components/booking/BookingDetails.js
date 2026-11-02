@@ -1,5 +1,6 @@
 import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User, ArrowUpRight } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import Count from '../Count';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
 import { partyOf, partyText } from '../../lib/party';
@@ -7,7 +8,7 @@ import { useSettings } from '../SettingsProvider';
 import { useRemoveBooking } from './useRemoveBooking';
 import { formatTime } from '../TimeSelect';
 import { colorFor, roomShade } from '../../lib/colors';
-import { fmtBooked, fmtShort, nightsLabel } from '../../lib/dates';
+import { fmtBooked, fmtShort } from '../../lib/dates';
 import { displayName } from '../../lib/staff';
 
 // One end of the stay: the date and the time, in large type. With no time of its own it shows the default time.
@@ -99,7 +100,7 @@ export default function BookingDetails({
         {(() => {
           const facts = [
             b.phone && { key: 'phone', icon: Phone, node: <a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a> },
-            { key: 'party', icon: Users, node: partyText(partyOf(targets)) },
+            { key: 'party', icon: Users, node: <span title={partyText(partyOf(targets))}><span className="font-mono">{partyOf(targets).adults + partyOf(targets).children}×</span><span className="sr-only"> {partyText(partyOf(targets))}</span></span> },
             { key: 'via', icon: Megaphone, node: `via ${b.channel}`, title: `Booked via ${b.channel}` },
             { key: 'plan', icon: Receipt, node: `Plan ${b.rate_plan}` },
           ].filter(Boolean);
@@ -122,7 +123,7 @@ export default function BookingDetails({
           <Moment icon={SignIn} tone="text-ok-text" label="Check-in" date={b.check_in} time={b.check_in_time} fallback={settings.checkInTime} />
           <Moment icon={SignOut} tone="text-danger" label="Check-out" date={b.check_out} time={b.check_out_time} fallback={settings.checkOutTime} />
         </div>
-        <p className="border-t border-line px-4 py-3 text-center text-[0.9375rem] font-semibold text-muted">{nightsLabel(b.nights)}</p>
+        <p className="flex items-center justify-center border-t border-line px-4 py-3 text-[0.9375rem] font-semibold text-muted"><Count kind="nights" n={b.nights} size={18} /></p>
       </section>
 
       <ul className="space-y-2 px-1 text-base">

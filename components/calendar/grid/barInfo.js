@@ -31,7 +31,7 @@ function Chip({ tone, children }) {
 }
 const chipW = (text) => String(text).length * CH + CHIP_PAD;
 const ICON = 14; // an icon's width, as on the booking rows: a symbol and a number say what a word used to
-const iconW = (text) => ICON + 4 + String(text).length * CH;
+const iconW = (text) => ICON + 4 + (String(text).length + 1) * CH; // +1: the times sign after the number
 
 // Each item: variants, widest first, as { w, node }.
 function items(b, roomTone, hold) {
@@ -54,13 +54,13 @@ function items(b, roomTone, hold) {
   // Nights and guests are an icon and a number, as on the booking rows (a moon and 5, a person and 2).
   out.push({
     key: 'nights',
-    variants: [{ w: iconW(b.nights), node: <span title={nightsLabel(b.nights)} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><Moon size={ICON} aria-hidden="true" />{b.nights}<span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span></span> }],
+    variants: [{ w: iconW(b.nights), node: <span title={nightsLabel(b.nights)} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><Moon size={ICON} aria-hidden="true" />{b.nights}×<span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span></span> }],
   });
   if (b.adults != null) {
     const guests = b.adults + (b.children ?? 0);
     out.push({
       key: 'guests',
-      variants: [{ w: iconW(guests), node: <span title={`${guests} ${guests === 1 ? 'guest' : 'guests'}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><User size={ICON} aria-hidden="true" />{guests}<span className="sr-only">guests</span></span> }],
+      variants: [{ w: iconW(guests), node: <span title={`${guests} ${guests === 1 ? 'guest' : 'guests'}`} className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono font-semibold"><User size={ICON} aria-hidden="true" />{guests}×<span className="sr-only">guests</span></span> }],
     });
   }
 
