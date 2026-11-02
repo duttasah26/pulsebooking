@@ -1,17 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+import Router from 'next/router';
 
 // A thin line along the top of the page while another page opens: it starts at once, creeps forward (never quite arriving) while the page loads,
-// then runs to the end and fades. Black in light mode, the logo's gold in dark. It says "something is happening" the moment a link is pressed, before the new page has anything to show.
+// then runs to the end and fades. The logo's gold, in both themes, with no glow. It says "something is happening" the moment a link is pressed, before the new page has anything to show.
 export default function TopProgress() {
-  const router = useRouter();
   const [bar, setBar] = useState({ width: 0, show: false });
   const timer = useRef(null);
 
   useEffect(() => {
     const stop = () => clearInterval(timer.current);
     const start = (url) => {
-      if (url === router.asPath) return; // the same page again: nothing to load
+      if (url === Router.asPath) return; // the same page again: nothing to load
       stop();
       setBar({ width: 8, show: true });
       // Each tick covers a fraction of what is left, so it slows down as it nears the end.
@@ -26,27 +25,26 @@ export default function TopProgress() {
         timer.current = setTimeout(() => setBar({ width: 0, show: false }), 300);
       }, 220);
     };
-    router.events.on('routeChangeStart', start);
-    router.events.on('routeChangeComplete', done);
-    router.events.on('routeChangeError', done);
+    Router.events.on('routeChangeStart', start);
+    Router.events.on('routeChangeComplete', done);
+    Router.events.on('routeChangeError', done);
     return () => {
-      router.events.off('routeChangeStart', start);
-      router.events.off('routeChangeComplete', done);
-      router.events.off('routeChangeError', done);
+      Router.events.off('routeChangeStart', start);
+      Router.events.off('routeChangeComplete', done);
+      Router.events.off('routeChangeError', done);
       stop();
       clearTimeout(timer.current);
     };
-  }, [router]);
+  }, []); // once: the router's events are stable, while the router object changes after each page and would cut the timers that finish the line
 
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px]">
       <div
-        className="h-full rounded-r-full bg-current text-ink dark:text-[#d1ab4f]"
+        className="h-full rounded-r-full bg-[#b8923a]"
         style={{
           width: `${bar.width}%`,
           opacity: bar.show ? 1 : 0,
           transition: bar.width === 0 ? 'none' : 'width 200ms ease-out, opacity 200ms ease-out 80ms',
-          boxShadow: '0 0 8px currentColor',
         }}
       />
     </div>
