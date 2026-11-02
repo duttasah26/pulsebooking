@@ -1,6 +1,5 @@
 import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User, ArrowUpRight } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
-import { shownStatus } from '../../lib/status';
 import Count from '../Count';
 import HoldButton from '../HoldButton';
 import PendingBanner from '../calendar/PendingBanner';
@@ -93,7 +92,7 @@ export default function BookingDetails({
             {b.name}
             {b.status === 'confirmed' && <Check size={20} weight="bold" aria-label="Confirmed" className="shrink-0 text-ok-text" />}
           </h3>
-          {shownStatus(b) !== 'confirmed' && <StatusBadge status={shownStatus(b)} />}
+          {b.status !== 'confirmed' && <StatusBadge status={b.status} />}
         </div>
         {b.status === 'on_hold' && <p className="mt-1 text-[0.9375rem]">Not confirmed yet</p>}
         {/* The facts, on one strict grid of two columns so everything lines up: the long lines (email, company) take the full width, then phone, guests,
