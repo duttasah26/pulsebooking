@@ -266,7 +266,7 @@ export default function OverviewPage() {
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           {/* The day, as a tab above the figures (a dropdown: the page behind it is the native date picker, so it works with the keyboard and on phones). */}
           <div className="-mb-1 flex items-end gap-3 border-b border-line">
-            <label className="relative -mb-px inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-t-xl border border-b-0 border-line bg-surface px-4 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
+            <label className="relative -mb-px inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-t-xl bg-chrome px-4 transition-colors duration-150 hover:bg-surface-3 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
               <span className="sr-only">Day</span>
               <span aria-hidden="true">{d === t ? `Today, ${fmtShort(d)}` : fmtShort(d)}</span>
               <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />
