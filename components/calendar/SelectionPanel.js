@@ -1,5 +1,6 @@
 import { CaretRight, Bed, Buildings, CalendarBlank, Clock, ListBullets, Phone, Tag, TextAa, Users, X, Check, Trash } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import { shownStatus } from '../../lib/status';
 import HoldButton from '../HoldButton';
 import RoomChips from '../RoomChips';
 import { FoldSection } from '../FilterParts';
@@ -105,7 +106,7 @@ export default function SelectionPanel({
                     >
                       <span className="flex items-start justify-between gap-2">
                         <span className="min-w-0 break-words text-[1.0625rem] font-semibold">{b.name}</span>
-                        <StatusBadge status={b.status} />
+                        <StatusBadge status={shownStatus(b)} />
                       </span>
                       <span className="mt-2 grid gap-1 text-[0.9375rem]">
                         <span className="flex items-center gap-2"><Bed size={16} aria-hidden="true" className="shrink-0 text-muted" />Room <span className="font-mono font-semibold">{b.room_number}</span></span>

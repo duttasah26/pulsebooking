@@ -5,6 +5,7 @@ import { Check, Clock, SignIn, X } from '@phosphor-icons/react';
 import { useSettings } from '../../SettingsProvider';
 import { colorFor, roomShade } from '../../../lib/colors';
 import { fmtShort } from '../../../lib/dates';
+import { shownStatus } from '../../../lib/status';
 import { packInfo } from './barInfo';
 import { LABEL, MONTH_HEAD } from './gridLayout';
 
@@ -114,7 +115,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   };
 
   // Room for text beside the bar's own padding, icons, room chip and (on a hold) the remove button.
-  const beside = (b.status === 'checked_in' || hold ? 18 : 0) + (hold && size.w >= 96 ? 40 : 0) + (hold ? 28 : 0);
+  const beside = (shownStatus(b) === 'checked_in' || hold ? 18 : 0) + (hold && size.w >= 96 ? 40 : 0) + (hold ? 28 : 0);
   const lines = useMemo(
     () => (rows ? packInfo(b, roomTone, hold, size.w - 4 - beside, size.h, true) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,7 +133,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
     <>
       {picked && <MarchingDashes color={c.border} />}
       {pinned && <PushPin size={11} weight="fill" aria-label="Pinned" className="pointer-events-none absolute right-1 top-1 hidden text-ink/60 @min-[56px]:block" />}
-      {b.status === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
+      {shownStatus(b) === 'checked_in' && <SignIn size={14} weight="bold" className="hidden shrink-0 @min-[70px]:block" />}
       {hold && <Clock size={14} className="hidden shrink-0 @min-[70px]:block" />}
       {hold && (
         <span

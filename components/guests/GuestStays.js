@@ -1,5 +1,6 @@
 import { Bed, CalendarBlank, Plus } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
+import { shownStatus } from '../../lib/status';
 import { addDays, fmtShort, nightsLabel, today } from '../../lib/dates';
 
 // Every stay a guest has had (deleted ones are struck through), with a button to book them again.
@@ -35,7 +36,7 @@ export default function GuestStays({ guest, rooms, onBookAgain }) {
                 </span>
               </span>
               <span className="shrink-0">
-                {b.deleted_at ? <StatusBadge deleted>Deleted</StatusBadge> : <StatusBadge status={b.status} />}
+                {b.deleted_at ? <StatusBadge deleted>Deleted</StatusBadge> : <StatusBadge status={shownStatus(b)} />}
               </span>
             </li>
           ))}

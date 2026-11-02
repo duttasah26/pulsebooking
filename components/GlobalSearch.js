@@ -7,6 +7,7 @@ import { useApi, useDebounced } from '../lib/useApi';
 import { addDays, diffDays, fmtShort, today } from '../lib/dates';
 import { colorFor } from '../lib/colors';
 import StatusBadge from './StatusBadge';
+import { shownStatus } from '../lib/status';
 import RoomNumber from './RoomNumber';
 import { useSettings } from './SettingsProvider';
 
@@ -113,7 +114,7 @@ export default function GlobalSearch() {
         <span className={`min-w-0 flex-1 ${done ? 'text-ink/75' : ''}`}>
           <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <span className="truncate text-[1.0625rem] font-semibold">{b.name || 'On hold'}</span>
-            <StatusBadge status={b.status} />
+            <StatusBadge status={shownStatus(b)} />
           </span>
           <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-[0.9375rem] text-muted">
             <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
