@@ -93,7 +93,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
   const times = [b.check_in_time && `in ${b.check_in_time}`, b.check_out_time && `out ${b.check_out_time}`].filter(Boolean).join(', ');
   const label = `${b.name}, Room ${b.room_number}, ${fmtShort(b.check_in)} to ${fmtShort(b.check_out)}${times ? `, ${times}` : ''}`;
 
-  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-clip rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? (large ? 'text-base' : 'text-sm') : 'text-[13px] leading-none'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
+  const shape = `${faded ? 'opacity-40 ' : ''}animate-bar-in @container relative z-[1] flex min-w-0 ${rows ? 'items-center' : 'items-start py-1'} gap-1 overflow-clip rounded-lg border text-left ${size.h === 0 || size.h >= 26 ? (large ? 'text-base' : 'text-sm') : 'text-[13px] leading-[1.25]'} font-medium ${finished ? 'text-ink/75 saturate-[0.6]' : 'text-ink'} ${
     hold ? 'border-dashed' : ''
   } ${
     g.cutStart ? (rows ? 'rounded-l-none border-l-0' : 'rounded-t-none border-t-0') : ''

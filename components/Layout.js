@@ -105,7 +105,8 @@ export default function Layout({ title, wide = false, children }) {
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className={`mx-auto ${max} px-4 pb-28 pt-4 outline-none md:px-6 md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
+      {/* animate-fade: the page content fades in quickly each time a page opens or reloads, instead of popping in as it is drawn and then filled. */}
+      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-4 pb-28 pt-4 outline-none md:px-6 md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
       {/* Phone tab bar: six places, a filled symbol and an emerald label for the one you are on. */}
       <nav

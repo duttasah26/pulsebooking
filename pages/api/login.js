@@ -22,7 +22,7 @@ async function login(req, res) {
   const hash = account ? await hashFor(account.name).catch(() => account.hash) : null; // a password changed in the app wins
   if (!account || !password || !hash || !verifyPassword(password, hash)) {
     await wait(600);
-    throw new HttpError(401, 'That name and password do not match.');
+    throw new HttpError(401, 'That email and password do not match.');
   }
   const token = await signSession(account.name, process.env.SESSION_SECRET);
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
