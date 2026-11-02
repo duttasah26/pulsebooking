@@ -30,9 +30,8 @@ function groupRows(list) {
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-// The big chart card leans only a hair (a large card tilting far looks loose); the small figure cards lean more.
 function Card({ className = '', children, ...rest }) {
-  return <ShineCard tilt={1.2} {...rest} className={`rounded-xl border border-line bg-surface ${className}`}>{children}</ShineCard>;
+  return <section {...rest} className={`rounded-xl border border-line bg-surface ${className}`}>{children}</section>;
 }
 
 // Each figure has its own vivid colour (tokens --pop-*), written out in full so Tailwind sees them. Chosen, a card takes its colour's edge and soft fill.
