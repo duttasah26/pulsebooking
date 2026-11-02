@@ -17,7 +17,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   const [editing, setEditing] = useState(false);
   const changed = Object.keys(current).length > 0;
   const active = views.find((v) => sameParams(v.params, current));
-  const chip = (on) => `btn shrink-0 ${on ? 'btn-on' : ''}`;
+  const chip = (on) => `btn shrink-0 ${on ? 'chip-on' : ''}`;
   const small = 'btn shrink-0';
 
   const submit = async (e) => {

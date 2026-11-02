@@ -472,8 +472,9 @@ body {
   .btn-hold:active, .btn-block-hold:active { background-color: var(--hold-press); }
 
   .btn-on, .btn-on:hover, .btn-on:active {
-    @apply font-semibold text-on-ink;
-    background-color: var(--bar);
+    @apply font-semibold text-ink;
+    background-color: var(--raised);
+    box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.14), 0 0 0 0.5px rgb(var(--shadow-rgb) / 0.1);
   }
 
   .btn-inverse { @apply text-on-ink; background-color: color-mix(in srgb, var(--on-ink) 18%, transparent); }
@@ -497,8 +498,7 @@ body {
   }
   .chip-on:hover { background-color: var(--accent-soft); }
 
-  /* Segmented control: a tinted track, the chosen segment solid ink (the same "on" as a chosen filter, tool or Settings tab; in dark that is a soft
-     raised grey, not a bright slab). Views, navigation, floors. */
+  /* Segmented control: a tinted track, the chosen segment a raised white tab. Views, navigation, floors. */
   .seg {
     @apply inline-flex shrink-0 items-center gap-0.5 rounded-lg p-0.5;
     background-color: var(--chrome);
