@@ -6,6 +6,7 @@ import { MotionConfig } from 'framer-motion';
 import { ToastProvider } from '../components/Toast';
 import { SettingsProvider } from '../components/SettingsProvider';
 import Assistant from '../components/Assistant';
+import TopProgress from '../components/TopProgress';
 import { watchSystemTheme } from '../lib/theme';
 import '../styles/globals.css';
 
@@ -24,6 +25,7 @@ export default function App({ Component, pageProps }) {
         <MotionConfig reducedMotion="user">
         <ToastProvider>
           <SettingsProvider>
+            <TopProgress />
             <Component {...pageProps} />
             {pathname !== '/login' && <Assistant />}
           </SettingsProvider>
