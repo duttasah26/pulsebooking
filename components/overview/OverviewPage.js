@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { Bell, CalendarBlank, DotsThreeVertical, X } from '@phosphor-icons/react';
 import { addDays, daysInMonth, diffDays, fmtShort, monthStart, range, today } from '../../lib/dates';
-import { hasArrived } from '../../lib/status';
 import { useApi } from '../../lib/useApi';
 import { useOverviewParts } from '../../lib/devicePrefs';
 import { tabKeys } from '../../lib/tabKeys';
@@ -167,7 +166,7 @@ const FILTERS = {
   arrivals: [['all', 'All'], ['waiting', 'Not checked in'], ['done', 'Checked in']],
   departures: [['all', 'All'], ['waiting', 'Still in'], ['done', 'Checked out']],
 };
-const isDone = (kind, b) => (kind === 'arrivals' ? hasArrived(b) : b.status === 'checked_out'); // arrivals: by status or, for a confirmed stay, because its check-in day has passed
+const isDone = (kind, status) => (kind === 'arrivals' ? status === 'checked_in' || status === 'checked_out' : status === 'checked_out');
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -228,7 +227,7 @@ export default function OverviewPage() {
   };
   const list = lists[kind];
   const pills = FILTERS[kind];
-  const shown = pills && filter !== 'all' ? list.rows.filter((r) => isDone(kind, r.first) === (filter === 'done')) : list.rows;
+  const shown = pills && filter !== 'all' ? list.rows.filter((r) => isDone(kind, r.first.status) === (filter === 'done')) : list.rows;
   const pick = (k) => { setKind(k); setFilter('all'); };
 
   const open = (b, members) => setSheet({ mode: 'edit', booking: b, group: members?.length > 1 ? members : undefined });
@@ -272,9 +271,9 @@ export default function OverviewPage() {
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
-              notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first)).length)]]} />
+              notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
             <Figure title="Departures" name="Departures" value={dash(departures.length)} pop="red" active={kind === 'departures'} onPick={() => pick('departures')}
-              notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first)).length)]]} />
+              notes={[['Checked out', dash(departures.filter((r) => isDone('departures', r.first.status)).length)]]} />
             <Figure title="In the house" name="Rooms in use" value={dash(inUse)} pop="blue" active={kind === 'house'} onPick={() => pick('house')}
               notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
             <Figure title="Upcoming" name="Bookings" value={dash(upcoming.length)} pop="violet" active={kind === 'upcoming'} onPick={() => pick('upcoming')}

@@ -3,7 +3,6 @@ import Count from '../Count';
 import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Phone, PushPin, X } from '@phosphor-icons/react';
 import { usePinned } from '../../lib/pinned';
 import StatusBadge from '../StatusBadge';
-import { shownStatus } from '../../lib/status';
 import RoomNumber from '../RoomNumber';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
@@ -54,7 +53,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
               isDeleted ? (
                 <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
               ) : (
-                <StatusBadge status={shownStatus(b)} />
+                <StatusBadge status={b.status} />
               )
             )}
           </span>
