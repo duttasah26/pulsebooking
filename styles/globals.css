@@ -61,6 +61,9 @@
   --pop-green-soft: #e1f3ef;
   --pop-red: #d03d27;
   --pop-red-soft: #fcebe7;
+  --slate: #9aa6bd;          /* the grey-blue of the chart bars and the quiet tiles */
+  --slate-strong: #55627d;
+  --slate-soft: #eceff5;
   --pop-blue: #2b62d4;
   --pop-blue-soft: #e8eefb;
   --pop-violet: #5b43c7;
@@ -142,6 +145,9 @@
   --pop-green-soft: rgb(80 200 185 / 0.14);
   --pop-red: #ff8f7b;
   --pop-red-soft: rgb(255 130 110 / 0.15);
+  --slate: #7f8da8;
+  --slate-strong: #aab6cf;
+  --slate-soft: rgb(150 165 195 / 0.14);
   --pop-blue: #8db0ff;
   --pop-blue-soft: rgb(124 166 255 / 0.16);
   --pop-violet: #b4a3ff;
@@ -472,9 +478,8 @@ body {
   .btn-hold:active, .btn-block-hold:active { background-color: var(--hold-press); }
 
   .btn-on, .btn-on:hover, .btn-on:active {
-    @apply font-semibold text-ink;
-    background-color: var(--raised);
-    box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.14), 0 0 0 0.5px rgb(var(--shadow-rgb) / 0.1);
+    @apply font-semibold text-on-ink;
+    background-color: var(--bar);
   }
 
   .btn-inverse { @apply text-on-ink; background-color: color-mix(in srgb, var(--on-ink) 18%, transparent); }
@@ -509,8 +514,9 @@ body {
   }
   .seg-item:hover { @apply text-ink; background-color: color-mix(in srgb, var(--raised) 50%, transparent); }
   .seg-item[aria-selected="true"], .seg-item[aria-current="page"], .seg-item[aria-current="step"], .seg-item[aria-pressed="true"] {
-    @apply font-semibold text-on-ink;
-    background-color: var(--bar);
+    @apply font-semibold text-ink;
+    background-color: var(--raised);
+    box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.14), 0 0 0 0.5px rgb(var(--shadow-rgb) / 0.1);
   }
 
   /* A group of related content: white on the canvas, hairline edge, no shadow. Never a card inside a card. */
