@@ -118,14 +118,14 @@ function OverviewSkeleton({ panel, week }) {
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy="true" aria-label="Loading the overview">
       <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
-        <div className="-ml-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-line bg-surface py-3 pl-4 pr-4 md:-ml-6 md:pl-6 lg:-mr-6">
+        <div className="-ml-4 flex flex-col gap-3 bg-surface pl-4 pr-4 pt-3 md:-ml-6 md:pl-6 lg:-mr-6">
           <div className="flex items-center gap-4">
             {block('size-14 shrink-0 rounded-full')}
             <div className="space-y-2">{block('h-8 w-64 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
           </div>
+          {block('h-10 w-44 rounded-t-xl')}
         </div>
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
-          <div className="-mb-1 border-b border-line">{block('h-10 w-44 rounded-t-xl')}</div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl lg:h-32', i))}
           </div>
@@ -249,7 +249,7 @@ export default function OverviewPage() {
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
       <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
-        <div className="-ml-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-line bg-surface py-3 pl-4 pr-4 md:-ml-6 md:pl-6 lg:-mr-6">
+        <div className="-ml-4 flex flex-col gap-3 bg-surface pl-4 pr-4 pt-3 md:-ml-6 md:pl-6 lg:-mr-6">
         <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
           <div className="min-w-0">
@@ -260,12 +260,9 @@ export default function OverviewPage() {
             </p>
           </div>
         </div>
-        </div>
-
-        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
-          {/* The day, as a tab above the figures (a dropdown: the page behind it is the native date picker, so it works with the keyboard and on phones). */}
-          <div className="-mb-1 flex items-end gap-3 border-b border-line">
-            <label className="relative -mb-px inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-t-xl bg-chrome px-4 transition-colors duration-150 hover:bg-surface-3 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
+          {/* The day, as a tab in the page's grey rising out of the white band and flowing into the grey below (a dropdown: the page behind it is the native date picker, so it works with the keyboard and on phones). */}
+          <div className="flex items-end gap-3">
+            <label className="relative inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-t-xl bg-canvas px-4 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
               <span className="sr-only">Day</span>
               <span aria-hidden="true">{d === t ? `Today, ${fmtShort(d)}` : fmtShort(d)}</span>
               <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />
@@ -273,6 +270,9 @@ export default function OverviewPage() {
             </label>
             {d !== t && <button type="button" className="btn btn-quiet mb-1" onClick={() => setDay(t)}>Today</button>}
           </div>
+        </div>
+
+        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
