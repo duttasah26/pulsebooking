@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Bell, CalendarBlank, DotsThreeVertical, X } from '@phosphor-icons/react';
+import { Bell, CaretDown, DotsThreeVertical, X } from '@phosphor-icons/react';
 import { addDays, daysInMonth, diffDays, fmtShort, monthStart, range, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
 import { useOverviewParts } from '../../lib/devicePrefs';
@@ -96,12 +96,12 @@ function WeekChart({ days }) {
         </g>
       ))}
       {days.map((d, i) => (
-        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" style={{ fill: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />
+        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" style={{ fill: 'color-mix(in srgb, var(--slate) 70%, var(--surface))' }} />
       ))}
-      <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--pop-blue)" strokeWidth="2" />
+      <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--slate-strong)" strokeWidth="2" />
       {days.map((d, i) => (
         <g key={d.day}>
-          <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--pop-blue)" />
+          <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--slate-strong)" />
           <text x={x(i)} y={y(d.leaving) + 4} textAnchor="middle" fill="var(--surface)" fontWeight="600">{d.leaving}</text>
           <text transform={`translate(${x(i) + 4} ${H - B + 14}) rotate(-45)`} textAnchor="end" fill="var(--muted)">{fmtShort(d.day)}</text>
         </g>
@@ -118,12 +118,12 @@ function OverviewSkeleton({ panel, week }) {
       <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <div className="flex items-center gap-4">
-            {block('size-14 shrink-0 rounded-full')}
-            <div className="space-y-2">{block('h-7 w-56 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
+            {block('size-16 shrink-0 rounded-full')}
+            <div className="space-y-2">{block('h-8 w-64 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
           </div>
-          {block('h-11 w-44 rounded-lg')}
         </div>
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
+          <div className="-mb-1 border-b border-line">{block('h-11 w-44 rounded-t-xl')}</div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl lg:h-32', i))}
           </div>
@@ -249,26 +249,28 @@ export default function OverviewPage() {
       <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 items-center gap-4">
-          <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
+          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-accent-soft text-2xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-semibold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
+            <h1 className="truncate text-[1.875rem] font-bold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
-              <Bell size={16} aria-hidden="true" />
+              <Bell size={16} weight="fill" aria-hidden="true" />
               {ready ? <span>{label}: {summary}</span> : <span aria-hidden="true" className="skeleton h-4 w-56 rounded-md" />}
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[0.9375rem] font-medium">
-            <CalendarBlank size={18} aria-hidden="true" className="text-muted" />
-            <span className="sr-only">Day</span>
-            <input type="date" value={d} min={addDays(t, -7)} max={addDays(t, 59)} onChange={(e) => setDay(e.target.value)} className="bg-transparent font-medium outline-none" />
-          </label>
-          {d !== t && <button type="button" className="btn btn-quiet" onClick={() => setDay(t)}>Today</button>}
-        </div>
         </div>
 
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
+          {/* The day, as a tab above the figures (a dropdown: the page behind it is the native date picker, so it works with the keyboard and on phones). */}
+          <div className="-mb-1 flex items-end gap-3 border-b border-line">
+            <label className="relative -mb-px inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-t-xl border border-b-0 border-line bg-surface px-4 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
+              <span className="sr-only">Day</span>
+              <span aria-hidden="true">{d === t ? `Today, ${fmtShort(d)}` : fmtShort(d)}</span>
+              <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />
+              <input type="date" value={d} min={addDays(t, -7)} max={addDays(t, 59)} onChange={(e) => setDay(e.target.value)} onClick={(e) => e.currentTarget.showPicker?.()} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
+            </label>
+            {d !== t && <button type="button" className="btn btn-quiet mb-1" onClick={() => setDay(t)}>Today</button>}
+          </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Figure title="Arrivals" name="Arrivals" value={dash(arrivals.length)} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               notes={[['Checked in', dash(arrivals.filter((r) => isDone('arrivals', r.first.status)).length)]]} />
@@ -292,8 +294,8 @@ export default function OverviewPage() {
                 <div className="flex min-h-0 min-w-0 flex-col">
                   <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
                     Arrivals vs. Departures
-                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--pop-blue) 42%, var(--surface))' }} />Arrivals</span>
-                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-pop-blue" />Departures</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--slate) 70%, var(--surface))' }} />Arrivals</span>
+                    <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-[var(--slate-strong)]" />Departures</span>
                   </p>
                   <div className="min-h-0 lg:flex-1"><WeekChart days={week} /></div>
                 </div>
@@ -302,10 +304,10 @@ export default function OverviewPage() {
                   <div className="grid grid-cols-2 gap-3 lg:min-h-0 lg:flex-1 lg:grid-rows-3">
                     <Tile big label="Today" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
                     <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
-                    <Tile label="Available rooms" tone="bg-pop-blue-soft" value={dash(roomCount - inUse)} />
-                    <Tile label="Occupied rooms" tone="bg-pop-blue-soft" value={dash(inUse)} />
-                    <Tile label="Adults" tone="bg-pop-blue-soft" value={dash(adults)} />
-                    <Tile label="Children" tone="bg-pop-blue-soft" value={dash(children)} />
+                    <Tile label="Available rooms" tone="bg-[var(--slate-soft)]" value={dash(roomCount - inUse)} />
+                    <Tile label="Occupied rooms" tone="bg-[var(--slate-soft)]" value={dash(inUse)} />
+                    <Tile label="Adults" tone="bg-[var(--slate-soft)]" value={dash(adults)} />
+                    <Tile label="Children" tone="bg-[var(--slate-soft)]" value={dash(children)} />
                   </div>
                 </div>
               </div>

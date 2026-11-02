@@ -32,7 +32,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   return (
     <section aria-label="Saved views and quick filters" className="space-y-2">
       <div className="flex items-center gap-2">
-        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-0.5 [&>:first-child]:ml-auto [&>:last-child]:mr-auto">
+        {/* One line that scrolls sideways on a phone; from sm up it wraps instead, so no chip (No phone or email) is ever cut off at the edge. */}
+        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-0.5 sm:flex-wrap sm:justify-center sm:overflow-visible [&>:first-child]:ml-auto [&>:last-child]:mr-auto sm:[&>:first-child]:ml-0 sm:[&>:last-child]:mr-0">
           <button type="button" aria-pressed={!changed} onClick={onReset} className={chip(!changed)}>
             {!changed && <Check size={14} weight="bold" aria-hidden="true" />}
             Standard

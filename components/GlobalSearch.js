@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
-import { CalendarBlank, CaretRight, MagnifyingGlass, Moon, User, X } from '@phosphor-icons/react';
+import Count from './Count';
+import { CalendarBlank, CaretRight, MagnifyingGlass, User, X } from '@phosphor-icons/react';
 import { useApi, useDebounced } from '../lib/useApi';
-import { addDays, diffDays, fmtShort, nightsLabel, today } from '../lib/dates';
+import { addDays, diffDays, fmtShort, today } from '../lib/dates';
 import { colorFor } from '../lib/colors';
 import StatusBadge from './StatusBadge';
 import RoomNumber from './RoomNumber';
@@ -126,21 +127,13 @@ export default function GlobalSearch() {
               )}
             </span>
             <span className="flex items-center gap-1.5">
-              <CalendarBlank size={16} aria-hidden="true" className="shrink-0" />
+              <CalendarBlank size={16} weight="fill" aria-hidden="true" className="shrink-0" />
               <span><span className="font-semibold text-ink">{fmtShort(b.check_in)}</span> to <span className="font-semibold text-ink">{fmtShort(b.check_out)}</span></span>
             </span>
             <span className="flex items-center gap-4">
-              <span className="flex items-center gap-1" title={nightsLabel(nights)}>
-                <Moon size={16} aria-hidden="true" />
-                <span className="font-mono">{nights}</span>
-                <span className="sr-only">{nights === 1 ? 'night' : 'nights'}</span>
-              </span>
+              <Count kind="nights" n={nights} />
               {b.adults != null && (
-                <span className="flex items-center gap-1">
-                  <User size={16} aria-hidden="true" />
-                  <span className="font-mono">{b.adults + (b.children ?? 0)}</span>
-                  <span className="sr-only">guests</span>
-                </span>
+                <Count kind="guests" n={b.adults + (b.children ?? 0)} />
               )}
             </span>
           </span>

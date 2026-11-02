@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Moon, Phone, PushPin, User, X } from '@phosphor-icons/react';
+import Count from '../Count';
+import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Phone, PushPin, X } from '@phosphor-icons/react';
 import { usePinned } from '../../lib/pinned';
 import StatusBadge from '../StatusBadge';
 import RoomNumber from '../RoomNumber';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
-import { fmtDateTime, fmtShort, nightsLabel } from '../../lib/dates';
+import { fmtDateTime, fmtShort } from '../../lib/dates';
 
 // The columns a view can show or hide. The guest's name is always there.
 export const BOOKING_COLUMNS = [
@@ -73,7 +74,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
             {show('dates') && (
               <span className="flex items-center gap-1.5">
-                <CalendarBlank size={minimal ? 14 : 16} aria-hidden="true" className="shrink-0" />
+                <CalendarBlank size={minimal ? 14 : 16} weight="fill" aria-hidden="true" className="shrink-0" />
                 <span>
                   <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_in)}</span> to <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_out)}</span>
                 </span>
@@ -81,29 +82,21 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
             <span className="flex items-center gap-4">
             {show('dates') && (
-              <span className="flex items-center gap-1" title={nightsLabel(b.nights)}>
-                <Moon size={minimal ? 14 : 16} aria-hidden="true" />
-                <span className="font-mono">{b.nights}</span>
-                <span className="sr-only">{b.nights === 1 ? 'night' : 'nights'}</span>
-              </span>
+              <Count kind="nights" n={b.nights} size={minimal ? 14 : 16} />
             )}
             {b.adults != null && (
-              <span className="flex items-center gap-1" title={`${b.adults} adult${b.adults === 1 ? '' : 's'}${b.children ? `, ${b.children} child${b.children === 1 ? '' : 'ren'}` : ''}`}>
-                <User size={minimal ? 14 : 16} aria-hidden="true" />
-                <span className="font-mono">{b.adults + (b.children ?? 0)}</span>
-                <span className="sr-only">guests</span>
-              </span>
+              <Count kind="guests" n={b.adults + (b.children ?? 0)} size={minimal ? 14 : 16} title={`${b.adults} adult${b.adults === 1 ? '' : 's'}${b.children ? `, ${b.children} child${b.children === 1 ? '' : 'ren'}` : ''}`} />
             )}
             </span>
             {show('organization') && b.organization && (
               <span className="flex min-w-0 items-center gap-1.5">
-                <Buildings size={16} aria-hidden="true" className="shrink-0" />
+                <Buildings size={16} weight="fill" aria-hidden="true" className="shrink-0" />
                 <span className="truncate">{b.organization}</span>
               </span>
             )}
             {show('contact') && (
               <span className="flex min-w-0 items-center gap-1.5">
-                {contact && <Phone size={16} aria-hidden="true" className="shrink-0" />}
+                {contact && <Phone size={16} weight="fill" aria-hidden="true" className="shrink-0" />}
                 <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
               </span>
             )}
