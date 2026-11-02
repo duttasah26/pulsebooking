@@ -638,12 +638,11 @@ body {
 .shine-card {
   position: relative;
   transform: perspective(900px) translateY(0) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  transition: transform 220ms var(--ease-out);
   will-change: transform;
 }
 .shine-card[data-hover] {
   transform: perspective(900px) translateY(-2px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  box-shadow: 0 14px 28px -14px rgb(var(--shadow-rgb) / 0.32), 0 2px 6px rgb(var(--shadow-rgb) / 0.08);
 }
 .shine-card::before, .shine-card::after {
   content: '';
@@ -676,7 +675,7 @@ body {
 }
 @keyframes shine-in { from { opacity: 0.4; } }
 @media (prefers-reduced-motion: reduce) {
-  .shine-card, .shine-card[data-hover] { transform: none; transition: box-shadow 220ms var(--ease-out); }
+  .shine-card, .shine-card[data-hover] { transform: none; transition: none; }
 }
 
 /* The sign-in page: the card and what is in it rise into focus one after another (--i). */

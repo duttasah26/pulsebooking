@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import ShineCard from '../ShineCard';
 import { Bell, CaretDown, DotsThreeVertical, X } from '@phosphor-icons/react';
 import { addDays, daysInMonth, diffDays, fmtShort, monthStart, range, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
@@ -29,8 +30,9 @@ function groupRows(list) {
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
+// The big chart card leans only a hair (a large card tilting far looks loose); the small figure cards lean more.
 function Card({ className = '', children, ...rest }) {
-  return <section {...rest} className={`rounded-xl border border-line bg-surface ${className}`}>{children}</section>;
+  return <ShineCard tilt={1.2} {...rest} className={`rounded-xl border border-line bg-surface ${className}`}>{children}</ShineCard>;
 }
 
 // Each figure has its own vivid colour (tokens --pop-*), written out in full so Tailwind sees them. Chosen, a card takes its colour's edge and soft fill.
@@ -46,11 +48,12 @@ const POP = {
 function Figure({ title, value, name, pop, notes, active, onPick }) {
   const tone = POP[pop].text;
   return (
-    <button
+    <ShineCard
+      as="button"
       type="button"
       aria-pressed={active}
       onClick={onPick}
-      className={`flex flex-col rounded-xl border p-4 text-left transition-[box-shadow,background-color] duration-150 lg:p-3 ${active ? POP[pop].on : 'border-line bg-surface hover:shadow-md'}`}
+      className={`flex flex-col rounded-xl border p-4 text-left lg:p-3 ${active ? POP[pop].on : 'border-line bg-surface'}`}
     >
       <span className="flex items-center justify-between">
         <span className="text-[0.9375rem] font-semibold">{title}</span>
@@ -63,7 +66,7 @@ function Figure({ title, value, name, pop, notes, active, onPick }) {
           <span key={label} className="flex items-baseline gap-1.5">{label} <span className="font-mono text-base font-semibold text-ink">{n}</span></span>
         ))}
       </span>
-    </button>
+    </ShineCard>
   );
 }
 
@@ -115,15 +118,15 @@ function OverviewSkeleton({ panel, week }) {
   const block = (cls, i = 0) => <div aria-hidden="true" className={`skeleton ${cls}`} style={{ animationDelay: `${i * 90}ms` }} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy="true" aria-label="Loading the overview">
-      <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
+        <div className="-ml-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-line bg-surface py-3 pl-4 pr-4 md:-ml-6 md:pl-6 lg:-mr-6">
           <div className="flex items-center gap-4">
-            {block('size-16 shrink-0 rounded-full')}
+            {block('size-14 shrink-0 rounded-full')}
             <div className="space-y-2">{block('h-8 w-64 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
           </div>
         </div>
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
-          <div className="-mb-1 border-b border-line">{block('h-11 w-44 rounded-t-xl')}</div>
+          <div className="-mb-1 border-b border-line">{block('h-10 w-44 rounded-t-xl')}</div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl lg:h-32', i))}
           </div>
@@ -246,10 +249,10 @@ export default function OverviewPage() {
   if (!ready) return <OverviewSkeleton panel={panel} week={parts.week !== false} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
-      <div className="flex min-w-0 flex-col gap-6 pt-4 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
+        <div className="-ml-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-line bg-surface py-3 pl-4 pr-4 md:-ml-6 md:pl-6 lg:-mr-6">
         <div className="flex min-w-0 items-center gap-4">
-          <span aria-hidden="true" className="grid size-16 shrink-0 place-items-center rounded-full bg-accent-soft text-2xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
+          <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
           <div className="min-w-0">
             <h1 className="truncate text-[1.875rem] font-bold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
@@ -263,7 +266,7 @@ export default function OverviewPage() {
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           {/* The day, as a tab above the figures (a dropdown: the page behind it is the native date picker, so it works with the keyboard and on phones). */}
           <div className="-mb-1 flex items-end gap-3 border-b border-line">
-            <label className="relative -mb-px inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-t-xl border border-b-0 border-line bg-surface px-4 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
+            <label className="relative -mb-px inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-t-xl border border-b-0 border-line bg-surface px-4 text-base font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2">
               <span className="sr-only">Day</span>
               <span aria-hidden="true">{d === t ? `Today, ${fmtShort(d)}` : fmtShort(d)}</span>
               <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />
