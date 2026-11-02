@@ -497,7 +497,8 @@ body {
   }
   .chip-on:hover { background-color: var(--accent-soft); }
 
-  /* Segmented control: a tinted track, the chosen segment a raised white tab. Views, navigation, floors. */
+  /* Segmented control: a tinted track, the chosen segment solid ink (the same "on" as a chosen filter, tool or Settings tab; in dark that is a soft
+     raised grey, not a bright slab). Views, navigation, floors. */
   .seg {
     @apply inline-flex shrink-0 items-center gap-0.5 rounded-lg p-0.5;
     background-color: var(--chrome);
@@ -508,9 +509,8 @@ body {
   }
   .seg-item:hover { @apply text-ink; background-color: color-mix(in srgb, var(--raised) 50%, transparent); }
   .seg-item[aria-selected="true"], .seg-item[aria-current="page"], .seg-item[aria-current="step"], .seg-item[aria-pressed="true"] {
-    @apply font-semibold text-ink;
-    background-color: var(--raised);
-    box-shadow: 0 1px 2px rgb(var(--shadow-rgb) / 0.14), 0 0 0 0.5px rgb(var(--shadow-rgb) / 0.1);
+    @apply font-semibold text-on-ink;
+    background-color: var(--bar);
   }
 
   /* A group of related content: white on the canvas, hairline edge, no shadow. Never a card inside a card. */
