@@ -28,8 +28,11 @@ export default function Login() {
   useEffect(() => {
     let bg;
     let gone = false;
-    import('asciify-engine/kit')
-      .then(({ background, swell }) => {
+    // Start once the card has finished rising: the quiet oval round it is measured when the background is made, so measuring a card
+    // that is still moving left the oval in the wrong place and it jumped. The canvas then fades in (see main > canvas in globals.css).
+    const risen = () => Promise.all((card.current?.getAnimations({ subtree: true }) ?? []).map((a) => a.finished.catch(() => {})));
+    Promise.all([import('asciify-engine/kit'), risen()])
+      .then(([{ background, swell }]) => {
         if (gone || !page.current) return;
         bg = background(page.current, {
           preset: swell,
