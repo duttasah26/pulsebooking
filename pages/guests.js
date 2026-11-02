@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
 import Layout from '../components/Layout';
+import ListPageSkeleton from '../components/ListPageSkeleton';
 import FilterDock from '../components/FilterDock';
 import SearchBox from '../components/SearchBox';
 import ViewsBar from '../components/ViewsBar';
@@ -172,6 +173,11 @@ export default function Guests() {
     />
   );
   const summary = `${SORTS.find(([v]) => v === sort)?.[1] ?? ''}${activeCount ? `, ${activeCount} ${activeCount === 1 ? 'filter' : 'filters'}` : ''}`;
+
+  // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
+  if (tab === 'guests' && !list.error && (!ready || !list.data || viewsLoading)) {
+    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+  }
 
   return (
     <Layout title="Guests">

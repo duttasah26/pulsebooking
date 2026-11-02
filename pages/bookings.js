@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
+import ListPageSkeleton from '../components/ListPageSkeleton';
 import BookingSheet from '../components/booking/BookingSheet';
 import BookingRow, { BOOKING_COLUMNS } from '../components/bookings/BookingRow';
 import ViewsBar from '../components/ViewsBar';
@@ -350,6 +351,11 @@ export default function Bookings() {
     />
   );
   const summary = `${active.label}${activeCount ? `, ${activeCount} ${activeCount === 1 ? 'filter' : 'filters'}` : ''}, ${SORTS.find(([v]) => v === sort)?.[1] ?? ''}`;
+
+  // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
+  if (!list.error && (!ready || !list.data || viewsLoading)) {
+    return <Layout title="Bookings"><ListPageSkeleton title="Bookings" label="Loading bookings" dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+  }
 
   return (
     <Layout title="Bookings">
