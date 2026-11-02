@@ -40,11 +40,11 @@ export default function TopProgress() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px]">
       <div
-        className="h-full rounded-r-full bg-[#b8923a]"
+        className="h-full w-full origin-left bg-[#b8923a]"
         style={{
-          width: `${bar.width}%`,
+          transform: `scaleX(${bar.width / 100})`, // scaled, not resized, so nothing is laid out again as it moves
           opacity: bar.show ? 1 : 0,
-          transition: bar.width === 0 ? 'none' : 'width 200ms ease-out, opacity 200ms ease-out 80ms',
+          transition: bar.width === 0 ? 'none' : 'transform 200ms ease-out, opacity 200ms ease-out 80ms',
         }}
       />
     </div>
