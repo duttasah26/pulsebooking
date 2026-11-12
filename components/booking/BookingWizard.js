@@ -351,7 +351,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
                       aria-pressed={!forAll && id === activeId}
                       onClick={() => setChosenRoom(id)}
                       aria-label={`Room ${numberOf(id)}`}
-                      className={`btn px-3 font-mono font-semibold transition-[box-shadow,transform,background-color] duration-200 ease-out enabled:hover:scale-110 motion-reduce:enabled:hover:scale-100 ${!forAll && id === activeId ? 'ring-2 ring-ink ring-offset-2' : ''}`}
+                      className={`btn px-3 font-mono font-semibold transition-[box-shadow,transform,background-color] duration-300 ease-out enabled:hover:scale-[1.04] motion-reduce:enabled:hover:scale-100 ${!forAll && id === activeId ? 'ring-2 ring-ink ring-offset-2' : ''}`}
                       style={{ backgroundColor: shade.fill, borderColor: shade.edge }}
                     >
                       {numberOf(id)}

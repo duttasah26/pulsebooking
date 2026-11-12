@@ -34,7 +34,7 @@ export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
                   disabled={busy}
                   title={busy ? `Room ${r.number} is booked on these days` : `Room ${r.number}`}
                   onClick={() => onToggle(r.id)}
-                  className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-0.5 rounded-lg border px-0 font-mono text-base font-semibold transition-[box-shadow,transform] duration-200 ease-out enabled:hover:scale-110 enabled:hover:z-10 motion-reduce:enabled:hover:scale-100 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-2' : ''}`}
+                  className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-0.5 rounded-lg border px-0 font-mono text-base font-semibold transition-[box-shadow,transform] duration-300 ease-out enabled:hover:scale-[1.04] enabled:hover:z-10 motion-reduce:enabled:hover:scale-100 disabled:cursor-not-allowed ${busy ? 'hatch text-muted opacity-60' : ''} ${on ? 'ring-2 ring-ink ring-offset-2' : ''}`}
                   style={busy ? undefined : { backgroundColor: shade.fill, borderColor: shade.edge }}
                 >
                   {r.number}
