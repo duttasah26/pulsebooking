@@ -1,8 +1,9 @@
 import { useId, useState } from 'react';
-import { Buildings, MagnifyingGlass } from '@phosphor-icons/react';
+import { Buildings, MagnifyingGlass, Plus } from '@phosphor-icons/react';
 
 // The Company or group field, working like the Contacts search: type and the companies already known appear in a list under the field
-// (name, guests and bookings); tap one, or use the arrow keys and Enter, to take it. A name that is not in the list is simply a new company.
+// (name, guests and bookings); tap one, or use the arrow keys and Enter, to take it. A name that is not in the list gets an "Add as a new
+// company" row at the end of the list (there is no separate company record: the company exists once it is typed on a guest or a booking).
 // `companies` is [{ name, guests, stays }] from /api/companies. The list closes when a company is taken or the field loses focus.
 const norm = (text) => String(text ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
 
@@ -12,7 +13,10 @@ export default function CompanyPicker({ id = 'b-org', value, onChange, companies
   const [active, setActive] = useState(-1);
   const typed = norm(value);
   const matches = companies.filter((c) => (typed ? norm(c.name).includes(typed) : true) && norm(c.name) !== typed).slice(0, 8);
-  const open = focused && matches.length > 0;
+  const exact = companies.some((c) => norm(c.name) === typed);
+  const canAdd = typed !== '' && !exact;
+  const rows = matches.length + (canAdd ? 1 : 0);
+  const open = focused && rows > 0;
 
   const take = (name) => {
     onChange(name);
@@ -24,13 +28,13 @@ export default function CompanyPicker({ id = 'b-org', value, onChange, companies
     if (!open) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActive((a) => (a + 1) % matches.length);
+      setActive((a) => (a + 1) % rows);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActive((a) => (a <= 0 ? matches.length - 1 : a - 1));
+      setActive((a) => (a <= 0 ? rows - 1 : a - 1));
     } else if (e.key === 'Enter' && active >= 0) {
       e.preventDefault();
-      take(matches[active].name);
+      take(active < matches.length ? matches[active].name : String(value).trim().replace(/\s+/g, ' '));
     } else if (e.key === 'Escape') {
       setFocused(false);
     }
@@ -81,6 +85,20 @@ export default function CompanyPicker({ id = 'b-org', value, onChange, companies
               </button>
             </li>
           ))}
+          {canAdd && (
+            <li id={`${listId}-${matches.length}`} role="option" aria-selected={active === matches.length}>
+              <button
+                type="button"
+                tabIndex={-1}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => take(String(value).trim().replace(/\s+/g, ' '))}
+                className={`flex min-h-14 w-full items-center gap-3 bg-accent-soft px-4 py-2.5 text-left font-semibold text-accent-strong hover:bg-accent-soft/60 ${active === matches.length ? 'bg-accent-soft/60' : ''}`}
+              >
+                <Plus className="ico-turn" size={18} weight="bold" aria-hidden="true" />
+                <span className="min-w-0 truncate">Add &ldquo;{String(value).trim()}&rdquo; as a new company</span>
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>
