@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import DateField from '../DateField';
 import { ArrowLeft, ArrowRight, Buildings, CalendarBlank, Check, Clock, Minus, Note, Plus, SignIn, SignOut, Tag, TextAa, X } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import TimeSelect from '../TimeSelect';
@@ -206,11 +207,11 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <FieldLabel icon={SignIn} htmlFor="bulk-in">Same check-in for all</FieldLabel>
-                <input id="bulk-in" type="date" className="field" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+                <DateField id="bulk-in" clearable value={checkIn} onChange={setCheckIn} />
               </div>
               <div>
                 <FieldLabel icon={SignOut} htmlFor="bulk-out">Same check-out for all</FieldLabel>
-                <input id="bulk-out" type="date" className="field" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} />
+                <DateField id="bulk-out" align="right" clearable value={checkOut} min={checkIn || undefined} onChange={setCheckOut} />
               </div>
             </div>
             <p className="t-footnote">A date picked here replaces the move for that end. A room that is already taken on the new days will stop the change.</p>

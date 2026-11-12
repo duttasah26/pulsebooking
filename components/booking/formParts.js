@@ -1,4 +1,5 @@
 import { Minus, Plus } from '@phosphor-icons/react';
+import DateField from '../DateField';
 import TimeSelect from '../TimeSelect';
 
 // The look shared by the new-booking form, the edit form and the booking details: plain sentence-case titles in dark ink,
@@ -29,7 +30,7 @@ export function Moment({ icon: Icon, tone, label, id, date, onDate, min, time, o
         {label}
       </label>
       {date !== undefined && (
-        <input id={`${id}-date`} name={`${id}-date`} type="date" className="field min-w-0 px-2 font-semibold [&::-webkit-calendar-picker-indicator]:ml-0 [&::-webkit-calendar-picker-indicator]:p-0" value={date} min={min} onChange={(e) => e.target.value && onDate(e.target.value)} />
+        <DateField id={`${id}-date`} name={`${id}-date`} className="font-semibold" value={date} min={min} onChange={(v) => v && onDate(v)} />
       )}
       <TimeSelect id={`${id}-time`} name={`${id}-time`} label="Time" value={time} onChange={onTime} hideLabel />
     </div>
