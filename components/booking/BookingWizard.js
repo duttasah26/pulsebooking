@@ -406,6 +406,9 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
       <div className={`space-y-4 ${step === 2 ? 'animate-step' : 'hidden'}`}>
         <Card icon={Tag} title="Book it, or only hold the room?">
           <StatusPicker value={f.status} onChange={f.setStatus} hideLabel only={['confirmed', 'on_hold']} />
+          <p className="t-footnote">
+            <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> keeps the room for now, until the guest is sure.
+          </p>
         </Card>
         {f.isHold && (
           <div>
