@@ -1,7 +1,7 @@
 import { useSettings } from '../SettingsProvider';
 import { roomShade } from '../../lib/colors';
 
-// Rooms grouped by floor (the first digit of the number): one row of chips per floor.
+// Rooms grouped by floor (the first digit of the number): one row of chips per floor, with no floor name (the floor colour and the number say it).
 function byFloor(rooms) {
   const floors = new Map();
   for (const r of rooms) {
@@ -10,8 +10,6 @@ function byFloor(rooms) {
   }
   return [...floors.entries()];
 }
-
-const FLOOR_NAME = { 1: '1st floor', 2: '2nd floor', 3: '3rd floor' };
 
 // Create mode: tap one or several rooms to book them together. Each room is a chip in its floor's colour, the same as on
 // the calendar; a chosen room has a dark ring and a tick; a room already booked on the chosen days is hatched and cannot
@@ -22,7 +20,6 @@ export default function RoomPicker({ rooms, roomIds, roomTaken, onToggle }) {
     <div className="space-y-2" role="group" aria-label="Rooms">
       {byFloor(rooms).map(([floor, list]) => (
         <div key={floor}>
-          <p className="t-group mb-2">{FLOOR_NAME[floor] ?? `Floor ${floor}`}</p>
           <div className="grid grid-cols-6 gap-2">
             {list.map((r) => {
               const on = roomIds.includes(r.id);

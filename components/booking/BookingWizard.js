@@ -323,7 +323,6 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <Stepper icon={Users} label="Adults" value={f.adults} min={1} onChange={f.setAdults} />
             <Stepper icon={Baby} label="Children" value={f.children} onChange={f.setChildren} />
           </div>
-          {allIds.length > 1 && <p className="text-base text-muted">One adult per room to start: {allIds.length} rooms, {allIds.length} guests. Change it if more are coming.</p>}
         </Card>
         <Card icon={Palette} title="Colour on the calendar (optional)">
           <ColorPicker id="b-color-label" label="Colour" hideLabel color={f.color} onChange={f.setColor} />
@@ -380,7 +379,6 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           <Card icon={Suitcase} title="Going away for a few days?">
             {f.away ? (
               <>
-                <p className="t-footnote">The room is kept for them. It is saved as two stays for the same guest.</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label htmlFor="away-from" className="label">They leave on</label>
@@ -408,9 +406,6 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
       <div className={`space-y-4 ${step === 2 ? 'animate-step' : 'hidden'}`}>
         <Card icon={Tag} title="Book it, or only hold the room?">
           <StatusPicker value={f.status} onChange={f.setStatus} hideLabel only={['confirmed', 'on_hold']} />
-          <p className="t-footnote">
-            <strong>Confirmed</strong> is a real booking. <strong>On hold</strong> keeps the room for now, until the guest is sure.
-          </p>
         </Card>
         {f.isHold && (
           <div>
