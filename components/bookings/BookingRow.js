@@ -104,7 +104,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
           </span>
         </span>
-        {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="text-muted" /></span>}
+        {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="ico-right text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
         <div className="flex shrink-0 items-center gap-3 pr-3 sm:gap-2">
@@ -112,7 +112,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             <Check size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Confirm</span>
           </button>
           <button type="button" className="btn btn-sm btn-quiet" onClick={() => onCancelHold(b)} aria-label={`Cancel hold, ${b.name}`}>
-            <X size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Cancel</span>
+            <X className="ico-turn" size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Cancel</span>
           </button>
         </div>
       )}

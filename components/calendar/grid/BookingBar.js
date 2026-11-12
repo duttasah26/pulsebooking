@@ -199,7 +199,7 @@ export default function BookingBar({ b, g, rows, style: placement, active, selec
         onClick={() => onDelete?.(b)}
         className="relative grid size-5 shrink-0 place-items-center rounded-lg before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-surface/70 @min-[70px]:size-6 [@media(pointer:coarse)]:before:-inset-x-3"
       >
-        <X size={14} weight="bold" />
+        <X className="ico-turn" size={14} weight="bold" />
       </button>
     </div>
   );

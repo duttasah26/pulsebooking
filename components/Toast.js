@@ -53,7 +53,7 @@ export function ToastProvider({ children }) {
               </button>
             )}
             <button type="button" className="btn btn-sm btn-icon btn-inverse btn-quiet shrink-0" onClick={clear} aria-label="Clear message">
-              <X size={16} weight="bold" aria-hidden="true" />
+              <X className="ico-turn" size={16} weight="bold" aria-hidden="true" />
             </button>
           </div>
         )}

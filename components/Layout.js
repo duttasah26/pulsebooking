@@ -64,7 +64,7 @@ export default function Layout({ title, wide = false, children }) {
                   here === href ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'
                 }`}
               >
-                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block short:block" />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="ico-pop hidden lg:block short:block" />
                 <span className="short:sr-only">{label}</span>
               </Link>
             ))}
@@ -93,7 +93,7 @@ export default function Layout({ title, wide = false, children }) {
                 aria-current={here === href ? 'page' : undefined}
                 className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-ink' : 'text-muted'}`}
               >
-                <Icon size={20} weight={here === href ? 'fill' : 'bold'} />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className={Icon === GearSix ? 'ico-spin' : 'ico-pop'} />
               </Link>
             ))}
             {/* Below the desktop width the assistant opens from here, not from a button floating over the page. */}

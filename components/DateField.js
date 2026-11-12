@@ -85,7 +85,7 @@ export default function DateField({ id, name, value, onChange, min, max, clearab
           <DateRangePicker single checkIn={value || undefined} checkOut={value ? addDays(value, 1) : undefined} min={min} max={max} onChange={(a) => { onChange(a); setOpen(false); button.current?.focus(); }} />
           {clearable && value && (
             <button type="button" className="btn btn-quiet w-full" onClick={() => { onChange(''); setOpen(false); button.current?.focus(); }}>
-              <X size={16} aria-hidden="true" /> Clear
+              <X className="ico-turn" size={16} aria-hidden="true" /> Clear
             </button>
           )}
         </div>,

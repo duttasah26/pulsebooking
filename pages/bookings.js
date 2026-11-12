@@ -365,7 +365,7 @@ export default function Bookings() {
           <div className="flex items-center justify-between gap-3">
             <h1 className="t-display">Bookings</h1>
             <button type="button" className="btn btn-primary sm:w-40" disabled={!rooms.data?.length} onClick={newBooking}>
-              <Plus size={18} aria-hidden="true" /> New Booking
+              <Plus className="ico-turn" size={18} aria-hidden="true" /> New Booking
             </button>
           </div>
 

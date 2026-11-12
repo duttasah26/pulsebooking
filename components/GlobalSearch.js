@@ -138,7 +138,7 @@ export default function GlobalSearch() {
             </span>
           </span>
         </span>
-        <CaretRight size={18} aria-hidden="true" className="mx-2 shrink-0 text-muted" />
+        <CaretRight size={18} aria-hidden="true" className="ico-right mx-2 shrink-0 text-muted" />
       </button>
     );
   };
@@ -168,7 +168,7 @@ export default function GlobalSearch() {
       />
       {q && (
         <button type="button" aria-label="Clear search" className="absolute right-1 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-tint hover:text-ink" onClick={() => { setQ(''); input.current?.focus(); }}>
-          <X size={16} aria-hidden="true" />
+          <X className="ico-turn" size={16} aria-hidden="true" />
         </button>
       )}
       {!q && <kbd aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-line px-1.5 font-mono text-sm leading-5 text-muted">/</kbd>}

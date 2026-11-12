@@ -164,11 +164,11 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
       <div>
       <div className="mb-1 flex items-center justify-between">
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, -1))} aria-label="Previous month">
-          <CaretLeft size={18} />
+          <CaretLeft className="ico-left" size={18} />
         </button>
         <span className="text-[1.0625rem] font-bold" aria-live="polite">{fmtMonth(view)}</span>
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, 1))} aria-label="Next month">
-          <CaretRight size={18} />
+          <CaretRight className="ico-right" size={18} />
         </button>
       </div>
 

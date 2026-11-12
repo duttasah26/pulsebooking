@@ -62,7 +62,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => hide()}>
-              <X size={20} weight="bold" aria-hidden="true" />
+              <X className="ico-turn" size={20} weight="bold" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           style={tabColor ? { backgroundColor: tabColor.soft ?? tabColor.bg, borderColor: tabColor.border } : undefined}
           className={`animate-fade flex h-44 min-h-24 w-11 shrink flex-col items-center gap-3 overflow-hidden rounded-lg border py-3 text-[0.9375rem] font-semibold transition-colors duration-150 ${tabColor ? '' : 'border-line bg-surface hover:bg-surface-2'}`}
         >
-          <CaretLeft size={18} aria-hidden="true" />
+          <CaretLeft className="ico-left" size={18} aria-hidden="true" />
           <span className="[writing-mode:vertical-rl]">{tab}</span>
           {tabMark && <span aria-hidden="true" className="size-2 rounded-sm bg-accent" />}
         </button>

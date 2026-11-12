@@ -44,7 +44,7 @@ function Stepper({ label, icon, text, on, minus, plus, minusLabel, plusLabel }) 
       <div className="flex items-center gap-2">
         <button type="button" className={btn} aria-label={minusLabel} onClick={minus}><Minus size={20} aria-hidden="true" /></button>
         <span className={`min-w-0 flex-1 rounded-lg border-2 px-3 py-2.5 text-center text-lg font-semibold transition-colors duration-150 ${on ? "border-ink bg-surface text-ink" : "border-line text-muted"}`} aria-live="polite">{text}</span>
-        <button type="button" className={btn} aria-label={plusLabel} onClick={plus}><Plus size={20} aria-hidden="true" /></button>
+        <button type="button" className={btn} aria-label={plusLabel} onClick={plus}><Plus className="ico-turn" size={20} aria-hidden="true" /></button>
       </div>
     </div>
   );
@@ -127,7 +127,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
       {job ? (
         <div className="flex items-center gap-3">
           <button type="button" className="btn btn-icon shrink-0" onClick={onCancel} aria-label="Back to the choices" title="Back to the choices">
-            <ArrowLeft size={20} weight="bold" aria-hidden="true" />
+            <ArrowLeft className="ico-left" size={20} weight="bold" aria-hidden="true" />
           </button>
           <div className="min-w-0">
             <h3 className="t-title">{job.title}</h3>
@@ -228,7 +228,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
                     {datesChange ? (
                       <>
                         <span className="text-muted line-through">{fmtShort(b.check_in)} to {fmtShort(b.check_out)}</span>
-                        <ArrowRight size={14} weight="bold" aria-hidden="true" />
+                        <ArrowRight className="ico-right" size={14} weight="bold" aria-hidden="true" />
                         <span><span className="font-semibold text-ok-text">{fmtShort(d.checkIn)}</span> to <span className="font-semibold text-danger">{fmtShort(d.checkOut)}</span></span>
                         {!d.valid && <strong>ends before it starts</strong>}
                       </>
@@ -273,7 +273,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
         </p>
         <div className="flex gap-2">
           <button type="button" className="btn btn-lg btn-quiet flex-1" onClick={onCancel}>
-            {only ? <ArrowLeft size={18} weight="bold" aria-hidden="true" /> : <X size={18} weight="bold" aria-hidden="true" />} {only ? 'Back' : 'Cancel'}
+            {only ? <ArrowLeft className="ico-left" size={18} weight="bold" aria-hidden="true" /> : <X className="ico-turn" size={18} weight="bold" aria-hidden="true" />} {only ? 'Back' : 'Cancel'}
           </button>
           <button
             type="submit"

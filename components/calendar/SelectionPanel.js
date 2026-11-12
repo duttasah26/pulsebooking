@@ -81,7 +81,7 @@ export default function SelectionPanel({
                       <span className="block text-[1.0625rem] font-semibold leading-6">{title}</span>
                       <span className="t-footnote block">{hint}</span>
                     </span>
-                    <CaretRight size={18} aria-hidden="true" className="shrink-0 text-muted" />
+                    <CaretRight size={18} aria-hidden="true" className="ico-right shrink-0 text-muted" />
                   </button>
                 </li>
               ))}
@@ -128,7 +128,7 @@ export default function SelectionPanel({
                       title="Take this one out of the selection"
                       className="absolute right-3 top-3 grid size-8 place-items-center rounded-md bg-surface/70 transition-colors duration-150 before:absolute before:-inset-1 before:content-[''] hover:bg-surface"
                     >
-                      <X size={14} weight="bold" aria-hidden="true" />
+                      <X className="ico-turn" size={14} weight="bold" aria-hidden="true" />
                     </button>
                   </li>
                 );

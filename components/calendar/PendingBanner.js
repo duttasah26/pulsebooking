@@ -17,7 +17,7 @@ function End({ label, tone, was, now }) {
         <>
           <p className="flex items-center gap-1.5 t-footnote line-through decoration-1">{fmtDayMonth(was)}</p>
           <p className="flex items-center gap-1.5">
-            <ArrowRight size={16} weight="bold" aria-hidden="true" className={`shrink-0 ${t.ink}`} />
+            <ArrowRight size={16} weight="bold" aria-hidden="true" className={`ico-right shrink-0 ${t.ink}`} />
             <span className={`font-mono text-base font-semibold ${t.ink}`}>{fmtDayMonth(now)}</span>
           </p>
         </>
@@ -46,7 +46,7 @@ function Change({ item: i, rooms, showName }) {
         {roomChanged ? (
           <span className="flex items-center gap-1">
             <span className="rounded bg-surface-2 px-1.5 text-muted line-through">Room <span className="font-mono">{was.room_number}</span></span>
-            <ArrowRight size={14} weight="bold" aria-hidden="true" />
+            <ArrowRight className="ico-right" size={14} weight="bold" aria-hidden="true" />
             <span className="rounded bg-bar px-1.5 font-semibold text-on-ink">Room <span className="font-mono">{nowRoom}</span></span>
           </span>
         ) : (
@@ -60,7 +60,7 @@ function Change({ item: i, rooms, showName }) {
       <p className="flex flex-wrap items-center gap-x-2 text-sm">
         <span className="text-muted">Stay</span>
         {delta !== 0 && <span className="text-muted line-through decoration-1">{nightsLabel(wasNights)}</span>}
-        {delta !== 0 && <ArrowRight size={14} weight="bold" aria-hidden="true" />}
+        {delta !== 0 && <ArrowRight className="ico-right" size={14} weight="bold" aria-hidden="true" />}
         <span className="font-semibold">{nightsLabel(nowNights)}</span>
         {delta !== 0 && (
           <span className={`rounded px-1.5 font-mono font-semibold ${delta > 0 ? 'bg-accent-soft text-accent-text' : 'bg-danger-soft text-danger'}`}>{delta > 0 ? '+' : ''}{delta}</span>

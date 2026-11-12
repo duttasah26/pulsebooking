@@ -194,7 +194,7 @@ export default function Guests() {
                 ))}
               </div>
               <button type="button" className="btn btn-primary ml-auto sm:ml-0 sm:w-40" onClick={() => setOpen('new')}>
-                <Plus size={18} aria-hidden="true" /> New Guest
+                <Plus className="ico-turn" size={18} aria-hidden="true" /> New Guest
               </button>
             </div>
           </div>

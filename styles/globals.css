@@ -764,6 +764,35 @@ main > canvas { animation: bg-in 1200ms var(--ease-out) backwards; }
 .animate-step { animation: step-in var(--dur-base) var(--ease-out); }
 .animate-tick, .animate-chip { animation: none; }
 .animate-shake { animation: fade-in var(--dur-base) var(--ease-out); }
+/* Icons answer the pointer: the icon itself moves when its button, link or tab is pointed at. Each class says how (set where the icon is drawn):
+   ico-pop lifts (navigation), ico-spin turns a cog, ico-turn turns a plus or cross a quarter, ico-right and ico-left nudge an arrow
+   or caret the way it points, ico-sun and ico-moon turn the theme icon. Any other icon in a .btn grows a touch. The motion is small, ease-out,
+   and gone with "reduce motion". */
+.ico-pop, .ico-spin, .ico-turn, .ico-right, .ico-left, .ico-sun, .ico-moon, .btn > svg {
+  transition: transform 260ms var(--ease-out);
+}
+:is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):not(:disabled, [aria-disabled="true"]):hover .ico-pop { transform: translateY(-2px) scale(1.12); }
+:is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):not(:disabled, [aria-disabled="true"]):hover .ico-spin { transform: rotate(75deg) scale(1.08); }
+:is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):not(:disabled, [aria-disabled="true"]):hover .ico-turn { transform: rotate(90deg); }
+:is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):not(:disabled, [aria-disabled="true"]):hover .ico-right { transform: translateX(3px); }
+:is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):not(:disabled, [aria-disabled="true"]):hover .ico-left { transform: translateX(-3px); }
+:is(a, button):not(:disabled):hover .ico-sun { transform: rotate(90deg) scale(1.1); }
+:is(a, button):not(:disabled):hover .ico-moon { transform: rotate(-24deg) scale(1.1); }
+.btn:not(:disabled):hover > svg:not([class*="ico-"]) { transform: scale(1.1); }
+@media (prefers-reduced-motion: reduce) {
+  .ico-pop, .ico-spin, .ico-turn, .ico-right, .ico-left, .ico-sun, .ico-moon, .btn > svg { transition: none; }
+  :is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):hover :is(.ico-pop, .ico-spin, .ico-turn, .ico-right, .ico-left, .ico-sun, .ico-moon), .btn:hover > svg { transform: none !important; }
+}
+
+/* Switching between light and dark is one slow cross-fade of the whole page (see lib/theme.js), not every part changing at its own speed. */
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: 700ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 1ms; }
+}
+
 /* A menu or calendar that drops from its button: it fades in and settles a few pixels down, growing from the button's edge. */
 @keyframes popover-in {
   from { opacity: 0; transform: translateY(-0.3rem) scale(0.98); }

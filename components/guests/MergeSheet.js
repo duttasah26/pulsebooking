@@ -99,10 +99,10 @@ export default function MergeSheet({ a, b, onClose, onDone }) {
         <section className="space-y-2 rounded-lg border border-line bg-surface-2 p-4" aria-label="What will happen">
           <h3 className="t-headline">What will happen</h3>
           <ul className="space-y-2 text-base leading-relaxed">
-            <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="mt-1 shrink-0" /> All <strong>{stayCount(other)} {stayCount(other) === 1 ? 'stay' : 'stays'}</strong> of “{other.name}” move to “{keepGuest.name}”, who then has <strong>{stayCount(keepGuest) + stayCount(other)}</strong> in total.</li>
-            <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="mt-1 shrink-0" /> The name stays “{keepGuest.name}”.{filled.length > 0 ? ` The ${filled.map((k) => label[k]).join(' and ')} that “${keepGuest.name}” does not have yet will be filled in from “${other.name}”.` : ' Their own details stay as they are.'}</li>
+            <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="ico-right mt-1 shrink-0" /> All <strong>{stayCount(other)} {stayCount(other) === 1 ? 'stay' : 'stays'}</strong> of “{other.name}” move to “{keepGuest.name}”, who then has <strong>{stayCount(keepGuest) + stayCount(other)}</strong> in total.</li>
+            <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="ico-right mt-1 shrink-0" /> The name stays “{keepGuest.name}”.{filled.length > 0 ? ` The ${filled.map((k) => label[k]).join(' and ')} that “${keepGuest.name}” does not have yet will be filled in from “${other.name}”.` : ' Their own details stay as they are.'}</li>
             <li className="flex gap-2"><Note size={18} aria-hidden="true" className="mt-1 shrink-0" /> Both guests’ notes are kept. A line in the notes records the merge and the old details, so nothing is lost.</li>
-            <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="mt-1 shrink-0" /> “{other.name}” then disappears from the Guests list. This cannot be undone with one tap.</li>
+            <li className="flex gap-2"><ArrowRight size={18} aria-hidden="true" className="ico-right mt-1 shrink-0" /> “{other.name}” then disappears from the Guests list. This cannot be undone with one tap.</li>
           </ul>
         </section>
         {error && <p role="alert" className="rounded-lg border border-danger px-3 py-2 text-base text-danger">{error}</p>}

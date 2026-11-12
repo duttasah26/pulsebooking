@@ -72,7 +72,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
                   title={`Delete the view ${v.name}`}
                   className="btn btn-icon btn-danger shrink-0 rounded-l-none"
                 >
-                  <X size={16} weight="bold" aria-hidden="true" />
+                  <X className="ico-turn" size={16} weight="bold" aria-hidden="true" />
                 </button>
               )}
             </span>
@@ -81,7 +81,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
         <div className="flex shrink-0 items-center gap-1">
           {changed && !active && !naming && (
             <button type="button" className={`${small} btn-quiet text-accent-text`} onClick={() => setNaming(true)} aria-label="Save this view" title="Save these filters as a view">
-              <Plus size={16} aria-hidden="true" /> <span className="hidden sm:inline">Save View</span>
+              <Plus className="ico-turn" size={16} aria-hidden="true" /> <span className="hidden sm:inline">Save View</span>
             </button>
           )}
           {views.length > 0 && (

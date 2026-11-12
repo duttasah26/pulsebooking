@@ -396,7 +396,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
               </>
             ) : (
               <button type="button" className="btn w-full" onClick={() => f.setAway({ from: addDays(f.checkIn, 1), to: addDays(f.checkIn, 2) })}>
-                <Plus size={18} aria-hidden="true" /> Add a Break
+                <Plus className="ico-turn" size={18} aria-hidden="true" /> Add a Break
               </button>
             )}
           </Card>
@@ -473,7 +473,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
         {/* Different keys: with one shared button React would turn Next into a submit button mid-click and submit the form. */}
         {step < 2 ? (
           <button key="next" type="button" className="btn btn-lg btn-primary flex-1" onClick={() => go(step + 1)}>
-            Next: {STEPS[step + 1]} <ArrowRight size={18} aria-hidden="true" />
+            Next: {STEPS[step + 1]} <ArrowRight className="ico-right" size={18} aria-hidden="true" />
           </button>
         ) : (
           <button key="confirm" type="submit" className="btn btn-lg btn-primary flex-1" disabled={f.busy}>

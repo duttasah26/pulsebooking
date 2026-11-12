@@ -15,7 +15,7 @@ export default function GuestStays({ guest, rooms, onBookAgain }) {
       <div className="mb-2 flex items-center justify-between">
         <h3 className="t-group">Stays <span className="font-mono">{stays.length}</span></h3>
         <button type="button" className="btn" disabled={rooms.length === 0} onClick={bookAgain}>
-          <Plus size={18} aria-hidden="true" /> Book Again
+          <Plus className="ico-turn" size={18} aria-hidden="true" /> Book Again
         </button>
       </div>
       {stays.length === 0 ? (

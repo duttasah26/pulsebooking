@@ -107,7 +107,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
       {onDate && (
         <nav aria-label="Days" className="flex items-stretch gap-2">
           <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
-            <CaretLeft size={22} aria-hidden="true" />
+            <CaretLeft className="ico-left" size={22} aria-hidden="true" />
           </button>
           <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
           <ol ref={stripRef} className="grid grid-cols-7 gap-1">
@@ -138,7 +138,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
           </ol>
           </div>
           <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
-            <CaretRight size={22} aria-hidden="true" />
+            <CaretRight className="ico-right" size={22} aria-hidden="true" />
           </button>
         </nav>
       )}
