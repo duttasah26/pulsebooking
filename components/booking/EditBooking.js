@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import CompanyPicker from '../CompanyPicker';
 import { Check, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Tag, User, Users } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
@@ -110,8 +111,7 @@ export default function EditBooking({ rooms, onCancel, onPreview, ...rest }) {
         )}
       </Card>
       <Card icon={Buildings} title="Company or group (optional)">
-        <input id="b-org" name="organization" aria-label="Company or group" className="field" list="b-org-list" placeholder="For example, Zee Bangla" value={f.organization} onChange={(e) => f.editOrganization(e.target.value)} autoComplete="off" />
-        <datalist id="b-org-list">{(f.companies ?? []).map((c) => <option key={c.name} value={c.name} />)}</datalist>
+        <CompanyPicker value={f.organization} onChange={f.editOrganization} companies={f.companies} />
       </Card>
       <Card icon={Users} title="How many people?">
         <div className="grid grid-cols-2 gap-3">

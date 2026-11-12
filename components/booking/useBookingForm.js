@@ -157,7 +157,7 @@ export function useBookingForm({
 
   // Companies already known, to suggest while typing the company. A company with a preset colour gives it to a new booking
   // until a colour is chosen by hand.
-  const companyList = useApi(edit ? null : '/api/companies').data ?? [];
+  const companyList = useApi('/api/companies').data ?? [];
   const colorTouched = useRef(edit);
   useEffect(() => {
     if (edit || colorTouched.current) return;
