@@ -72,7 +72,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
                   title={`Delete the view ${v.name}`}
                   className="btn btn-icon btn-danger shrink-0 rounded-l-none"
                 >
-                  <X className="ico-turn" size={16} weight="bold" aria-hidden="true" />
+                  <X size={16} weight="bold" aria-hidden="true" />
                 </button>
               )}
             </span>

@@ -59,7 +59,7 @@ export default function Sheet({ title, onClose: closeNow, children, footer, acti
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <button type="button" className="btn btn-icon" onClick={onClose} aria-label="Close">
-              <X className="ico-turn" size={20} weight="bold" />
+              <X size={20} weight="bold" />
             </button>
           </div>
         </div>

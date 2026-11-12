@@ -65,7 +65,7 @@ function Chip({ field, open, setOpen }) {
         {field.render({ close: () => setOpen(false) })}
       </Pop>
       <button type="button" aria-label={`Remove the ${field.label} filter`} onClick={field.clear} className={`${SEG} min-w-10 justify-center rounded-r-md px-2 text-muted hover:bg-ink/10 hover:text-ink lg:min-w-8`}>
-        <X className="ico-turn" size={14} weight="bold" aria-hidden="true" />
+        <X size={14} weight="bold" aria-hidden="true" />
       </button>
     </div>
   );

@@ -28,7 +28,7 @@ export default function GhostBar({ g, rows, style: placement, tone, name, onRemo
           onClick={onRemove}
           className="pointer-events-auto relative ml-auto grid size-6 shrink-0 place-items-center rounded-lg bg-transparent before:absolute before:-inset-x-2 before:-inset-y-1 before:content-[''] hover:bg-[rgb(var(--edge-rgb)/0.1)] [@media(pointer:coarse)]:before:-inset-x-3"
         >
-          <X className="ico-turn" size={14} weight="bold" />
+          <X size={14} weight="bold" />
         </button>
       )}
     </div>

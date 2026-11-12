@@ -273,7 +273,7 @@ export default function BulkEdit({ bookings, onApply, onCancel, only, onPreview 
         </p>
         <div className="flex gap-2">
           <button type="button" className="btn btn-lg btn-quiet flex-1" onClick={onCancel}>
-            {only ? <ArrowLeft className="ico-left" size={18} weight="bold" aria-hidden="true" /> : <X className="ico-turn" size={18} weight="bold" aria-hidden="true" />} {only ? 'Back' : 'Cancel'}
+            {only ? <ArrowLeft className="ico-left" size={18} weight="bold" aria-hidden="true" /> : <X size={18} weight="bold" aria-hidden="true" />} {only ? 'Back' : 'Cancel'}
           </button>
           <button
             type="submit"

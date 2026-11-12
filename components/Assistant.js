@@ -123,7 +123,7 @@ export default function Assistant() {
           </button>
         )}
         <button type="button" className="btn btn-icon" onClick={() => setOpen(false)} aria-label="Close the assistant">
-          <X className="ico-turn" size={16} aria-hidden="true" />
+          <X size={16} aria-hidden="true" />
         </button>
       </header>
 

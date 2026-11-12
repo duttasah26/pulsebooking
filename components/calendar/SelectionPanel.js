@@ -128,7 +128,7 @@ export default function SelectionPanel({
                       title="Take this one out of the selection"
                       className="absolute right-3 top-3 grid size-8 place-items-center rounded-md bg-surface/70 transition-colors duration-150 before:absolute before:-inset-1 before:content-[''] hover:bg-surface"
                     >
-                      <X className="ico-turn" size={14} weight="bold" aria-hidden="true" />
+                      <X size={14} weight="bold" aria-hidden="true" />
                     </button>
                   </li>
                 );

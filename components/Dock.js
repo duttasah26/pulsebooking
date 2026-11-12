@@ -62,7 +62,7 @@ export default function Dock({ open, onToggle, label, title, actions, tab, tabMa
           <div className="flex shrink-0 items-center gap-1">
             {actions}
             <button type="button" className="btn btn-icon" aria-label={`Hide ${label.toLowerCase()}`} aria-expanded="true" title={`Hide ${label.toLowerCase()}`} onClick={() => hide()}>
-              <X className="ico-turn" size={20} weight="bold" aria-hidden="true" />
+              <X size={20} weight="bold" aria-hidden="true" />
             </button>
           </div>
         </div>

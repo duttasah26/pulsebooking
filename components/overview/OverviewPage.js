@@ -395,7 +395,7 @@ export default function OverviewPage() {
             <h2 className="text-base font-semibold">{ready ? list.title : <Sk className="h-4 w-24" />}</h2>
             {kind !== 'arrivals' && (
               <button type="button" className="btn btn-icon btn-quiet" aria-label="Back to arrivals" title="Back to arrivals" onClick={() => pick('arrivals')}>
-                <X className="ico-turn" size={20} weight="bold" aria-hidden="true" />
+                <X size={20} weight="bold" aria-hidden="true" />
               </button>
             )}
           </div>

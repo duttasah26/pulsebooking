@@ -112,7 +112,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             <Check size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Confirm</span>
           </button>
           <button type="button" className="btn btn-sm btn-quiet" onClick={() => onCancelHold(b)} aria-label={`Cancel hold, ${b.name}`}>
-            <X className="ico-turn" size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Cancel</span>
+            <X size={16} weight="bold" aria-hidden="true" /> <span className="hidden sm:inline">Cancel</span>
           </button>
         </div>
       )}
