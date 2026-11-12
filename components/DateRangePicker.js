@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarBlank, CaretLeft, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, MagnifyingGlass, SignIn, SignOut } from '@phosphor-icons/react';
 import { useSettings } from './SettingsProvider';
 import { stayColor } from '../lib/colors';
 import { parseSpan } from '../lib/naturalDate';
@@ -134,7 +134,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
   return (
     <div className="space-y-3">
       <div className="relative">
-        <CalendarBlank size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <MagnifyingGlass size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
         <input
           type="text"
           className="field w-full pl-11"
