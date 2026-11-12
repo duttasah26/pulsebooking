@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import DateField from '../components/DateField';
 import { Bed, Buildings, CalendarBlank, Hash, Phone, Plus, Stack } from '@phosphor-icons/react';
 import Layout from '../components/Layout';
-import ListPageSkeleton from '../components/ListPageSkeleton';
+import ListPageSkeleton, { ListRowsSkeleton } from '../components/ListPageSkeleton';
 import FilterDock from '../components/FilterDock';
 import SearchBox from '../components/SearchBox';
 import ViewsBar from '../components/ViewsBar';
@@ -124,8 +125,8 @@ export default function Guests() {
       clear: () => setParams({ from: '', to: '' }),
       render: () => (
         <div className="grid grid-cols-2 gap-2">
-          <input type="date" name="from" aria-label="Stayed from" className="field min-w-0 px-2 text-sm" value={from} max={to || undefined} onChange={(e) => setParams({ from: e.target.value })} />
-          <input type="date" name="to" aria-label="Stayed until" className="field min-w-0 px-2 text-sm" value={to} min={from || undefined} onChange={(e) => setParams({ to: e.target.value })} />
+          <DateField name="from" aria-label="Stayed from" placeholder="From" clearable className="text-sm" value={from} max={to || undefined} onChange={(v) => setParams({ from: v })} />
+          <DateField name="to" aria-label="Stayed until" placeholder="Until" align="right" clearable className="text-sm" value={to} min={from || undefined} onChange={(v) => setParams({ to: v })} />
         </div>
       ),
     },
@@ -176,7 +177,7 @@ export default function Guests() {
 
   // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
   if (tab === 'guests' && !list.error && (!ready || !list.data || viewsLoading)) {
-    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs avatar rows={8} chips={[119, 91, 153, 116, 155]} dockHeight={447} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
   }
 
   return (
@@ -221,9 +222,7 @@ export default function Guests() {
           )}
 
           {(!ready || list.loading) && !list.data ? (
-            <div className="space-y-2" aria-busy="true" aria-label="Loading guests…">
-              {[0, 1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-16 rounded-lg" style={{ animationDelay: `${i * 90}ms` }} />)}
-            </div>
+            <ListRowsSkeleton rows={6} avatar label="Loading guests…" />
           ) : guests.length === 0 ? (
             <p className="rounded-lg border border-line bg-surface px-6 py-12 text-center text-base text-muted">
               {search || activeCount ? 'No guests match this search. Some filters may be on: clear them to see more.' : 'No guests yet. They are added when you create a booking.'}
