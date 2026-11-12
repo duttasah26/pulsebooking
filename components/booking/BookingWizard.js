@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import CompanyPicker from '../CompanyPicker';
 import DateField from '../DateField';
-import { ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Plus, X, Megaphone, Note, Receipt } from '@phosphor-icons/react';
+import { ArrowRight, CaretDown, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Plus, X, Megaphone, Note, Receipt } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
 import DateRangePicker from '../DateRangePicker';
 import { formatTime } from '../TimeSelect';
 import StatusBadge from '../StatusBadge';
+import Count from '../Count';
 import { useSettings } from '../SettingsProvider';
 import RoomPicker from './RoomPicker';
 import StatusPicker from './StatusPicker';
@@ -27,14 +28,14 @@ const ASKS = [
   { title: 'Check and confirm', help: '' },
 ];
 
-// One room of the booking, then its check-in, its check-out (red) and the nights. Words are plain; only the check-out
-// date is coloured. A guest with several rooms on different days gets one line each, one after the other.
-function StayLine({ room, checkIn, checkOut, inTime, outTime }) {
+// One room of the booking as a single quiet line: its number and its nights, with a caret that opens the check-in and check-out (dates and
+// times). A booking of one room starts open; with several rooms they start closed, so the card stays short enough to read at a glance.
+function StayLine({ room, checkIn, checkOut, inTime, outTime, defaultOpen = false }) {
   const { settings } = useSettings();
   const shade = roomShade({ number: room }, settings);
   const chip = (
-    <span className="rounded-md px-2 py-0.5 text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
-      Room <span className="font-mono">{room}</span>
+    <span aria-label={`Room ${room}`} className="rounded-md px-2 py-0.5 font-mono text-base font-semibold" style={{ backgroundColor: shade.fill, boxShadow: `inset 0 0 0 1px ${shade.edge}` }}>
+      {room}
     </span>
   );
   // A new booking starts with no days chosen: say so instead of trying to write a date that is not there.
@@ -47,23 +48,28 @@ function StayLine({ room, checkIn, checkOut, inTime, outTime }) {
     );
   }
   return (
-    <li className="rounded-lg border border-line bg-surface p-3 text-base">
-      <div className="flex items-center justify-between gap-3">
-        {chip}
-        <span className="font-semibold">{nightsLabel(diffDays(checkIn, checkOut))}</span>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-3 border-t border-line pt-3">
-        <div className="min-w-0">
-          <p className="text-[0.9375rem] text-muted">Check-in</p>
-          <p className="font-semibold">{fmtShort(checkIn)}</p>
-          {inTime && <p className="font-mono text-[0.9375rem] text-muted">{formatTime(inTime)}</p>}
+    <li className="rounded-lg border border-line bg-surface text-base">
+      <details className="group" open={defaultOpen}>
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden">
+          {chip}
+          <span className="flex items-center gap-3">
+            <Count kind="nights" n={diffDays(checkIn, checkOut)} />
+            <CaretDown size={18} aria-hidden="true" className="text-muted transition-transform duration-200 group-open:rotate-180" />
+          </span>
+        </summary>
+        <div className="grid grid-cols-2 gap-3 border-t border-line px-3 pb-3 pt-3">
+          <div className="min-w-0">
+            <p className="text-[0.9375rem] text-muted">Check-in</p>
+            <p className="font-semibold">{fmtShort(checkIn)}</p>
+            {inTime && <p className="font-mono text-[0.9375rem] text-muted">{formatTime(inTime)}</p>}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[0.9375rem] text-muted">Check-out</p>
+            <p className="font-semibold text-danger">{fmtShort(checkOut)}</p>
+            {outTime && <p className="font-mono text-[0.9375rem] text-muted">{formatTime(outTime)}</p>}
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="text-[0.9375rem] text-muted">Check-out</p>
-          <p className="font-semibold text-danger">{fmtShort(checkOut)}</p>
-          {outTime && <p className="font-mono text-[0.9375rem] text-muted">{formatTime(outTime)}</p>}
-        </div>
-      </div>
+      </details>
     </li>
   );
 }
@@ -290,6 +296,14 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
   useEffect(() => () => onPreview?.(null), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalRooms = f.roomIds.length + extraRooms;
+  // The card's basics: everyone staying, and the nights of every room added up.
+  const totalNights = allIds.reduce((sum, id) => {
+    const own = f.extraStays.find((x) => x.roomIds[0] === id);
+    const a = own?.checkIn ?? f.checkIn;
+    const b = own?.checkOut ?? f.checkOut;
+    return sum + (a && b ? Math.max(0, diffDays(a, b)) : 0);
+  }, 0);
+  const totalGuests = (Number(f.adults) || 0) + (Number(f.children) || 0);
   const confirmLabel = f.isHold ? 'Place Hold' : totalRooms > 1 ? `Confirm ${totalRooms} Rooms` : 'Confirm Booking';
 
   return (
@@ -425,6 +439,11 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
             <StatusBadge status={f.status} />
           </div>
 
+          <div className="flex items-center gap-5 text-base font-semibold">
+            <Count kind="guests" n={totalGuests} size={18} title={`${f.adults} ${Number(f.adults) === 1 ? 'adult' : 'adults'}${Number(f.children) > 0 ? `, ${f.children} ${Number(f.children) === 1 ? 'child' : 'children'}` : ''}`} />
+            <Count kind="nights" n={totalNights} size={18} title={allIds.length > 1 ? `${totalNights} room-nights over ${allIds.length} rooms` : undefined} />
+          </div>
+
           <div>
             <ul className="space-y-2">
               {allIds.map((id) => rooms.find((r) => r.id === id)?.number).filter(Boolean).sort().map((number) => {
@@ -437,6 +456,7 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
                     checkOut={own?.checkOut ?? f.checkOut}
                     inTime={own ? own.checkInTime ?? f.checkInTime : f.checkInTime}
                     outTime={own ? own.checkOutTime ?? f.checkOutTime : f.checkOutTime}
+                    defaultOpen={allIds.length === 1}
                   />
                 );
               })}
@@ -446,7 +466,6 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
 
           {/* The rest, as one short line each, with the same small icons used elsewhere. */}
           <ul className="space-y-1.5 border-t border-[rgb(var(--edge-rgb)/0.1)] pt-3 text-base">
-            <li className="flex items-center gap-2"><Users size={18} aria-hidden="true" className="shrink-0 text-muted" />{f.adults} {Number(f.adults) === 1 ? 'adult' : 'adults'}{Number(f.children) > 0 && <>, {f.children} {Number(f.children) === 1 ? 'child' : 'children'}</>}</li>
             <li className="flex items-center gap-2"><Megaphone size={18} aria-hidden="true" className="shrink-0 text-muted" />Booked via {f.channel}</li>
             <li className="flex items-center gap-2"><Receipt size={18} aria-hidden="true" className="shrink-0 text-muted" />{ratePlan}</li>
             {f.organization.trim() && <li className="flex items-center gap-2"><Buildings size={18} aria-hidden="true" className="shrink-0 text-muted" /><span className="min-w-0 break-words">{f.organization.trim()}</span></li>}
