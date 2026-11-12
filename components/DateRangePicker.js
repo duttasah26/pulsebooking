@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { CaretLeft, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
+import { CalendarBlank, CaretLeft, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
 import { useSettings } from './SettingsProvider';
 import { stayColor } from '../lib/colors';
+import { parseSpan } from '../lib/naturalDate';
 import {
   addDays, addMonths, dayOfMonth, daysInMonth, diffDays, fmtMonth, fmtShort, monthStart, nightsLabel, range, today, weekdayIndex,
 } from '../lib/dates';
@@ -33,8 +34,18 @@ function End({ icon: Icon, label, date, out = false, active, onClick }) {
   );
 }
 
-export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = () => false, inclusive = false }) {
+// single: choose one day (onChange(day, day + 1)); min / max (YYYY-MM-DD) grey out days outside them. Above the calendar a line takes
+// plain words ("next fri", "dec 1 to dec 5", "fri for 3 nights"): the calendar turns to the day as you type and Enter picks it.
+export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = () => false, inclusive = false, single = false, min, max }) {
   const [view, setView] = useState(monthStart(checkIn || today()));
+  const [typedText, setTypedText] = useState('');
+  const typed = typedText.trim() ? parseSpan(typedText) : null;
+  const outside = (d) => (min && d < min) || (max && d > max);
+  const typedOk = typed && !outside(typed.from) && !outside(typed.to);
+  useEffect(() => {
+    if (typedOk) setView(monthStart(typed.from));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typedOk && typed.from]);
   const [awaitingEnd, setAwaitingEnd] = useState(false);
   const [editStart, setEditStart] = useState(false); // the Check-in box was tapped: the next day tapped is the new check-in
   const todayStr = today();
@@ -56,7 +67,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
 
   const days = range(view, daysInMonth(view));
   const nights = checkIn && checkOut ? diffDays(checkIn, checkOut) : 0;
-  const lastDay = checkOut ? (inclusive ? addDays(checkOut, -1) : checkOut) : null; // the day drawn as the end of the range
+  const lastDay = single ? null : checkOut ? (inclusive ? addDays(checkOut, -1) : checkOut) : null; // the day drawn as the end of the range
   const words = inclusive
     ? { start: 'first day', end: 'last day', pickStart: 'Pick the first day', pickEnd: 'Now pick the last day', unit: (n) => `${n} day${n === 1 ? '' : 's'}` }
     : { start: 'check-in', end: 'check-out', pickStart: 'Pick a check-in day', pickEnd: 'Now pick the check-out day', unit: nightsLabel };
@@ -77,6 +88,12 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
   // With a check-in already chosen: a later day is the check-out, and tapping another later day moves the check-out
   // instead of starting over. Only a day on or before the check-in starts a new range.
   const pick = (d) => {
+    if (outside(d)) return;
+    if (single) {
+      own.current = true;
+      onChange(d, addDays(d, 1));
+      return;
+    }
     own.current = true;
     if (editStart) {
       if (isBusy(d)) { own.current = false; return; }
@@ -97,9 +114,44 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
     setAwaitingEnd(true);
   };
 
+  // Enter on the typed words: a single day is a tap on that day; two ends set the whole stay (or span), if it fits.
+  const applyTyped = () => {
+    if (!typedOk) return;
+    const { from, to } = typed;
+    if (single || from === to) {
+      pick(from);
+    } else if (inclusive ? true : freeBetween(from, to)) {
+      own.current = true;
+      onChange(from, inclusive ? addDays(to, 1) : to);
+      setAwaitingEnd(false);
+      setEditStart(false);
+    } else {
+      return;
+    }
+    setTypedText('');
+  };
+
   return (
     <div className="space-y-3">
-      <div>
+      <div className="relative">
+        <CalendarBlank size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <input
+          type="text"
+          className="field w-full pl-11"
+          value={typedText}
+          onChange={(e) => setTypedText(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); applyTyped(); } else if (e.key === 'Escape' && typedText) { e.stopPropagation(); setTypedText(''); } }}
+          placeholder={single ? 'tomorrow, next fri, dec 1…' : 'next fri, dec 1 to dec 5, fri for 3 nights…'}
+          aria-label="Type a date"
+          aria-invalid={typedText.trim() && !typedOk ? true : undefined}
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="done"
+        />
+      </div>
+      <div className={single ? 'hidden' : undefined}>
         <div className="grid grid-cols-2 gap-2">
           <End icon={SignIn} label={inclusive ? 'First day' : 'Check-in'} date={checkIn} active={editStart} onClick={() => { setEditStart(true); setAwaitingEnd(false); }} />
           <End icon={SignOut} label={inclusive ? 'Last day' : 'Check-out'} date={awaitingEnd ? null : lastDay} out active={awaitingEnd && !editStart} onClick={() => { setEditStart(false); setAwaitingEnd(true); }} />
@@ -128,6 +180,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
           const isEnd = d === lastDay;
           const inside = checkIn && lastDay && d > checkIn && d < lastDay;
           const busy = isBusy(d);
+          const preview = typedOk && d >= typed.from && d <= typed.to;
           const blockedEnd = awaitingEnd && d > checkIn && !clearThrough(d);
           const disabled = awaitingEnd ? (d < checkIn || (d === checkIn && !inclusive) ? busy : blockedEnd) : busy && !(checkIn && d > checkIn);
           let tone = 'text-ink hover:bg-surface-2';
@@ -138,14 +191,14 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
             <button
               key={d}
               type="button"
-              disabled={disabled && !isStart && !isEnd}
+              disabled={(disabled && !isStart && !isEnd) || outside(d)}
               onClick={() => pick(d)}
               aria-label={`${fmtShort(d)}${isStart ? `, ${words.start}` : isEnd ? `, ${words.end}` : busy ? ', booked' : ''}`}
               aria-pressed={isStart || isEnd}
               style={isStart || isEnd ? { backgroundColor: (isStart ? inColor : outColor).bg, borderColor: (isStart ? inColor : outColor).border } : undefined}
               className={`cell mx-auto flex size-11 items-center justify-center rounded-lg font-mono text-base lg:size-10 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${tone} ${
                 d === todayStr && !isStart && !isEnd ? 'font-bold text-accent-text ring-1 ring-accent' : ''
-              }`}
+              } ${preview ? 'outline outline-2 -outline-offset-2 outline-dashed outline-accent' : ''}`}
             >
               {dayOfMonth(d)}
             </button>

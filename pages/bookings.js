@@ -1,8 +1,9 @@
 import { Fragment, useState } from 'react';
+import DateField from '../components/DateField';
 import { Bed, Buildings, CalendarBlank, Hourglass, Phone, Plus, Stack, Tag } from '@phosphor-icons/react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
-import ListPageSkeleton from '../components/ListPageSkeleton';
+import ListPageSkeleton, { ListRowsSkeleton } from '../components/ListPageSkeleton';
 import BookingSheet from '../components/booking/BookingSheet';
 import BookingRow, { BOOKING_COLUMNS } from '../components/bookings/BookingRow';
 import ViewsBar from '../components/ViewsBar';
@@ -306,8 +307,8 @@ export default function Bookings() {
             onChange={(v) => setParams({ rby: v })}
           />
           <div className="grid grid-cols-2 gap-2">
-            <input type="date" name="df" aria-label="From date" className="field min-w-0 px-2 text-sm" value={df} max={dt || undefined} onChange={(e) => setParams({ df: e.target.value })} />
-            <input type="date" name="dt" aria-label="Until date" className="field min-w-0 px-2 text-sm" value={dt} min={df || undefined} onChange={(e) => setParams({ dt: e.target.value })} />
+            <DateField name="df" aria-label="From date" placeholder="From" clearable className="text-sm" value={df} max={dt || undefined} onChange={(v) => setParams({ df: v })} />
+            <DateField name="dt" aria-label="Until date" placeholder="Until" align="right" clearable className="text-sm" value={dt} min={df || undefined} onChange={(v) => setParams({ dt: v })} />
           </div>
         </div>
       ),
@@ -354,7 +355,7 @@ export default function Bookings() {
 
   // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
   if (!list.error && (!ready || !list.data || viewsLoading)) {
-    return <Layout title="Bookings"><ListPageSkeleton title="Bookings" label="Loading bookings" dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+    return <Layout title="Bookings"><ListPageSkeleton title="Bookings" label="Loading bookings" groups={[1, 2, 2, 2]} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
   }
 
   return (
@@ -386,9 +387,7 @@ export default function Bookings() {
           )}
 
           {(!ready || list.loading) && !list.data ? (
-            <div className="space-y-2" aria-busy="true" aria-label="Loading bookings…">
-              {[0, 1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-16 rounded-lg" style={{ animationDelay: `${i * 90}ms` }} />)}
-            </div>
+            <ListRowsSkeleton rows={6} label="Loading bookings…" />
           ) : rows.length === 0 ? (
             <p className="rounded-lg border border-line bg-surface px-6 py-12 text-center text-base text-muted">
               {search

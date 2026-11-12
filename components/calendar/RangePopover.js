@@ -33,7 +33,7 @@ export default function RangePopover({ date, span, onShow, onClose }) {
       ref={box}
       role="dialog"
       aria-label="Choose dates to show"
-      className="absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] space-y-2 rounded-lg border border-line bg-surface p-3 shadow-lg"
+      className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] space-y-2 rounded-lg border border-line bg-surface p-3 shadow-lg"
     >
       <DateRangePicker inclusive checkIn={from} checkOut={to} onChange={(a, b) => { setFrom(a); setTo(b); }} />
       {tooLong && <p role="alert" className="text-sm text-danger">Pick at most {MAX_SPAN} days.</p>}

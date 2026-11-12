@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import DateField from '../DateField';
 import { ArrowRight, Check, WarningCircle, Baby, Bed, Buildings, CalendarBlank, Palette, SignIn, SignOut, Suitcase, Tag, User, Users, Plus, X, Megaphone, Note, Receipt } from '@phosphor-icons/react';
 import FieldLabel from '../FieldLabel';
 import GuestPicker from '../GuestPicker';
@@ -382,11 +383,11 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label htmlFor="away-from" className="label">They leave on</label>
-                    <input id="away-from" type="date" className="field min-w-0 px-2 font-semibold" value={f.away.from} min={addDays(f.checkIn, 1)} max={addDays(f.checkOut, -2)} onChange={(e) => e.target.value && f.setAway({ from: e.target.value, to: f.away.to > e.target.value ? f.away.to : addDays(e.target.value, 1) })} />
+                    <DateField id="away-from" className="font-semibold" value={f.away.from} min={addDays(f.checkIn, 1)} max={addDays(f.checkOut, -2)} onChange={(v) => v && f.setAway({ from: v, to: f.away.to > v ? f.away.to : addDays(v, 1) })} />
                   </div>
                   <div>
                     <label htmlFor="away-to" className="label">They come back on</label>
-                    <input id="away-to" type="date" className="field min-w-0 px-2 font-semibold" value={f.away.to} min={addDays(f.away.from, 1)} max={addDays(f.checkOut, -1)} onChange={(e) => e.target.value && f.setAway({ ...f.away, to: e.target.value })} />
+                    <DateField id="away-to" align="right" className="font-semibold" value={f.away.to} min={addDays(f.away.from, 1)} max={addDays(f.checkOut, -1)} onChange={(v) => v && f.setAway({ ...f.away, to: v })} />
                   </div>
                 </div>
                 <button type="button" className="btn w-full" onClick={() => f.setAway(null)}>
