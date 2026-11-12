@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { partyOf } from '../../lib/party';
 import Count from '../Count';
 import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Phone, PushPin, X } from '@phosphor-icons/react';
 import { usePinned } from '../../lib/pinned';
@@ -29,6 +30,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
   const show = (key) => !hidden.includes(key);
   const rooms = [...new Set(b.rooms ?? [b.room_number])].sort();
   const members = b.members?.length > 1 ? b.members : null; // the rooms of one stay, gathered on this row
+  const party = partyOf(members ?? [b]); // everyone on the row: a stay in several rooms counts the guests of all of them
   const [open, setOpen] = useState(false);
   const { ids: pinnedIds } = usePinned();
   const pinned = pinnedIds.includes(b.id) || Boolean(members?.some((m) => pinnedIds.includes(m.id))); // a pin beside the name, so a pinned booking is known without opening it
@@ -85,7 +87,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
               <Count kind="nights" n={b.nights} size={minimal ? 14 : 16} />
             )}
             {b.adults != null && (
-              <Count kind="guests" n={b.adults + (b.children ?? 0)} size={minimal ? 14 : 16} title={`${b.adults} adult${b.adults === 1 ? '' : 's'}${b.children ? `, ${b.children} child${b.children === 1 ? '' : 'ren'}` : ''}`} />
+              <Count kind="guests" n={party.adults + party.children} size={minimal ? 14 : 16} title={`${party.adults} adult${party.adults === 1 ? '' : 's'}${party.children ? `, ${party.children} child${party.children === 1 ? '' : 'ren'}` : ''}`} />
             )}
             </span>
             {show('organization') && b.organization && (
