@@ -106,7 +106,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
       {onDate && (
         <nav aria-label="Months" className="flex items-stretch gap-2">
           <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Month before" {...hold('prev', () => onDate(addMonths(first, -1)))}>
-            <CaretLeft size={22} aria-hidden="true" />
+            <CaretLeft className="ico-left" size={22} aria-hidden="true" />
           </button>
           <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
           <ol ref={stripRef} className="grid grid-cols-5 gap-1">
@@ -129,7 +129,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
           </ol>
           </div>
           <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Month after" {...hold('next', () => onDate(addMonths(first, 1)))}>
-            <CaretRight size={22} aria-hidden="true" />
+            <CaretRight className="ico-right" size={22} aria-hidden="true" />
           </button>
         </nav>
       )}

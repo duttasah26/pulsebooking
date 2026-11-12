@@ -81,7 +81,7 @@ export default function SelectionPanel({
                       <span className="block text-[1.0625rem] font-semibold leading-6">{title}</span>
                       <span className="t-footnote block">{hint}</span>
                     </span>
-                    <CaretRight size={18} aria-hidden="true" className="shrink-0 text-muted" />
+                    <CaretRight size={18} aria-hidden="true" className="ico-right shrink-0 text-muted" />
                   </button>
                 </li>
               ))}

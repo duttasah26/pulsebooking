@@ -50,11 +50,11 @@ export function Stepper({ label, value, onChange, min = 0 }) {
       <p className={TITLE}>{label}</p>
       <div className="flex items-center justify-between gap-2">
         <button type="button" className="btn btn-lg btn-icon" onClick={() => onChange(Math.max(min, n - 1))} disabled={n <= min} aria-label={`One fewer ${label.toLowerCase()}`}>
-          <Minus size={20} aria-hidden="true" />
+          <Minus className="ico-still" size={20} aria-hidden="true" />
         </button>
         <output key={n} className="min-w-10 text-center font-mono text-[1.75rem] font-semibold" aria-label={`${n} ${label.toLowerCase()}`}>{n}</output>
         <button type="button" className="btn btn-lg btn-icon" onClick={() => onChange(n + 1)} aria-label={`One more ${label.toLowerCase()}`}>
-          <Plus size={20} aria-hidden="true" />
+          <Plus className="ico-still" size={20} aria-hidden="true" />
         </button>
       </div>
     </div>

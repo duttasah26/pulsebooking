@@ -1,4 +1,4 @@
-import { Bed, Buildings, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User, ArrowUpRight } from '@phosphor-icons/react';
+import { Bed, Buildings, Moon, Check, Clock, Envelope, Megaphone, Note, Phone, Receipt, SignIn, SignOut, Users, Stack, Trash, PencilSimple, User, ArrowUpRight } from '@phosphor-icons/react';
 import StatusBadge from '../StatusBadge';
 import ShineCard from '../ShineCard';
 import HoldButton from '../HoldButton';
@@ -42,6 +42,7 @@ export default function BookingDetails({
   booking: b, group, rooms = [], onRemove, onSaved, onDone, onRemoved, onConfirm, onPutOnHold, groupCount = 0, onShowGroup, onShowInCalendar, pending, onSavePending, onCancelPending,
 }) {
   const targets = group && group.length > 1 ? group : [b];
+  const roomNights = targets.reduce((n, t) => n + Number(t.nights ?? 0), 0); // every room's nights added up when several are selected
   const { remove, removing } = useRemoveBooking({ booking: b, targets, onRemove, onSaved, onDone: onRemoved ?? onDone });
   const { settings } = useSettings();
   const c = colorFor(b, settings);
@@ -101,6 +102,7 @@ export default function BookingDetails({
           const facts = [
             b.phone && { key: 'phone', icon: Phone, node: <a href={`tel:${b.phone.replace(/[^+\d]/g, '')}`} className="underline decoration-ink/30 underline-offset-2 hover:decoration-ink">{b.phone}</a> },
             { key: 'party', icon: Users, node: <span title={partyText(partyOf(targets))}><span className="font-mono">{partyOf(targets).adults + partyOf(targets).children}x</span><span className="sr-only"> {partyText(partyOf(targets))}</span></span> },
+            targets.length > 1 && { key: 'nights', icon: Moon, node: <span title={targets.length > 1 ? `${roomNights} room-nights: ${targets.length} rooms, ${b.nights} ${b.nights === 1 ? 'night' : 'nights'} each` : nightsLabel(b.nights)}><span className="font-mono">{roomNights}x</span><span className="sr-only"> {roomNights === 1 ? 'night' : 'nights'}</span></span> },
             { key: 'via', icon: Megaphone, node: `via ${b.channel}`, title: `Booked via ${b.channel}` },
             { key: 'plan', icon: Receipt, node: `Plan ${b.rate_plan}` },
           ].filter(Boolean);

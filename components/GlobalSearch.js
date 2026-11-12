@@ -138,7 +138,7 @@ export default function GlobalSearch() {
             </span>
           </span>
         </span>
-        <CaretRight size={18} aria-hidden="true" className="mx-2 shrink-0 text-muted" />
+        <CaretRight size={18} aria-hidden="true" className="ico-right mx-2 shrink-0 text-muted" />
       </button>
     );
   };

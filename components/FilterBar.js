@@ -95,14 +95,14 @@ export default function FilterBar({ fields, onClearAll, search }) {
             align="right"
             button={
               <button type="button" aria-expanded={open} className="btn min-h-12 shrink-0 gap-2 px-4 sm:w-40 lg:min-h-11" onClick={() => toggle(!open)}>
-                <Plus size={18} aria-hidden="true" /> Filter
+                <Plus className="ico-turn" size={18} aria-hidden="true" /> Filter
               </button>
             }
           >
             {field ? (
               <div className="space-y-3">
                 <button type="button" className="btn btn-quiet btn-sm -ml-2" onClick={() => setAdding(null)}>
-                  <CaretLeft size={16} aria-hidden="true" /> {field.label}
+                  <CaretLeft className="ico-left" size={16} aria-hidden="true" /> {field.label}
                 </button>
                 {field.render({ close: () => toggle(false) })}
               </div>

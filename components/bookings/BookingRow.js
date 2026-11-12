@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { partyOf } from '../../lib/party';
 import Count from '../Count';
 import { Buildings, CalendarBlank, CaretDown, CaretRight, Check, Phone, PushPin, X } from '@phosphor-icons/react';
 import { usePinned } from '../../lib/pinned';
@@ -29,6 +30,8 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
   const show = (key) => !hidden.includes(key);
   const rooms = [...new Set(b.rooms ?? [b.room_number])].sort();
   const members = b.members?.length > 1 ? b.members : null; // the rooms of one stay, gathered on this row
+  const roomNights = (members ?? [b]).reduce((n, m) => n + Number(m.nights ?? 0), 0); // a stay in several rooms counts the nights of every room
+  const party = partyOf(members ?? [b]); // everyone on the row: a stay in several rooms counts the guests of all of them
   const [open, setOpen] = useState(false);
   const { ids: pinnedIds } = usePinned();
   const pinned = pinnedIds.includes(b.id) || Boolean(members?.some((m) => pinnedIds.includes(m.id))); // a pin beside the name, so a pinned booking is known without opening it
@@ -82,10 +85,10 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
             <span className="flex items-center gap-4">
             {show('dates') && (
-              <Count kind="nights" n={b.nights} size={minimal ? 14 : 16} />
+              <Count kind="nights" n={roomNights} size={minimal ? 14 : 16} title={members ? `${roomNights} room-nights: ${members.length} rooms, ${b.nights} ${b.nights === 1 ? 'night' : 'nights'} each` : undefined} />
             )}
             {b.adults != null && (
-              <Count kind="guests" n={b.adults + (b.children ?? 0)} size={minimal ? 14 : 16} title={`${b.adults} adult${b.adults === 1 ? '' : 's'}${b.children ? `, ${b.children} child${b.children === 1 ? '' : 'ren'}` : ''}`} />
+              <Count kind="guests" n={party.adults + party.children} size={minimal ? 14 : 16} title={`${party.adults} adult${party.adults === 1 ? '' : 's'}${party.children ? `, ${party.children} child${party.children === 1 ? '' : 'ren'}` : ''}`} />
             )}
             </span>
             {show('organization') && b.organization && (
@@ -102,7 +105,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
           </span>
         </span>
-        {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="text-muted" /></span>}
+        {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="ico-right text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
         <div className="flex shrink-0 items-center gap-3 pr-3 sm:gap-2">

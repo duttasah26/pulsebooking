@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarBlank, CaretLeft, CaretRight, SignIn, SignOut } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight, MagnifyingGlass, SignIn, SignOut } from '@phosphor-icons/react';
 import { useSettings } from './SettingsProvider';
 import { stayColor } from '../lib/colors';
 import { parseSpan } from '../lib/naturalDate';
@@ -134,7 +134,7 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
   return (
     <div className="space-y-3">
       <div className="relative">
-        <CalendarBlank size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+        <MagnifyingGlass size={20} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
         <input
           type="text"
           className="field w-full pl-11"
@@ -164,11 +164,11 @@ export default function DateRangePicker({ checkIn, checkOut, onChange, isBusy = 
       <div>
       <div className="mb-1 flex items-center justify-between">
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, -1))} aria-label="Previous month">
-          <CaretLeft size={18} />
+          <CaretLeft className="ico-left" size={18} />
         </button>
         <span className="text-[1.0625rem] font-bold" aria-live="polite">{fmtMonth(view)}</span>
         <button type="button" className="btn btn-icon" onClick={() => setView(addMonths(view, 1))} aria-label="Next month">
-          <CaretRight size={18} />
+          <CaretRight className="ico-right" size={18} />
         </button>
       </div>
 

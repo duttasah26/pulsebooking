@@ -89,11 +89,11 @@ export default function CalendarToolbar({
       >
         <div role="group" aria-label="Move through the days" className="flex shrink-0 items-center gap-1">
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(-1)} aria-label="Previous">
-            <CaretLeft size={18} />
+            <CaretLeft className="ico-left" size={18} />
           </button>
           <button type="button" className="btn shrink-0 px-4 font-semibold" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(1)} aria-label="Next">
-            <CaretRight size={18} />
+            <CaretRight className="ico-right" size={18} />
           </button>
         </div>
         <div className="relative shrink-0">
@@ -112,7 +112,7 @@ export default function CalendarToolbar({
         </div>
         {phone && onNew && (
           <button type="button" className="btn btn-primary btn-icon ml-auto shrink-0" onClick={onNew} aria-label="New booking" title="New booking">
-            <Plus size={20} aria-hidden="true" />
+            <Plus className="ico-turn" size={20} aria-hidden="true" />
           </button>
         )}
         <div className="flex min-w-0 flex-1 basis-48 items-center gap-2 max-md:basis-full md:mx-2 short:flex-none short:basis-auto">

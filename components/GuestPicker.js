@@ -142,7 +142,7 @@ export default function GuestPicker({ initial, onChange, onQuery, tone }) {
             className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-accent-soft px-4 py-2 font-semibold text-accent-strong transition-colors duration-150 hover:bg-accent-soft/60 active:bg-accent-soft/40"
             onClick={() => { setAdding(true); setDraft({ name: query.trim(), phone: '', email: '', organization: '', color: null }); }}
           >
-            <Plus size={18} weight="bold" aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest
+            <Plus className="ico-turn" size={18} weight="bold" aria-hidden="true" /> Add &ldquo;{query.trim()}&rdquo; as a New Guest
           </button>
           </div>
         </div>

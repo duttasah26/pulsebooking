@@ -15,7 +15,7 @@ export default function ThemeToggle() {
   const label = `Switch to ${next} mode`;
   return (
     <button type="button" className="btn btn-quiet btn-icon text-muted" onClick={() => setChoice(next === device ? 'system' : next)} aria-label={label} title={label}>
-      <Icon size={20} weight="bold" />
+      <Icon size={20} weight="bold" className={next === 'light' ? 'ico-sun' : 'ico-moon'} />
     </button>
   );
 }
