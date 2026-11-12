@@ -30,6 +30,11 @@ function groupRows(list) {
   return [...map.values()].map((r) => ({ ...r, rooms: [...new Set(r.rooms)].sort() }));
 }
 
+// A placeholder the size of a piece of text, drawn inline so the line keeps the height its text would have.
+function Sk({ className = 'h-4 w-16' }) {
+  return <span aria-hidden="true" className={`skeleton inline-block rounded-md align-middle ${className}`} />;
+}
+
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 // What a figure counts: the bookings (one row each), the guests in them (adults and children), or the rooms they hold.
@@ -53,39 +58,40 @@ const POP = {
 
 // One of the figures: a title, a big centred number in its colour, its name under it, and a small count. Choosing it fills the list.
 // The three dots (their own button, beside the card) choose what the number counts.
-function Figure({ title, value, name, pop, notes, active, onPick, measure, onMeasure }) {
+function Figure({ title, value, name, pop, notes, active, onPick, measure, onMeasure, loading = false }) {
   const tone = POP[pop].text;
   return (
     <div className="relative">
       <ShineCard
-        as="button"
-        type="button"
-        aria-pressed={active}
-        onClick={onPick}
-        className={`flex h-full w-full flex-col rounded-xl border p-4 text-left lg:p-3 ${active ? POP[pop].on : 'border-line bg-surface'}`}
+        as={loading ? 'div' : 'button'}
+        type={loading ? undefined : 'button'}
+        aria-pressed={loading ? undefined : active}
+        onClick={loading ? undefined : onPick}
+        tilt={loading ? 0 : 4}
+        className={`flex h-full w-full flex-col rounded-xl border p-4 text-left lg:p-3 ${active && !loading ? POP[pop].on : 'border-line bg-surface'}`}
       >
         <span className="flex items-center justify-between">
-          <span className="text-[0.9375rem] font-semibold">{title}</span>
+          <span className="text-[0.9375rem] font-semibold">{loading ? <Sk className="h-4 w-20" /> : title}</span>
           <span aria-hidden="true" className="size-5" />
         </span>
-        <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none lg:mt-2 lg:text-4xl ${tone}`}>{value}</span>
-        <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{name}</span>
+        <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none lg:mt-2 lg:text-4xl ${tone}`}>{loading ? <span className="block h-12 lg:h-9"><Sk className="h-[0.8em] w-[1.6ch] align-top" /></span> : value}</span>
+        <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{loading ? <Sk className="h-4 w-24" /> : name}</span>
         <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted lg:mt-2 lg:pt-2">
           {notes.map(([label, n]) => (
-            <span key={label} className="flex items-baseline gap-1.5">{label} <span className="font-mono text-base font-semibold text-ink">{n}</span></span>
+            <span key={label} className="flex items-baseline gap-1.5">{loading ? <Sk className="h-3 w-14" /> : label} <span className="font-mono text-base font-semibold text-ink">{loading ? <Sk className="h-3.5 w-4" /> : n}</span></span>
           ))}
         </span>
       </ShineCard>
-      <MeasureMenu label={title} value={measure} onPick={onMeasure} className="absolute right-2 top-2 lg:right-1.5 lg:top-1.5" />
+      {!loading && <MeasureMenu label={title} value={measure} onPick={onMeasure} className="absolute right-2 top-2 lg:right-1.5 lg:top-1.5" />}
     </div>
   );
 }
 
-function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = false }) {
+function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = false, loading = false }) {
   return (
-    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} lg:min-h-0 ${tone}`}>
-      <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{value}</p>
-      <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{label}</p>
+    <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} lg:min-h-0 ${loading ? 'bg-surface-2' : tone}`}>
+      <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{loading ? <Sk className={big ? 'h-9 w-[3ch]' : 'h-7 w-[2ch]'} /> : value}</p>
+      <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{loading ? <Sk className={`h-3.5 ${big ? 'w-16' : 'w-20'}`} /> : label}</p>
     </div>
   );
 }
@@ -160,7 +166,7 @@ function WeekChart({ days, unit, picked, onPick }) {
 }
 
 // The day tab and the calendar under it: the same month picker as the calendar's Go to (with a line to type "next fri", "dec 1"), for one day.
-function DayPicker({ day, today: t, onPick }) {
+function DayPicker({ day, today: t, onPick, loading = false }) {
   const [open, setOpen] = useState(false);
   const box = useRef(null);
   useEffect(() => {
@@ -180,12 +186,13 @@ function DayPicker({ day, today: t, onPick }) {
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
+        disabled={loading}
         onClick={() => setOpen((o) => !o)}
         className="inline-flex h-11 min-w-[11.5rem] items-center justify-between gap-2 rounded-t-xl bg-canvas px-4 text-base font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:h-10"
       >
         <span className="sr-only">Day: </span>
-        <span>{day === t ? `Today, ${fmtShort(day)}` : fmtShort(day)}</span>
-        <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />
+        {loading ? <Sk className="h-4 w-32" /> : <span>{day === t ? `Today, ${fmtShort(day)}` : fmtShort(day)}</span>}
+        {!loading && <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />}
       </button>
       {open && (
         <div role="dialog" aria-label="Choose the day" className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-3 shadow-lg">
@@ -305,16 +312,16 @@ export default function OverviewPage() {
         <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden="true" className={`grid size-14 shrink-0 place-items-center rounded-full text-xl font-semibold text-accent-text ${ready ? 'bg-accent-soft' : 'skeleton'}`}>{ready ? first[0] ?? '·' : ''}</span>
           <div className="min-w-0">
-            <h1 className="truncate text-[1.875rem] font-bold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}{!ready && <>,<span aria-hidden="true" className="skeleton ml-2 inline-block h-[0.8em] w-28 rounded-md align-baseline" /></>}</h1>
+            <h1 className="truncate text-[1.875rem] font-bold leading-tight">{ready ? (first ? `Hello again, ${first}` : 'Hello again') : <Sk className="h-8 w-72 max-w-full" />}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
-              <Bell size={16} weight="fill" aria-hidden="true" />
+              {ready ? <Bell size={16} weight="fill" aria-hidden="true" /> : <Sk className="size-4 rounded-full" />}
               {ready ? <span className="min-w-0 truncate">{label}: {summary}</span> : <span aria-hidden="true"><span className="skeleton inline-block h-4 w-56 rounded-md align-middle" /></span>}
             </p>
           </div>
         </div>
           {/* The day, as a tab in the page's grey rising out of the white band and flowing into the grey below. It opens the same calendar as Go to on the Calendar, with a line to type the day in words. */}
           <div className="flex items-end gap-3">
-            <DayPicker day={d} today={t} onPick={setDay} />
+            <DayPicker day={d} today={t} onPick={setDay} loading={!ready} />
             {/* Always there so the row never changes height or width; it only fades in once the day is not today. */}
             <button type="button" className={`btn btn-quiet transition-opacity ${d === t ? 'pointer-events-none opacity-0' : ''}`} tabIndex={d === t ? -1 : undefined} aria-hidden={d === t ? true : undefined} onClick={() => setDay(t)}>Today</button>
           </div>
@@ -322,19 +329,19 @@ export default function OverviewPage() {
 
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <Figure title="Arrivals" name={MEASURE_NAME[measures.arrivals]} value={dash(count(arrivals, measures.arrivals))} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
+            <Figure loading={!ready} title="Arrivals" name={MEASURE_NAME[measures.arrivals]} value={dash(count(arrivals, measures.arrivals))} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
               measure={measures.arrivals} onMeasure={(m) => setMeasure({ ...measures, arrivals: m })}
               notes={[['Checked in', dash(count(arrivals.filter((r) => isDone('arrivals', r.first.status)), measures.arrivals))]]} />
-            <Figure title="Departures" name={MEASURE_NAME[measures.departures]} value={dash(count(departures, measures.departures))} pop="red" active={kind === 'departures'} onPick={() => pick('departures')}
+            <Figure loading={!ready} title="Departures" name={MEASURE_NAME[measures.departures]} value={dash(count(departures, measures.departures))} pop="red" active={kind === 'departures'} onPick={() => pick('departures')}
               measure={measures.departures} onMeasure={(m) => setMeasure({ ...measures, departures: m })}
               notes={[['Checked out', dash(count(departures.filter((r) => isDone('departures', r.first.status)), measures.departures))]]} />
-            <Figure title="In the house" name={measures.house === 'rooms' ? 'Rooms in use' : MEASURE_NAME[measures.house]} value={dash(count(inHouse, measures.house))} pop="blue" active={kind === 'house'} onPick={() => pick('house')}
+            <Figure loading={!ready} title="In the house" name={measures.house === 'rooms' ? 'Rooms in use' : MEASURE_NAME[measures.house]} value={dash(count(inHouse, measures.house))} pop="blue" active={kind === 'house'} onPick={() => pick('house')}
               measure={measures.house} onMeasure={(m) => setMeasure({ ...measures, house: m })}
               notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
-            <Figure title="Upcoming" name={MEASURE_NAME[measures.upcoming]} value={dash(count(upcoming, measures.upcoming))} pop="violet" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
+            <Figure loading={!ready} title="Upcoming" name={MEASURE_NAME[measures.upcoming]} value={dash(count(upcoming, measures.upcoming))} pop="violet" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
               measure={measures.upcoming} onMeasure={(m) => setMeasure({ ...measures, upcoming: m })}
               notes={[['Next 7 days', dash(count(upcoming.filter((r) => r.first.check_in < addDays(d, 8)), measures.upcoming))]]} />
-            <Figure title="On hold" name={measures.holds === 'bookings' ? 'Holds' : MEASURE_NAME[measures.holds]} value={dash(count(holdRows, measures.holds))} pop="amber" active={kind === 'holds'} onPick={() => pick('holds')}
+            <Figure loading={!ready} title="On hold" name={measures.holds === 'bookings' ? 'Holds' : MEASURE_NAME[measures.holds]} value={dash(count(holdRows, measures.holds))} pop="amber" active={kind === 'holds'} onPick={() => pick('holds')}
               measure={measures.holds} onMeasure={(m) => setMeasure({ ...measures, holds: m })}
               notes={[measures.holds === 'rooms' ? ['Holds', dash(holdRows.length)] : ['Rooms', dash(count(holdRows, 'rooms'))]]} />
           </div>
@@ -342,30 +349,38 @@ export default function OverviewPage() {
           {parts.week !== false && (
             <Card className="p-4 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col" aria-label="Week overview">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-base font-semibold">Week overview</h2>
-                <div className="flex items-center gap-2">
-                  <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
-                  <MeasureMenu label="Week overview" value={measures.week} onPick={(m) => setMeasure({ ...measures, week: m })} className="relative" />
-                </div>
+                <h2 className="text-base font-semibold">{ready ? 'Week overview' : <Sk className="h-4 w-32" />}</h2>
+                {ready ? (
+                  <div className="flex items-center gap-2">
+                    <Pills label="Which week" value={ahead ? 'next' : 'past'} onPick={(k) => setAhead(k === 'next')} items={[['past', '-7 days'], ['next', '+7 days']]} />
+                    <MeasureMenu label="Week overview" value={measures.week} onPick={(m) => setMeasure({ ...measures, week: m })} className="relative" />
+                  </div>
+                ) : (
+                  <div aria-hidden="true" className="flex items-center gap-2"><span className="skeleton h-9 w-[4.75rem] rounded-full" /><span className="skeleton h-9 w-[4.75rem] rounded-full" /><span className="skeleton size-9 rounded-full" /></div>
+                )}
               </div>
               <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:min-h-0 lg:flex-1">
                 <div className="flex min-h-0 min-w-0 flex-col">
+                  {!ready ? (
+                    <p className="mb-3 flex items-center text-[0.9375rem] font-semibold"><span><Sk className="h-4 w-72 max-w-full" /></span></p>
+                  ) : (
                   <p className="mb-3 flex flex-wrap items-center gap-x-4 text-[0.9375rem] font-semibold text-muted">
                     Arrivals vs. Departures{measures.week !== 'bookings' && <span className="font-normal"> ({MEASURE_NAME[measures.week].toLowerCase()})</span>}
                     <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--slate) 70%, var(--surface))' }} />Arrivals</span>
                     <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-[var(--slate-strong)]" />Departures</span>
                   </p>
+                  )}
                   <div className="min-h-0 lg:flex-1">{ready ? <WeekChart days={week} unit={MEASURE_WORD[measures.week]} picked={d} onPick={setDay} /> : <ChartSkeleton />}</div>
                 </div>
                 <div className="flex min-h-0 flex-col">
-                  <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
+                  <p className="mb-3 text-[0.9375rem] font-semibold text-muted">{ready ? 'Occupancy' : <Sk className="h-4 w-24" />}</p>
                   <div className="grid grid-cols-2 gap-3 lg:min-h-0 lg:flex-1 lg:grid-rows-3">
-                    <Tile big label="Today" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
-                    <Tile big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
-                    <Tile label="Available rooms" tone="bg-[var(--slate-soft)]" value={dash(roomCount - inUse)} />
-                    <Tile label="Occupied rooms" tone="bg-[var(--slate-soft)]" value={dash(inUse)} />
-                    <Tile label="Adults" tone="bg-[var(--slate-soft)]" value={dash(adults)} />
-                    <Tile label="Children" tone="bg-[var(--slate-soft)]" value={dash(children)} />
+                    <Tile loading={!ready} big label="Today" value={dash(pct(inUse, roomCount))} tone="bg-pop-violet-soft" text="text-pop-violet" />
+                    <Tile loading={!ready} big label="This month" value={dash(pct(nights, roomCount * monthDays))} tone="bg-pop-green-soft" text="text-pop-green" />
+                    <Tile loading={!ready} label="Available rooms" tone="bg-[var(--slate-soft)]" value={dash(roomCount - inUse)} />
+                    <Tile loading={!ready} label="Occupied rooms" tone="bg-[var(--slate-soft)]" value={dash(inUse)} />
+                    <Tile loading={!ready} label="Adults" tone="bg-[var(--slate-soft)]" value={dash(adults)} />
+                    <Tile loading={!ready} label="Children" tone="bg-[var(--slate-soft)]" value={dash(children)} />
                   </div>
                 </div>
               </div>
@@ -377,14 +392,16 @@ export default function OverviewPage() {
       {panel && (
         <aside aria-label={list.title} className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-t-0 lg:[scrollbar-gutter:stable]">
           <div className="flex min-h-14 items-center justify-between gap-2 px-4">
-            <h2 className="text-base font-semibold">{list.title}</h2>
+            <h2 className="text-base font-semibold">{ready ? list.title : <Sk className="h-4 w-24" />}</h2>
             {kind !== 'arrivals' && (
               <button type="button" className="btn btn-icon btn-quiet" aria-label="Back to arrivals" title="Back to arrivals" onClick={() => pick('arrivals')}>
-                <X size={20} weight="bold" aria-hidden="true" />
+                <X className="ico-turn" size={20} weight="bold" aria-hidden="true" />
               </button>
             )}
           </div>
-          {pills && <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="px-4 pb-3" />}
+          {pills && (ready
+            ? <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="px-4 pb-3" />
+            : <div aria-hidden="true" className="flex gap-2 px-4 pb-3"><span className="skeleton h-9 w-[3.25rem] rounded-full" /><span className="skeleton h-9 w-[8.25rem] rounded-full" /><span className="skeleton h-9 w-[6.75rem] rounded-full" /></div>)}
           <div role="tabpanel" className="border-t border-line">
             {!ready ? (
               <div aria-hidden="true" className="space-y-px">
