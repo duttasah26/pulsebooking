@@ -90,6 +90,22 @@ function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = fa
   );
 }
 
+// The chart before its data is in: the same frame, grid and bars' places as the real one, so nothing moves when the numbers arrive.
+const SKELETON_BARS = [0.62, 0.3, 0.45, 0.8, 0.38, 0.55, 0.42];
+function ChartSkeleton() {
+  const W = 520, H = 220, L = 30, R = 12, T = 18, B = 70;
+  const slot = (W - L - R) / SKELETON_BARS.length;
+  const y = (f) => T + (H - T - B) * (1 - f);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="w-full max-w-xl overflow-visible lg:h-full lg:max-w-none">
+      {[0, 0.25, 0.5, 0.75, 1].map((f) => <line key={f} x1={L} x2={W - R} y1={y(f)} y2={y(f)} stroke="var(--grid-line)" strokeWidth="1" strokeDasharray={f ? '3 4' : undefined} />)}
+      <g className="skeleton-svg">
+        {SKELETON_BARS.map((f, i) => <rect key={i} x={L + slot * i + slot / 2 - 14} y={y(f)} width="28" height={y(0) - y(f)} rx="2" style={{ fill: 'var(--surface-3)', animationDelay: `${i * 90}ms` }} />)}
+      </g>
+    </svg>
+  );
+}
+
 // Arrivals as bars and departures as a line with its numbers boxed on the points, over a numbered axis, the days slanted underneath.
 function WeekChart({ days, unit, picked, onPick }) {
   const W = 520, H = 220, L = 30, R = 12, T = 18, B = 70;
@@ -102,23 +118,23 @@ function WeekChart({ days, unit, picked, onPick }) {
   const y = (n) => T + (H - T - B) * (1 - n / max);
   const summary = days.map((d) => `${fmtShort(d.day)}: ${plural(d.arriving, unit)} arriving, ${plural(d.leaving, unit)} leaving`).join('. ');
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Arrivals and departures. ${summary}. Choose a day to show it.`} className="w-full max-w-xl overflow-visible text-[11px] lg:h-full lg:max-w-none">
+    <svg key={days[0].day + unit} viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Arrivals and departures. ${summary}. Choose a day to show it.`} className="animate-settle w-full max-w-xl overflow-visible text-[11px] lg:h-full lg:max-w-none">
       {ticks.map((n) => (
         <g key={n}>
           <line x1={L} x2={W - R} y1={y(n)} y2={y(n)} stroke="var(--grid-line)" strokeWidth="1" strokeDasharray={n ? '3 4' : undefined} />
           <text x={L - 8} y={y(n) + 4} textAnchor="end" fill="var(--muted)">{n}</text>
         </g>
       ))}
-      {days.map((d, i) => d.day === picked && <rect key={`on-${d.day}`} x={x(i) - slot / 2 + 2} y={T - 6} width={slot - 4} height={H - T - 8} rx="6" style={{ fill: 'var(--slate-soft)' }} />)}
+      {days.map((d, i) => <rect key={`on-${d.day}`} x={x(i) - slot / 2 + 2} y={T - 6} width={slot - 4} height={H - T - 8} rx="6" style={{ fill: 'var(--slate-soft)', opacity: d.day === picked ? 1 : 0, transition: 'opacity 200ms var(--ease-out)' }} />)}
       {days.map((d, i) => (
-        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" style={{ fill: 'color-mix(in srgb, var(--slate) 70%, var(--surface))' }} />
+        <rect key={d.day} x={x(i) - 14} y={y(d.arriving)} width="28" height={y(0) - y(d.arriving)} rx="2" style={{ fill: 'color-mix(in srgb, var(--slate) 70%, var(--surface))', y: y(d.arriving), height: y(0) - y(d.arriving), transition: 'y 320ms var(--ease-out), height 320ms var(--ease-out)' }} />
       ))}
       <polyline points={days.map((d, i) => `${x(i)},${y(d.leaving)}`).join(' ')} fill="none" stroke="var(--slate-strong)" strokeWidth="2" />
       {days.map((d, i) => (
         <g key={d.day}>
           <rect x={x(i) - 9} y={y(d.leaving) - 9} width="18" height="18" rx="3" fill="var(--slate-strong)" />
           <text x={x(i)} y={y(d.leaving) + 4} textAnchor="middle" fill="var(--surface)" fontWeight="600">{d.leaving}</text>
-          <text transform={`translate(${x(i) + 4} ${H - B + 14}) rotate(-45)`} textAnchor="end" fill="var(--ink)" fontWeight={d.day === picked ? 700 : 400} opacity={d.day === picked ? 1 : 0.7}>{fmtShort(d.day)}</text>
+          <text transform={`translate(${x(i) + 4} ${H - B + 14}) rotate(-45)`} textAnchor="end" fill="var(--ink)" style={{ opacity: d.day === picked ? 1 : 0.65, transition: 'opacity 200ms var(--ease-out)' }}>{fmtShort(d.day)}</text>
         </g>
       ))}
       {days.map((d, i) => (
@@ -165,47 +181,16 @@ function DayPicker({ day, today: t, onPick }) {
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex min-h-10 items-center gap-2 rounded-t-xl bg-canvas px-4 text-base font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex h-11 min-w-[11.5rem] items-center justify-between gap-2 rounded-t-xl bg-canvas px-4 text-base font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:h-10"
       >
         <span className="sr-only">Day: </span>
         <span>{day === t ? `Today, ${fmtShort(day)}` : fmtShort(day)}</span>
         <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />
       </button>
       {open && (
-        <div role="dialog" aria-label="Choose the day" className="absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-3 shadow-lg">
+        <div role="dialog" aria-label="Choose the day" className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-3 shadow-lg">
           <DateRangePicker single checkIn={day} checkOut={addDays(day, 1)} min={addDays(t, -7)} max={addDays(t, 59)} onChange={(a) => { onPick(a); setOpen(false); }} />
         </div>
-      )}
-    </div>
-  );
-}
-
-// The whole page in outline, shown until every request is in, so the page appears once, complete, and never fills in piece by piece.
-function OverviewSkeleton({ panel, week }) {
-  const block = (cls, i = 0) => <div aria-hidden="true" className={`skeleton ${cls}`} style={{ animationDelay: `${i * 90}ms` }} />;
-  return (
-    <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy="true" aria-label="Loading the overview">
-      <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
-        <div className="-ml-4 flex flex-col gap-3 bg-surface pl-4 pr-4 pt-3 md:-ml-6 md:pl-6 lg:-mr-6">
-          <div className="flex items-center gap-4">
-            {block('size-14 shrink-0 rounded-full')}
-            <div className="space-y-2">{block('h-8 w-64 rounded-md')}{block('h-4 w-40 rounded-md', 1)}</div>
-          </div>
-          {block('h-10 w-44 rounded-t-xl')}
-        </div>
-        <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            {[0, 1, 2, 3, 4].map((i) => block('h-44 rounded-xl lg:h-32', i))}
-          </div>
-          {week && block('h-96 w-full rounded-xl lg:h-auto lg:flex-1', 2)}
-        </div>
-      </div>
-      {panel && (
-        <aside className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-hidden lg:border-l lg:border-t-0">
-          <div className="flex min-h-14 items-center px-4">{block('h-5 w-24 rounded-md')}</div>
-          <div className="flex gap-2 px-4 pb-3">{[0, 1, 2].map((i) => block('h-9 w-28 rounded-full', i))}</div>
-          <div className="space-y-px border-t border-line">{[0, 1, 2, 3, 4].map((i) => block('h-[4.5rem] w-full', i))}</div>
-        </aside>
       )}
     </div>
   );
@@ -313,25 +298,25 @@ export default function OverviewPage() {
 
   // The list panel runs the full height of the page along its right edge; everything else sits in the column beside it.
   const panel = parts.cards !== false;
-  if (!ready) return <OverviewSkeleton panel={panel} week={parts.week !== false} />;
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
       <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
         <div className="-ml-4 flex flex-col gap-3 bg-surface pl-4 pr-4 pt-3 md:-ml-6 md:pl-6 lg:-mr-6">
         <div className="flex min-w-0 items-center gap-4">
-          <span aria-hidden="true" className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-soft text-xl font-semibold text-accent-text">{first[0] ?? '·'}</span>
+          <span aria-hidden="true" className={`grid size-14 shrink-0 place-items-center rounded-full text-xl font-semibold text-accent-text ${ready ? 'bg-accent-soft' : 'skeleton'}`}>{ready ? first[0] ?? '·' : ''}</span>
           <div className="min-w-0">
-            <h1 className="truncate text-[1.875rem] font-bold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}</h1>
+            <h1 className="truncate text-[1.875rem] font-bold leading-tight">{first ? `Hello again, ${first}` : 'Hello again'}{!ready && <>,<span aria-hidden="true" className="skeleton ml-2 inline-block h-[0.8em] w-28 rounded-md align-baseline" /></>}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
               <Bell size={16} weight="fill" aria-hidden="true" />
-              {ready ? <span>{label}: {summary}</span> : <span aria-hidden="true" className="skeleton h-4 w-56 rounded-md" />}
+              {ready ? <span className="min-w-0 truncate">{label}: {summary}</span> : <span aria-hidden="true"><span className="skeleton inline-block h-4 w-56 rounded-md align-middle" /></span>}
             </p>
           </div>
         </div>
           {/* The day, as a tab in the page's grey rising out of the white band and flowing into the grey below. It opens the same calendar as Go to on the Calendar, with a line to type the day in words. */}
           <div className="flex items-end gap-3">
             <DayPicker day={d} today={t} onPick={setDay} />
-            {d !== t && <button type="button" className="btn btn-quiet mb-1" onClick={() => setDay(t)}>Today</button>}
+            {/* Always there so the row never changes height or width; it only fades in once the day is not today. */}
+            <button type="button" className={`btn btn-quiet transition-opacity ${d === t ? 'pointer-events-none opacity-0' : ''}`} tabIndex={d === t ? -1 : undefined} aria-hidden={d === t ? true : undefined} onClick={() => setDay(t)}>Today</button>
           </div>
         </div>
 
@@ -370,7 +355,7 @@ export default function OverviewPage() {
                     <span className="flex items-center gap-1.5 font-normal"><span className="size-2.5 rounded-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--slate) 70%, var(--surface))' }} />Arrivals</span>
                     <span className="flex items-center gap-1.5 font-normal"><span className="h-0.5 w-3 bg-[var(--slate-strong)]" />Departures</span>
                   </p>
-                  <div className="min-h-0 lg:flex-1"><WeekChart days={week} unit={MEASURE_WORD[measures.week]} picked={d} onPick={setDay} /></div>
+                  <div className="min-h-0 lg:flex-1">{ready ? <WeekChart days={week} unit={MEASURE_WORD[measures.week]} picked={d} onPick={setDay} /> : <ChartSkeleton />}</div>
                 </div>
                 <div className="flex min-h-0 flex-col">
                   <p className="mb-3 text-[0.9375rem] font-semibold text-muted">Occupancy</p>
@@ -390,7 +375,7 @@ export default function OverviewPage() {
       </div>
 
       {panel && (
-        <aside aria-label={list.title} className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-t-0">
+        <aside aria-label={list.title} className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-t-0 lg:[scrollbar-gutter:stable]">
           <div className="flex min-h-14 items-center justify-between gap-2 px-4">
             <h2 className="text-base font-semibold">{list.title}</h2>
             {kind !== 'arrivals' && (

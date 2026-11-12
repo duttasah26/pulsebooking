@@ -39,7 +39,7 @@ export default function MeasureMenu({ label, value, onPick, className = '' }) {
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" />
       </button>
       {open && (
-        <div id={id} role="menu" aria-label={`${label}: show`} className="absolute right-0 top-full mt-1 w-52 rounded-lg border border-line bg-surface p-1 shadow-lg">
+        <div id={id} role="menu" aria-label={`${label}: show`} style={{ transformOrigin: "top right" }} className="popover-in absolute right-0 top-full mt-1 w-52 rounded-lg border border-line bg-surface p-1 shadow-lg">
           <p className="px-3 pb-1 pt-1.5 text-[0.8125rem] font-semibold text-muted">Show</p>
           {MEASURES.map(([key, text]) => (
             <button

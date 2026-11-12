@@ -90,6 +90,7 @@
   --hold-press: #e7d085;
   /* One motion set. Durations: quick (colour, hover), base (fades, small moves), slow (sheets, panels). Ease out for
      arrivals, ease in for exits. */
+  --skeleton-glint: rgb(255 255 255 / 0.6);
   --dur-quick: 120ms;
   --dur-base: 200ms;
   --dur-slow: 280ms;
@@ -103,6 +104,7 @@
    held back (lower tint, a calmer green) so nothing glows; floating things get a hairline and a deeper shadow so they still read. */
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --skeleton-glint: rgb(255 255 255 / 0.06);
   --canvas: #0b0a09;
   --surface: #171513;
   --surface-2: #211e1b;
@@ -614,7 +616,7 @@ body {
   to { opacity: 1; transform: none; }
 }
 @keyframes chip-in {
-  from { opacity: 0; transform: scale(0.7); }
+  from { opacity: 0; transform: scale(0.88); }
   to { opacity: 1; transform: none; }
 }
 @keyframes tray-in {
@@ -622,7 +624,7 @@ body {
   to { opacity: 1; transform: none; }
 }
 .row-in { animation: row-in var(--dur-slow) var(--ease-out) backwards; animation-delay: calc(min(var(--i, 0), 12) * 30ms); }
-.chip-in { animation: chip-in 320ms cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards; animation-delay: calc(min(var(--i, 0), 14) * 28ms + 80ms); }
+.chip-in { animation: chip-in var(--dur-slow) var(--ease-out) backwards; animation-delay: calc(min(var(--i, 0), 14) * 28ms + 80ms); }
 .tray-in { animation: tray-in var(--dur-base) var(--ease-out); }
 .cell-in { animation: fade-in var(--dur-slow) var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 14ms); }
 /* A booking bar gives a very small sideways spring when it is clicked (width only, never height). */
@@ -638,11 +640,14 @@ body {
 .shine-card {
   position: relative;
   transform: perspective(900px) translateY(0) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 220ms var(--ease-out);
-  will-change: transform;
+  /* Letting go eases back slowly; the colours of a chosen card glide instead of snapping. */
+  transition: transform 420ms var(--ease-out), background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 .shine-card[data-hover] {
   transform: perspective(900px) translateY(-2px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  /* While the pointer is on it the lean follows closely (a long lag made it feel sluggish). */
+  transition: transform 110ms ease-out, background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  will-change: transform;
 }
 .shine-card::before, .shine-card::after {
   content: '';
@@ -670,12 +675,8 @@ body {
 :root[data-theme="dark"] .shine-card::before { background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.2), transparent 52%); mix-blend-mode: screen; }
 :root[data-theme="dark"] .shine-card::after { mix-blend-mode: screen; }
 :root[data-theme="dark"] .shine-card[data-hover]::after { opacity: 0.22; }
-@media (prefers-reduced-motion: no-preference) {
-  .shine-card { animation: shine-in 600ms var(--ease-out) backwards; }
-}
-@keyframes shine-in { from { opacity: 0.4; } }
 @media (prefers-reduced-motion: reduce) {
-  .shine-card, .shine-card[data-hover] { transform: none; transition: none; }
+  .shine-card, .shine-card[data-hover] { transform: none; transition: background-color var(--dur-base), border-color var(--dur-base), box-shadow var(--dur-base); }
 }
 
 /* The sign-in page: the card and what is in it rise into focus one after another (--i). */
@@ -763,6 +764,13 @@ main > canvas { animation: bg-in 1200ms var(--ease-out) backwards; }
 .animate-step { animation: step-in var(--dur-base) var(--ease-out); }
 .animate-tick, .animate-chip { animation: none; }
 .animate-shake { animation: fade-in var(--dur-base) var(--ease-out); }
+/* A menu or calendar that drops from its button: it fades in and settles a few pixels down, growing from the button's edge. */
+@keyframes popover-in {
+  from { opacity: 0; transform: translateY(-0.3rem) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.popover-in { transform-origin: top left; animation: popover-in var(--dur-base) var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .popover-in { animation-name: fade-in; } }
 /* Folded sections open with a soft rise instead of a jump. */
 details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-out); }
 
@@ -803,13 +811,29 @@ details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-ou
 .clock-colon { animation: clock-colon 1s steps(1, end) infinite; }
 
 /* Loading placeholders: a slow light sweep instead of a blink, so the wait reads as calm. */
-@keyframes shimmer {
-  from { background-position: 150% 0; }
-  to { background-position: -50% 0; }
+@keyframes skeleton-sweep {
+  to { transform: translateX(100%); }
 }
 .skeleton {
+  position: relative;
+  overflow: hidden;
   background-color: var(--surface-2);
 }
+/* A soft band of light that travels across every placeholder (transform only, so it stays smooth). It takes the placeholder's own
+   animation-delay, so a column of them ripples instead of flashing together. */
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--skeleton-glint), transparent);
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1500ms ease-in-out infinite;
+  animation-delay: inherit;
+}
+/* The same breathing for placeholders drawn in SVG (where the sweep of light cannot be a pseudo-element). */
+@keyframes skeleton-breathe { 50% { opacity: 0.45; } }
+.skeleton-svg rect { animation: skeleton-breathe 1500ms ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .skeleton-svg rect { animation: none; } }
 /* Skeleton hands over to the real calendar with a fade, not a jump. */
 .animate-settle { animation: fade-in var(--dur-slow) var(--ease-out); }
 
@@ -820,7 +844,7 @@ details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-ou
   .animate-sheet-out { animation-name: fade-out; }
   .animate-dock-in { animation-name: fade-in; }
   .animate-dock-out { animation-name: fade-out; }
-  .skeleton { animation: none; background-image: none; }
+  .skeleton::after { animation: none; display: none; }
   .animate-sheet { animation-name: fade-in; }
   .animate-pop, .animate-bar-in { animation-duration: 120ms; }
   .animate-step, details[open] > .details-body { animation-name: fade-in; }
