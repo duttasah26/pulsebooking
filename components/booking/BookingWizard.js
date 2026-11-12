@@ -440,8 +440,8 @@ function Steps({ rooms, onCancel, onClear, onPreview, drawn, ...rest }) {
           </div>
 
           <div className="flex items-center gap-5 text-base font-semibold">
-            <Count kind="guests" n={totalGuests} size={18} title={`${f.adults} ${Number(f.adults) === 1 ? 'adult' : 'adults'}${Number(f.children) > 0 ? `, ${f.children} ${Number(f.children) === 1 ? 'child' : 'children'}` : ''}`} />
-            <Count kind="nights" n={totalNights} size={18} title={allIds.length > 1 ? `${totalNights} room-nights over ${allIds.length} rooms` : undefined} />
+            <Count kind="guests" n={totalGuests} size={18} weight="bold" title={`${f.adults} ${Number(f.adults) === 1 ? 'adult' : 'adults'}${Number(f.children) > 0 ? `, ${f.children} ${Number(f.children) === 1 ? 'child' : 'children'}` : ''}`} />
+            <Count kind="nights" n={totalNights} size={18} weight="bold" title={allIds.length > 1 ? `${totalNights} room-nights over ${allIds.length} rooms` : undefined} />
           </div>
 
           <div>
