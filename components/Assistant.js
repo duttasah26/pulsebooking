@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowCounterClockwise, ChatCircleDots, PaperPlaneTilt, X } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, ChatCircleDots, PaperPlaneTilt, Sparkle, X } from '@phosphor-icons/react';
 import { api, useApi } from '../lib/useApi';
 import { useSettings } from './SettingsProvider';
 import { roomShade } from '../lib/colors';
@@ -40,8 +40,7 @@ function Answer({ text, rooms }) {
 
 /*
   The chat assistant: a round button at the bottom right that opens a small chat panel (like the chat on a hotel website).
-  It answers questions about rooms and bookings from the database (see pages/api/assistant.js); it can read everything and book a new stay or hold when you give it the details and say yes
-  (it never edits or deletes). The conversation is kept while you move between pages, and the Reset button clears it.
+  It answers questions about rooms and bookings from the database (see pages/api/assistant.js); it can read everything and, after you say yes to a summary, change it (book, move, edit, delete, merge); every change can be undone. The conversation is kept while you move between pages, and the Reset button clears it.
 */
 export default function Assistant() {
   const { pathname } = useRouter();
@@ -116,7 +115,10 @@ export default function Assistant() {
       className={`${place} flex h-[min(34rem,calc(100dvh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg`}
     >
       <header className="flex min-h-14 items-center gap-2 border-b border-line py-2 pl-4 pr-2">
-        <h2 className="t-headline min-w-0 flex-1">Assistant</h2>
+        <h2 className="t-headline flex min-w-0 flex-1 items-center gap-2">
+          <ChatCircleDots size={22} weight="fill" aria-hidden="true" className="shrink-0 text-accent-text" />
+          Assistant
+        </h2>
         {messages.length > 0 && (
           <button type="button" className="btn btn-quiet btn-icon" onClick={() => setMessages([])} aria-label="Start a new chat" title="Start a new chat">
             <ArrowCounterClockwise size={16} aria-hidden="true" />
@@ -150,7 +152,12 @@ export default function Assistant() {
             {m.role === 'assistant' && !m.error ? <Answer text={m.text} rooms={rooms.data} /> : m.text}
           </p>
         ))}
-        {busy && <p className="w-fit rounded-lg bg-surface-2 px-3.5 py-2.5 text-[0.9375rem] text-muted">Checking the bookings…</p>}
+        {busy && (
+          <p role="status" className="flex w-fit items-center gap-2 rounded-lg bg-surface-2 px-3.5 py-2.5 text-[0.9375rem]">
+            <Sparkle size={16} weight="fill" aria-hidden="true" className="thinking-icon shrink-0 text-muted" />
+            <span className="thinking">Thinking…</span>
+          </p>
+        )}
         <div ref={end} />
       </div>
 

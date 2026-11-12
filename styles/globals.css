@@ -793,6 +793,25 @@ main > canvas { animation: bg-in 1200ms var(--ease-out) backwards; }
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 1ms; }
 }
 
+/* The assistant's "Thinking…": the words are lit by a band of light that travels across them, and the spark beside them breathes. */
+@keyframes thinking-sweep {
+  from { background-position: 130% 0; }
+  to { background-position: -30% 0; }
+}
+.thinking {
+  color: var(--muted);
+  background: linear-gradient(100deg, var(--muted) 35%, var(--ink) 50%, var(--muted) 65%) 130% 0 / 260% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: thinking-sweep 1600ms linear infinite;
+}
+.thinking-icon { animation: skeleton-breathe 1600ms ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .thinking { animation: none; background: none; -webkit-text-fill-color: currentColor; }
+  .thinking-icon { animation: none; }
+}
+
 /* A menu or calendar that drops from its button: it fades in and settles a few pixels down, growing from the button's edge. */
 @keyframes popover-in {
   from { opacity: 0; transform: translateY(-0.3rem) scale(0.98); }
