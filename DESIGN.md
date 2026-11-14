@@ -204,6 +204,15 @@ Status is told by shape too: on hold is dashed and hatched.
   editing draws a dashed ghost bar at the new place; Undo is the tool pane button and Ctrl+Z on the calendar at desktop
   width, a toast elsewhere; keys T, N, Esc and Ctrl+Z; two taps place a hold; a hold is never created twice by accident.
 
+## Motion, loading and pickers
+
+- Motion is short and ease-out (`--ease-out`), with a reduced-motion path for each piece: fades stay, movement goes. Menus and calendars that drop from a button use `.popover-in`. Light and dark switch with one 700ms cross-fade (View Transitions), never part by part.
+- Icons answer the pointer with a small movement of the whole icon (`.ico-pop` lifts, `.ico-spin` for the cog, `.ico-sun` and `.ico-moon`, `.ico-turn` for plus, `.ico-right` and `.ico-left` for arrows and carets); other icons in a button grow a little. Cancel and close (X) icons and the number steppers do **not** animate. Cards that lean toward the pointer (the Overview figures) follow it closely and ease back slowly.
+- Loading shows **the real layout in placeholders**, not a generic block: `.skeleton` (a soft band of light travels across it), the same sizes as what will load, so nothing moves when the data arrives. On the Overview the whole tab is placeholders. Bookings and Guests match their rows (77px) and quick filters.
+- Dates are picked on the app's own month calendar (`DateRangePicker`, `DateField`), never the browser's date box. Above the calendar a line with a magnifier takes words (`next fri`, `dec 1 to dec 5`); the day is outlined as you type and Enter picks it. A field that opens it is a calendar-icon button.
+- Choosing from known things (guests, companies) is an inline list under the field with counts, arrow keys and an "Add X as a new ..." row (`GuestPicker`, `CompanyPicker`); never a native dropdown list.
+- A count of nights or guests is an icon and a number with an x (`Count`): filled on white, outline on a tinted card. A booking in several rooms shows everyone and the nights of every room added up.
+
 ## Glossary
 
 One word per idea, everywhere in the interface and the docs.
@@ -225,6 +234,7 @@ One word per idea, everywhere in the interface and the docs.
 - Do keep text short: a label, then at most one line of help.
 - Don't add a second accent colour, a second radius, a colour per tool, or Lucide icons (Phosphor only).
 - Don't put an icon in front of a label that already says what it is.
+- Don't animate cancel or close icons, and don't tilt icons; keep icon motion to a lift, a turn or a nudge the way the icon points.
 - Don't use dashes in UI text.
 - Don't put controls on top of the calendar. Zoom, tools and Undo live outside it. The only things drawn over it are the
   confirm bar after a first tap, the booking bars' own handles, and the booking panel on wide screens (which never
