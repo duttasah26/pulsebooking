@@ -29,8 +29,8 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
       >
         <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-md bg-surface-2 font-semibold text-muted ${roomy ? 'size-10 text-base' : 'size-7 text-sm'}`}>{initials(g.name)}</span>
         <span className="min-w-0 flex-1">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="min-w-0 text-[1.0625rem] font-semibold [overflow-wrap:anywhere] sm:truncate">{g.name}</span>
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="min-w-0 text-[1.0625rem] font-semibold [overflow-wrap:break-word] sm:truncate">{g.name}</span>
             {duplicate && (
               <span className="shrink-0 rounded-md bg-bar px-2 text-sm font-semibold text-on-ink">Same person?</span>
             )}
@@ -38,14 +38,20 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
           {anyLine && (
             <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 text-[0.9375rem] text-muted">
               {show('phone') && g.phone && <span className="flex items-center gap-1 whitespace-nowrap"><Phone size={14} aria-hidden="true" />{g.phone}</span>}
-              {show('email') && g.email && <span className="flex min-w-0 items-center gap-1"><Envelope size={14} aria-hidden="true" className="shrink-0" /><span className="min-w-0 [overflow-wrap:anywhere] sm:truncate">{g.email}</span></span>}
-              {show('organization') && g.organization && <span className="flex min-w-0 items-center gap-1"><Buildings size={14} aria-hidden="true" className="shrink-0" /><span className="min-w-0 [overflow-wrap:anywhere] sm:truncate">{g.organization}</span></span>}
+              {show('email') && g.email && <span className="flex min-w-0 items-center gap-1"><Envelope size={14} aria-hidden="true" className="shrink-0" /><span className="min-w-0 [overflow-wrap:break-word] sm:truncate">{g.email}</span></span>}
+              {show('organization') && g.organization && <span className="flex min-w-0 items-center gap-1"><Buildings size={14} aria-hidden="true" className="shrink-0" /><span className="min-w-0 [overflow-wrap:break-word] sm:truncate">{g.organization}</span></span>}
               {noContact && <span>No phone or email</span>}
+            </span>
+          )}
+          {/* A phone has no width for a column at the right: the stays are a line under the contact instead, so the name keeps the row. */}
+          {show('stays') && (
+            <span className="mt-1 block text-[0.9375rem] text-muted sm:hidden">
+              <span className="font-mono font-semibold text-ink">{g.stays}</span> {Number(g.stays) === 1 ? 'stay' : 'stays'}{g.last_check_in && `, last ${fmtDayMonthYear(g.last_check_in)}`}
             </span>
           )}
         </span>
         {show('stays') && (
-          <span className="shrink-0 text-right text-[0.9375rem]">
+          <span className="hidden shrink-0 text-right text-[0.9375rem] sm:block">
             <span className="block"><span className="font-mono font-semibold">{g.stays}</span> {Number(g.stays) === 1 ? 'stay' : 'stays'}</span>
             {g.last_check_in && <span className="block text-muted">last {fmtDayMonthYear(g.last_check_in)}</span>}
           </span>

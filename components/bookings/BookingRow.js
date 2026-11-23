@@ -50,7 +50,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         <span aria-hidden="true" className={`shrink-0 rounded-md ${minimal ? 'size-3.5' : 'size-4'}`} style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-            <span className={`truncate ${minimal ? 'text-[0.9375rem]' : 'text-[1.0625rem]'} font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
+            <span className={`min-w-0 [overflow-wrap:break-word] sm:truncate ${minimal ? 'text-[0.9375rem]' : 'text-[1.0625rem]'} font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
             {pinned && !isDeleted && <PushPin size={14} weight="fill" aria-label="Pinned" className="shrink-0 text-muted" />}
             {show('status') && (
               isDeleted ? (
@@ -94,13 +94,13 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             {show('organization') && b.organization && (
               <span className="flex min-w-0 items-center gap-1.5">
                 <Buildings size={16} weight="fill" aria-hidden="true" className="shrink-0" />
-                <span className="truncate">{b.organization}</span>
+                <span className="min-w-0 [overflow-wrap:break-word] sm:truncate">{b.organization}</span>
               </span>
             )}
             {show('contact') && (
               <span className="flex min-w-0 items-center gap-1.5">
                 {contact && <Phone size={16} weight="fill" aria-hidden="true" className="shrink-0" />}
-                <span className="truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
+                <span className="min-w-0 [overflow-wrap:break-word] sm:truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
               </span>
             )}
           </span>
