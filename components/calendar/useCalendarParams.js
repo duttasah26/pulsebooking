@@ -39,6 +39,8 @@ export function useCalendarParams() {
     if (isDate(saved.date)) next.date = saved.date;
     if (Number.isInteger(saved.span) && saved.span >= 1 && saved.span <= MAX_SPAN) next.span = saved.span;
     if (typeof saved.floors === 'string' && saved.floors) next.floors = saved.floors;
+    // A phone, upright or sideways, is for looking at what is happening now: with no day kept from earlier in this visit, it opens on today.
+    if (!next.date && window.matchMedia('(max-width: 767px), (orientation: landscape) and (max-height: 500px) and (max-width: 1023px)').matches) next.date = today();
     // A moment later, so the router has finished its own first update of the address (a hard reload otherwise undoes this).
     const timer = Object.keys(next).length ? setTimeout(() => router.replace({ pathname: '/', query: next }, undefined, { shallow: true }), 50) : null;
     return () => clearTimeout(timer);
@@ -47,7 +49,8 @@ export function useCalendarParams() {
   // With nothing in the address, the calendar opens on the first view chosen in Settings for this device (Timeline unless changed), for the current month.
   const [firstView] = useFirstView();
   const view = VIEWS.some((v) => v.key === q.view) ? q.view : firstView;
-  // With no date in the address the timeline opens on the first day of this month (Today still jumps to today).
+  // With no date in the address the timeline opens on the first day of this month (Today still jumps to today). A phone opens
+  // on today instead (see the effect above).
   const date = isDate(q.date) ? q.date : view === 'timeline' ? monthStart(today()) : today();
   const spanParam = Number(q.span);
   const fallbackSpan = daysInMonth(isDate(q.date) ? monthStart(q.date) : monthStart(today())); // a whole month, not 14 days
