@@ -25,12 +25,12 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
       <button
         type="button"
         onClick={() => onOpen(g.id)}
-        className={`flex min-w-0 flex-1 items-center gap-4 px-4 text-left transition-colors duration-150 hover:bg-surface-2 md:px-5 ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 px-4 text-left sm:gap-4 transition-colors duration-150 hover:bg-surface-2 md:px-5 ${roomy ? 'min-h-[4.5rem] py-3' : 'min-h-11 py-1'}`}
       >
         <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-md bg-surface-2 font-semibold text-muted ${roomy ? 'size-10 text-base' : 'size-7 text-sm'}`}>{initials(g.name)}</span>
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-[1.0625rem] font-semibold">{g.name}</span>
+            <span className="min-w-0 text-[1.0625rem] font-semibold [overflow-wrap:anywhere] sm:truncate">{g.name}</span>
             {duplicate && (
               <span className="shrink-0 rounded-md bg-bar px-2 text-sm font-semibold text-on-ink">Same person?</span>
             )}
