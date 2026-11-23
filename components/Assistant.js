@@ -53,13 +53,18 @@ export default function Assistant() {
   const [busy, setBusy] = useState(false);
   const end = useRef(null);
   const input = useRef(null);
+  const panel = useRef(null);
   const rooms = useApi(open ? '/api/rooms?all=1' : null); // to know which numbers are rooms
 
   useEffect(() => {
     end.current?.scrollIntoView({ block: 'end' });
   }, [messages, busy, open]);
   useEffect(() => {
-    if (open) input.current?.focus();
+    if (!open) return;
+    // With a mouse the box is ready to type in. On a touch screen focusing it would pop the keyboard over the panel before
+    // anything is asked, so the panel itself takes focus and the keyboard opens only when the box is tapped.
+    if (matchMedia('(pointer: fine)').matches) input.current?.focus();
+    else panel.current?.focus();
   }, [open]);
   useEffect(() => {
     const toggle = () => setOpen((o) => !o);
@@ -110,9 +115,11 @@ export default function Assistant() {
 
   return (
     <section
+      ref={panel}
+      tabIndex={-1}
       role="dialog"
       aria-label="Assistant"
-      className={`${place} flex h-[min(34rem,calc(100dvh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg`}
+      className={`${place} flex h-[min(34rem,calc(100dvh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border outline-none border-line bg-surface shadow-lg`}
     >
       <header className="flex min-h-14 items-center gap-2 border-b border-line py-2 pl-4 pr-2">
         <h2 className="t-headline flex min-w-0 flex-1 items-center gap-2">
