@@ -14,6 +14,7 @@ import { api, useApi } from '../lib/useApi';
 import { useQueryState } from '../lib/useQueryState';
 import { tabKeys } from '../lib/tabKeys';
 import { OVERVIEW_PARTS, useFirstView, useOverviewParts, useRowSize, useShowDone } from '../lib/devicePrefs';
+import { THEMES, useTheme } from '../lib/theme';
 
 /*
   Settings, in tabs. On a wide screen the tabs are listed on the left; on a phone they are a row of buttons under the header.
@@ -102,6 +103,7 @@ export default function Settings() {
   const [rowSize, setRowSize] = useRowSize();
   const [showDone, setShowDone] = useShowDone();
   const [overview, setOverview] = useOverviewParts();
+  const [theme, setTheme] = useTheme();
   const toast = useToast();
   const rooms = useApi('/api/rooms?all=1');
   const [saved, setSaved] = useState('');
@@ -175,6 +177,18 @@ export default function Settings() {
           <div id="settings-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="space-y-8">
             {tab === 'look' && (
               <>
+            {/* On an upright phone this is the only place to change it: the header there gives the moon button's room to the search. */}
+            <Group id="theme" icon={Palette} title="Theme" scope="This device only" hint="System follows the light or dark setting of this phone or computer.">
+              <Segmented
+                legend="Theme"
+                legendHidden
+                min="3.25rem"
+                options={THEMES}
+                value={theme}
+                onChange={(v) => { setTheme(v); setSaved('Theme changed on this device'); }}
+              />
+            </Group>
+
             <Group id="looks" icon={TextAa} title="Text size" scope="This device only" hint="Makes every word in the app bigger on this phone or computer. Other devices keep their own size.">
               <Segmented
                 legend="Text size"

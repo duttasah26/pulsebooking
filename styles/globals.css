@@ -205,9 +205,12 @@
 
 @custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
+/* A phone held upright (phone width, and taller than a phone held sideways). Used as `upright:` in class names. */
+@custom-variant upright (@media (max-width: 767px) and (min-height: 501px));
+
 /* Room above the header and under the phone tab bar. In a browser tab the browser's own bars give that room, so it is only the
    notch and home bar insets. Opened from the home screen the app reaches the very edges of the screen, so the header comes
-   down 16px (more under a notch) and the tab bar rises 12px (more over a home bar), clear of the rounded corners, the status
+   down 16px (more under a notch) and the tab bar rises 17px (more over a home bar), clear of the rounded corners, the status
    icons and the swipe area. A phone held sideways keeps its few pixels of height: only the insets there. Everything that
    sits under the header or above the tab bar is offset by these too. */
 :root {
@@ -217,7 +220,7 @@
 @media (display-mode: fullscreen), (display-mode: standalone) {
   :root {
     --app-top: max(env(safe-area-inset-top, 0px), 1rem);
-    --app-bottom: max(env(safe-area-inset-bottom, 0px), 0.75rem);
+    --app-bottom: max(env(safe-area-inset-bottom, 0px), 1.0625rem); /* 17px: the tab bar sits where a native app's does (Reddit measured) */
   }
 }
 @media (orientation: landscape) and (max-height: 500px) {

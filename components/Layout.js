@@ -84,7 +84,8 @@ export default function Layout({ title, wide = false, children }) {
             <IndiaClock />
             <span aria-hidden="true" className="hidden h-6 w-px bg-line lg:block" />
             <div className="flex items-center gap-1">
-            <ThemeToggle />
+            {/* An upright phone changes the theme in Settings: the header gives this room to the search. */}
+            <span className="hidden md:contents short:contents"><ThemeToggle /></span>
             {UTILITY.map(({ href, label, Icon }) => (
               <Link
                 key={href}
