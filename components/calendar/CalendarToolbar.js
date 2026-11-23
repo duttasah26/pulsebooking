@@ -92,7 +92,7 @@ export default function CalendarToolbar({
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(-1)} aria-label="Previous">
             <CaretLeft className="ico-left" size={18} />
           </button>
-          <button type="button" className="btn shrink-0 px-4 font-semibold short:px-3" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
+          <button type="button" className="btn shrink-0 px-4 font-semibold short:px-2" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(1)} aria-label="Next">
             <CaretRight className="ico-right" size={18} />
           </button>
@@ -100,7 +100,7 @@ export default function CalendarToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            className={`btn gap-2 px-3 ${rangeOpen ? 'btn-on' : ''}`}
+            className={`btn gap-2 px-3 short:px-2 ${rangeOpen ? 'btn-on' : ''}`}
             title="Go to a date, or choose a range of days"
             aria-expanded={rangeOpen}
             onPointerDown={(e) => e.stopPropagation()} // so the panel's click-outside close does not fight this button
