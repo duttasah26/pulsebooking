@@ -34,19 +34,26 @@ function RoomChip({ number }) {
 function Row({ b, tone, what, detail, onOpen }) {
   const hold = b.status === 'on_hold';
   const bg = { arriving: 'bg-ok-soft', leaving: 'bg-danger-soft', staying: 'bg-surface', hold: 'bg-hold' }[hold ? 'hold' : tone];
+  const whatTone = tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-ok-text' : '';
+  // On a phone the state ("Leaves tomorrow", "at 1:00 PM") is a line under the details instead of a column at the right, so the
+  // name and the dates keep the width of the row and nothing is cut.
   return (
     <li>
       <button
         type="button"
         onClick={() => onOpen(b)}
-        className={`flex min-h-16 w-full items-center gap-4 px-4 py-3 text-left transition-[filter] duration-150 hover:brightness-95 ${bg} ${hold ? 'border-y border-dashed border-hold-edge' : ''}`}
+        className={`flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-[filter] duration-150 hover:brightness-95 sm:gap-4 ${bg} ${hold ? 'border-y border-dashed border-hold-edge' : ''}`}
       >
         <RoomChip number={b.room_number} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-base font-semibold">{b.name}</span>
+          <span className="block text-base font-semibold [overflow-wrap:break-word] sm:truncate">{b.name}</span>
           <span className="block text-[0.9375rem] text-muted">{detail}</span>
+          <span className={`block text-[0.9375rem] font-semibold sm:hidden ${whatTone}`}>
+            {what}
+            {hold && <span className="text-hold-ink">{what ? ', on hold' : 'On hold'}</span>}
+          </span>
         </span>
-        <span className={`shrink-0 text-right text-base font-semibold ${tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-ok-text' : ''}`}>
+        <span className={`hidden shrink-0 text-right text-base font-semibold sm:block ${whatTone}`}>
           {what}
           {hold && <span className="block text-sm font-semibold text-hold-ink">On hold</span>}
         </span>
