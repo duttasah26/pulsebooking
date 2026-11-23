@@ -109,9 +109,14 @@ only inside the dense calendar grid.
 
 ## Layout
 
-Phone first. Touch targets are 44px or more; the dense grid is the one exception, and zoom is its remedy. A phone held
-sideways (the `short:` variant) swaps the toolbar rows for a slim **tool column on the left** because it has width but
-no height; the booking form always opens as a **bottom sheet** there, never beside the calendar. On wide screens the booking panel is a card that **lies over the right
+Phone first. Touch targets are 44px or more; the dense grid is the one exception, and zoom is its remedy. **A phone is
+for looking at the calendar**, upright or sideways (the `short:` variant, used more): no tools, no Today card, no zoom
+buttons (pinch instead), the days shown inside the View menu, and the page itself never scrolls (it is locked; only the
+calendar scrolls inside). Sideways the controls are one line: the heading sits on the Go to button and View is an icon;
+under 700px wide the arrows and the clock go too (swipe the line to step the days). Rows may shrink to 16px there. The
+booking form always opens as a **bottom sheet** on a phone, never beside the calendar. Lists on a phone wrap rather than
+scroll sideways: quick views fold into one View dropdown, the Guests lists are a dropdown, Settings tabs are a slim
+column at the left, and long names wrap instead of being cut. On wide screens the booking panel is a card that **lies over the right
 side of the calendar**, as tall as the calendar, so opening or closing it never resizes the calendar. The calendar always
 leaves a slim column at its right (the width of the folded tab). The room bar sits on the calendar's right edge, which the
 open panel covers; fold the panel or use the wheel to scroll the rooms. Nothing scrolls
@@ -152,8 +157,9 @@ Status is told by shape too: on hold is dashed and hatched.
 - **Segmented control** (`seg` and `seg-item`): a tinted track with the chosen segment raised in white. Used for the main
   navigation, the calendar views, floors, the booking steps and sort direction.
 - **Navigation**: Calendar, Bookings and Guests as a segmented control in the white header, with words always visible;
-  Settings and Account as icon buttons at the far right beside the India clock. On a phone, a five tab bar with filled
-  symbols and a green label for the current tab.
+  Settings and Account as icon buttons at the far right beside the India clock. On a phone, a five tab bar (Calendar, Bookings,
+  Guests, Overview, Settings; Account is a tab inside Settings) with filled symbols and a green label for the current tab.
+  The header icons stay still on hover; only their colours change.
 - **Tools** (left column or toolbar), in three chunks: **Book** (New, On Hold), **Look** (Open, Select, Hand), **Fix**
   (Undo, Redo). Monochrome; the tool that is on is solid ink. New fills green and On Hold fills straw while on, because
   that is what they make. The pointer over the calendar wears the active tool's icon.
