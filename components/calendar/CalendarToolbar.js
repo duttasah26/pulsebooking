@@ -19,7 +19,7 @@ function Strip({ label, children }) {
 }
 
 // Timeline length: 7, 14 or 30 days, or a custom range (which opens the same panel as Go to).
-function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
+function RangeSelect({ span, monthAligned, onCustom, set, onResetView, className = '!w-auto shrink-0' }) {
   const preset = SPANS.includes(span);
   // Choosing a length starts from the default view for it: the days fill the screen again, from the first day.
   const choose = (value) => {
@@ -34,7 +34,7 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
   };
   return (
     // A pop-up button: grey like View and zoom, showing the current choice.
-    <select aria-label="Days shown" className="btn pop-btn !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
+    <select aria-label="Days shown" className={`btn pop-btn ${className}`} value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
       {SPANS.map((n) => <option key={n} value={n}>{n} days</option>)}
       <option value="month">This month</option>
       {!preset && !monthAligned && <option value={span}>{span} days (custom)</option>}
@@ -106,12 +106,12 @@ export default function CalendarToolbar({
             onClick={() => setRangeOpen((o) => !o)}
           >
             <CalendarBlank size={18} aria-hidden="true" />
-            <span className="sr-only @[44rem]:not-sr-only">Go to…</span>
+            <span className={phone ? 'sr-only' : 'sr-only @[44rem]:not-sr-only'}>Go to…</span>
           </button>
           {rangeOpen && <RangePopover date={date} span={span} onShow={show} onClose={() => setRangeOpen(false)} />}
         </div>
         {phone && onNew && (
-          <button type="button" className="btn btn-primary btn-icon ml-auto shrink-0" onClick={onNew} aria-label="New booking" title="New booking">
+          <button type="button" className="btn btn-primary btn-icon ml-auto shrink-0 short:hidden" onClick={onNew} aria-label="New booking" title="New booking">
             <Plus className="ico-turn" size={20} aria-hidden="true" />
           </button>
         )}
@@ -127,12 +127,27 @@ export default function CalendarToolbar({
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
       <div className="no-scrollbar flex flex-wrap items-center gap-2 md:gap-3 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
-        <ViewMenu floorKeys={floorKeys} shownFloors={shownFloors} onToggleFloor={onToggleFloor} showDone={showDone} onToggleDone={onToggleDone && (view === 'timeline' || view === 'month') ? onToggleDone : undefined} />
+        {/* On a phone the days shown live in the View menu and zoom is a pinch, so this row fits the screen without scrolling. */}
+        <ViewMenu
+          floorKeys={floorKeys}
+          shownFloors={shownFloors}
+          onToggleFloor={onToggleFloor}
+          showDone={showDone}
+          onToggleDone={onToggleDone && (view === 'timeline' || view === 'month') ? onToggleDone : undefined}
+          days={phone && view === 'timeline' ? <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} className="w-full" /> : null}
+        />
         {/* Range and zoom are one group: how much of the calendar you see. */}
-        <div className="flex items-center gap-2">
-          {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
-          {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
-        </div>
+        {!phone && (
+          <div className="flex items-center gap-2">
+            {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
+            {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
+          </div>
+        )}
+        {phone && onNew && (
+          <button type="button" className="btn btn-primary btn-icon ml-auto hidden shrink-0 short:inline-flex" onClick={onNew} aria-label="New booking" title="New booking">
+            <Plus className="ico-turn" size={20} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that
