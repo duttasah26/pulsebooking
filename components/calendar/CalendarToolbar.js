@@ -87,8 +87,9 @@ export default function CalendarToolbar({
         onTouchEnd={phone ? onTouchEnd : undefined}
         onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
       >
-        {/* A small phone held sideways has no width for the arrows: swiping this row steps the days instead. */}
-        <div role="group" aria-label="Move through the days" className={`flex shrink-0 items-center gap-1 ${phone ? 'short:max-[699px]:[&>button:not(:nth-child(2))]:hidden' : ''}`}>
+        {/* A small phone held sideways, or one under 360px wide, has no width for the arrows beside the New Booking button:
+            swiping this row steps the days instead. */}
+        <div role="group" aria-label="Move through the days" className={`flex shrink-0 items-center gap-1 ${phone ? 'short:max-[699px]:[&>button:not(:nth-child(2))]:hidden max-[359px]:[&>button:not(:nth-child(2))]:hidden' : ''}`}>
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(-1)} aria-label="Previous">
             <CaretLeft className="ico-left" size={18} />
           </button>
