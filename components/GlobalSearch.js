@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import Count from './Count';
 import { CalendarBlank, CaretRight, MagnifyingGlass, User, X } from '@phosphor-icons/react';
@@ -147,7 +148,9 @@ export default function GlobalSearch() {
 
   return (
     <div ref={box} className="relative mx-auto w-full max-w-md">
-      <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 md:left-3 -translate-y-1/2 text-muted" />
+      <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 md:left-3 -translate-y-1/2 text-muted upright:hidden" />
+      {/* An upright phone: the header has no logo beside the search, so the brand mark sits inside it, in a round search bar. */}
+      <Image src="/icon.png" alt="" width={256} height={256} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 hidden size-7 -translate-y-1/2 object-contain upright:block" />
       <input
         ref={input}
         type="search"
@@ -159,17 +162,17 @@ export default function GlobalSearch() {
         aria-autocomplete="list"
         aria-activedescendant={showing && mark >= 0 ? `gs-opt-${mark}` : undefined}
         aria-label="Search guests and bookings"
-        placeholder={wide ? 'Search guests and bookings' : 'Search…'}
+        placeholder={wide ? 'Search guests and bookings' : 'Search Pulse'}
         autoComplete="off"
         spellCheck={false}
-        className={`field pl-8 md:pl-9 text-base md:text-[0.9375rem] [&::-webkit-search-cancel-button]:hidden ${q ? 'pr-10' : 'pr-3 md:pr-10'}`}
+        className={`field pl-8 md:pl-9 text-base md:text-[0.9375rem] [&::-webkit-search-cancel-button]:hidden upright:min-h-12 upright:rounded-full upright:pl-12 ${q ? 'pr-10 upright:pr-12' : 'pr-3 md:pr-10 upright:pr-4'}`}
         value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
       />
       {q && (
-        <button type="button" aria-label="Clear search" className="absolute right-1 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-tint hover:text-ink" onClick={() => { setQ(''); input.current?.focus(); }}>
+        <button type="button" aria-label="Clear search" className="absolute right-1 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-tint hover:text-ink upright:right-2 upright:rounded-full" onClick={() => { setQ(''); input.current?.focus(); }}>
           <X size={16} aria-hidden="true" />
         </button>
       )}

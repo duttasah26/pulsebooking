@@ -48,7 +48,8 @@ export default function Layout({ title, wide = false, children }) {
 
       <header className="nav-still sticky top-0 z-30 border-b pt-[var(--app-top)] border-line bg-surface/95 backdrop-blur-sm">
         <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-2 px-safe md:gap-4`}>
-          <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="The Pulse Newtown, Rooms: go to the calendar">
+          {/* On an upright phone with the header search, the brand mark sits inside the search instead (like a native app's search bar). */}
+          <Link href="/" className={`flex shrink-0 items-center rounded-md ${pathname === '/' || pathname === '/overview' ? 'upright:hidden' : ''}`} aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
           </Link>
 
