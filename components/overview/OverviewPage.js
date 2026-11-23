@@ -5,6 +5,7 @@ import { Bell, CaretDown, X } from '@phosphor-icons/react';
 import { addDays, daysInMonth, diffDays, fmtShort, monthStart, range, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
 import { useMediaQuery } from '../../lib/useMediaQuery';
+import { useKeepInView } from '../../lib/useKeepInView';
 import Sheet from '../Sheet';
 import { useOverviewMeasures, useOverviewParts } from '../../lib/devicePrefs';
 import { tabKeys } from '../../lib/tabKeys';
@@ -171,6 +172,8 @@ function WeekChart({ days, unit, picked, onPick }) {
 function DayPicker({ day, today: t, onPick, loading = false }) {
   const [open, setOpen] = useState(false);
   const box = useRef(null);
+  const panel = useRef(null);
+  useKeepInView(panel, open);
   useEffect(() => {
     if (!open) return undefined;
     const onPointer = (e) => !box.current?.contains(e.target) && setOpen(false);
@@ -197,7 +200,7 @@ function DayPicker({ day, today: t, onPick, loading = false }) {
         {!loading && <CaretDown size={16} weight="bold" aria-hidden="true" className="text-muted" />}
       </button>
       {open && (
-        <div role="dialog" aria-label="Choose the day" className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-3 shadow-lg">
+        <div ref={panel} role="dialog" aria-label="Choose the day" className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-3 shadow-lg">
           <DateRangePicker single checkIn={day} checkOut={addDays(day, 1)} min={addDays(t, -7)} max={addDays(t, 59)} onChange={(a) => { onPick(a); setOpen(false); }} />
         </div>
       )}
@@ -315,7 +318,7 @@ export default function OverviewPage() {
   return (
     <div className={`-mt-4 grid gap-x-6 md:-mb-4 ${panel ? 'lg:grid-cols-[minmax(0,1fr)_30rem]' : ''}`} aria-busy={!ready}>
       <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
-        <div className="-ml-4 flex flex-col gap-3 bg-surface pl-4 pr-4 pt-3 md:-ml-6 md:pl-6 lg:-mr-6">
+        <div className="-mx-4 flex flex-col gap-3 bg-surface px-4 pt-3 md:-mx-6 md:px-6">
         <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-lg sm:size-14 sm:text-xl font-semibold text-accent-text ${ready ? 'bg-accent-soft' : 'skeleton'}`}>{ready ? first[0] ?? '·' : ''}</span>
           <div className="min-w-0">
