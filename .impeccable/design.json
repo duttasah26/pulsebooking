@@ -1,261 +1,491 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-04T23:55:34Z",
+  "generatedAt": "2026-11-23T08:37:49Z",
   "title": "Design System: Pulse Rooms",
   "extensions": {
     "colorMeta": {
-      "canvas": {
-        "role": "neutral",
-        "displayName": "Canvas",
-        "canonical": "#f3f3ef",
+      "accent": {
+        "role": "primary",
+        "displayName": "Ledger Green",
+        "canonical": "#1d6b50",
         "tonalRamp": [
-          "#2c2c21",
-          "#4d4d3a",
-          "#6e6e53",
-          "#90906c",
-          "#a9a98d",
-          "#c2c2ae",
-          "#dbdbcf",
-          "#f4f4f0"
+          "#103c2d",
+          "#1c684e",
+          "#28946f",
+          "#34c190",
+          "#5fd3ab",
+          "#8fe1c4",
+          "#bfeedd",
+          "#ebfaf4"
         ]
       },
-      "surface": {
-        "role": "neutral",
-        "displayName": "Surface",
+      "accent-strong": {
+        "role": "primary",
+        "displayName": "Deep Ledger Green",
+        "canonical": "#155a43",
+        "tonalRamp": [
+          "#0e3e2e",
+          "#196c50",
+          "#249972",
+          "#2ec694",
+          "#5ad8ae",
+          "#8be4c6",
+          "#bdf0df",
+          "#eafaf5"
+        ]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Ledger Wash",
+        "canonical": "#e6f0ea",
+        "tonalRamp": [
+          "#1d3024",
+          "#32533f",
+          "#47765a",
+          "#5c9974",
+          "#80b394",
+          "#a6c9b4",
+          "#cce0d4",
+          "#eff5f2"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Paper White on Green",
         "canonical": "#ffffff",
         "tonalRamp": [
           "#262626",
-          "#434343",
-          "#616161",
-          "#7e7e7e",
-          "#9b9b9b",
+          "#424242",
+          "#5e5e5e",
+          "#7a7a7a",
+          "#999999",
           "#b8b8b8",
-          "#d5d5d5",
+          "#d6d6d6",
           "#f2f2f2"
         ]
       },
-      "surface-2": {
-        "role": "neutral",
-        "displayName": "Surface Two",
-        "canonical": "#ecece6",
+      "hold": {
+        "role": "status",
+        "displayName": "Straw",
+        "canonical": "#f6ebc8",
         "tonalRamp": [
-          "#2b2b21",
-          "#4d4d3a",
-          "#6e6e53",
-          "#8f8f6d",
-          "#a8a88d",
-          "#c2c2ae",
-          "#dbdbcf",
-          "#f4f4f1"
+          "#42350b",
+          "#725b13",
+          "#a2821b",
+          "#d2a822",
+          "#e2bf50",
+          "#ebd284",
+          "#f4e5b9",
+          "#fbf7e9"
         ]
       },
-      "line": {
-        "role": "neutral",
-        "displayName": "Gainsboro Line",
-        "canonical": "#deded5",
+      "hold-edge": {
+        "role": "status",
+        "displayName": "Straw Edge",
+        "canonical": "#a87708",
         "tonalRamp": [
-          "#2b2b22",
-          "#4b4b3b",
-          "#6c6c55",
-          "#8d8d6f",
-          "#a7a78f",
-          "#c0c0af",
-          "#dadad0",
-          "#f4f4f1"
+          "#493403",
+          "#7f5a06",
+          "#b48009",
+          "#eaa60b",
+          "#f6bd3c",
+          "#f9d177",
+          "#fbe5b1",
+          "#fef7e7"
+        ]
+      },
+      "hold-ink": {
+        "role": "status",
+        "displayName": "Straw Ink",
+        "canonical": "#7a4e05",
+        "tonalRamp": [
+          "#492f03",
+          "#7f5105",
+          "#b57407",
+          "#eb960a",
+          "#f7b03b",
+          "#f9c876",
+          "#fce0b1",
+          "#fef5e7"
+        ]
+      },
+      "danger": {
+        "role": "status",
+        "displayName": "Brick",
+        "canonical": "#a3301e",
+        "tonalRamp": [
+          "#41130c",
+          "#702115",
+          "#9f2f1d",
+          "#cf3d26",
+          "#df6653",
+          "#e99486",
+          "#f2c2ba",
+          "#fbece9"
+        ]
+      },
+      "danger-soft": {
+        "role": "status",
+        "displayName": "Brick Wash",
+        "canonical": "#f8e7e3",
+        "tonalRamp": [
+          "#3d180f",
+          "#6a2a1b",
+          "#973b26",
+          "#c44d31",
+          "#d6735c",
+          "#e29d8d",
+          "#efc7be",
+          "#faeeeb"
         ]
       },
       "ink": {
         "role": "neutral",
-        "displayName": "Near Black Ink",
+        "displayName": "Register Ink",
         "canonical": "#261f1c",
         "tonalRamp": [
           "#2c2420",
-          "#4e3f39",
-          "#6f5b52",
-          "#91766b",
-          "#aa958c",
-          "#c3b4ad",
-          "#dbd3cf",
+          "#4c3e38",
+          "#6d5950",
+          "#8d7368",
+          "#a8938a",
+          "#c2b3ad",
+          "#dcd4d0",
           "#f4f1f0"
         ]
       },
       "muted": {
         "role": "neutral",
-        "displayName": "Dimgray Muted",
+        "displayName": "Dimgray",
         "canonical": "#6f655c",
         "tonalRamp": [
           "#2a2623",
-          "#4a433d",
-          "#6a6058",
-          "#897d72",
-          "#a49a91",
-          "#bfb8b1",
-          "#d9d5d1",
+          "#49423c",
+          "#675e56",
+          "#867a6f",
+          "#a3988f",
+          "#beb7b1",
+          "#dad6d2",
           "#f3f2f1"
         ]
       },
-      "accent": {
-        "role": "primary",
-        "displayName": "Emerald",
-        "canonical": "#047857",
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f3f2ee",
         "tonalRamp": [
-          "#024a36",
-          "#04825f",
-          "#06bb87",
-          "#08f3b0",
-          "#3df9c3",
-          "#76fad5",
-          "#aefce6",
-          "#e6fef7"
+          "#2d2a20",
+          "#4e4937",
+          "#6f684e",
+          "#908765",
+          "#aba487",
+          "#c4bfab",
+          "#dddacf",
+          "#f4f4f0"
         ]
       },
-      "accent-soft": {
-        "role": "primary",
-        "displayName": "Emerald Mist",
-        "canonical": "#d8f0e6",
+      "surface": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "#ffffff",
         "tonalRamp": [
-          "#153729",
-          "#256148",
-          "#368b68",
-          "#46b687",
-          "#6ec7a2",
-          "#98d8bd",
-          "#c2e8d8",
-          "#edf8f3"
+          "#262626",
+          "#424242",
+          "#5e5e5e",
+          "#7a7a7a",
+          "#999999",
+          "#b8b8b8",
+          "#d6d6d6",
+          "#f2f2f2"
         ]
       },
-      "danger": {
-        "role": "danger",
-        "displayName": "Check-out Red",
-        "canonical": "#b42318",
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Well",
+        "canonical": "#efeee9",
         "tonalRamp": [
-          "#440d09",
-          "#771710",
-          "#aa2117",
-          "#de2b1e",
-          "#e7594e",
-          "#ee8982",
-          "#f5bab5",
-          "#fceae8"
+          "#2c2a20",
+          "#4d4938",
+          "#6d684f",
+          "#8e8767",
+          "#a9a489",
+          "#c3bfac",
+          "#dddad0",
+          "#f4f4f0"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e3e1d9",
+        "tonalRamp": [
+          "#2c2a20",
+          "#4c4838",
+          "#6d6750",
+          "#8d8668",
+          "#a8a28a",
+          "#c2bead",
+          "#dcdad0",
+          "#f4f3f0"
+        ]
+      },
+      "grid-line": {
+        "role": "neutral",
+        "displayName": "Grid Rule",
+        "canonical": "#d6d3c9",
+        "tonalRamp": [
+          "#2b2921",
+          "#4b4739",
+          "#6b6551",
+          "#8b836a",
+          "#a7a18b",
+          "#c1bdae",
+          "#dcd9d1",
+          "#f4f3f1"
+        ]
+      },
+      "field-line": {
+        "role": "neutral",
+        "displayName": "Field Edge",
+        "canonical": "#948b80",
+        "tonalRamp": [
+          "#2a2723",
+          "#48433d",
+          "#665f56",
+          "#857b70",
+          "#a29a90",
+          "#beb8b1",
+          "#dad7d3",
+          "#f3f2f1"
+        ]
+      },
+      "tint": {
+        "role": "neutral",
+        "displayName": "Ink Tint",
+        "canonical": "rgb(38 31 28 / 0.06)",
+        "tonalRamp": [
+          "#2c2420",
+          "#4c3e38",
+          "#6d5950",
+          "#8d7368",
+          "#a8938a",
+          "#c2b3ad",
+          "#dcd4d0",
+          "#f4f1f0"
         ]
       }
     },
     "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "page titles, the calendar heading"
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "sheet, panel and section titles"
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "names in lists, card titles, setting names"
+      },
       "body": {
         "displayName": "Body",
-        "purpose": "16px on phones for text and controls; 12 to 14px only inside the dense calendar grid."
+        "purpose": "anything you read or press on a phone"
       },
-      "heading": {
-        "displayName": "Heading",
-        "purpose": "Sheet and page titles, 20px semibold, no uppercase eyebrow labels."
+      "footnote": {
+        "displayName": "Footnote",
+        "purpose": "help under a field or a title"
       },
-      "data": {
-        "displayName": "Data",
-        "purpose": "Geist Mono for room numbers, dates and times only."
+      "group": {
+        "displayName": "Group",
+        "purpose": "the small heading over a group of rows; never uppercase"
+      },
+      "figures": {
+        "displayName": "Figures",
+        "purpose": "Numbers that identify something (room numbers, dates in the grid, times, counts, the clock) are set tabular so columns line up."
       }
     },
     "shadows": [
       {
-        "name": "primary-button",
-        "value": "0 1px 2px rgb(0 0 0 / 0.15)",
-        "purpose": "The one small shadow, under the primary button."
+        "name": "shadow-sm",
+        "value": "0 1px 2px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k)))",
+        "purpose": "The chosen segment and a switch handle, lifted off its track."
       },
       {
-        "name": "floating",
-        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-        "purpose": "Sheets, the booking panel and floating bars."
+        "name": "shadow",
+        "value": "0 1px 3px rgb(var(--shadow-rgb) / calc(0.1 * var(--shadow-k))), 0 1px 2px rgb(var(--shadow-rgb) / calc(0.06 * var(--shadow-k)))",
+        "purpose": "Small floating pieces."
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 0 0 1px rgb(var(--edge-rgb) / var(--ring-a)), 0 4px 12px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k))), 0 1px 3px rgb(var(--shadow-rgb) / calc(0.06 * var(--shadow-k)))",
+        "purpose": "Popovers and menus that drop from a button."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 0 0 1px rgb(var(--edge-rgb) / var(--ring-a)), 0 12px 32px rgb(var(--shadow-rgb) / calc(0.14 * var(--shadow-k))), 0 2px 6px rgb(var(--shadow-rgb) / calc(0.08 * var(--shadow-k)))",
+        "purpose": "Sheets, toasts and the unsaved change card. Dark raises --shadow-k to 3 and draws a hairline ring."
       }
     ],
     "motion": [
       {
-        "name": "ease-arrive",
+        "name": "dur-quick",
+        "value": "120ms",
+        "purpose": "Colour changes on buttons, fields and segments."
+      },
+      {
+        "name": "dur-base",
+        "value": "200ms",
+        "purpose": "Fades, the page fade-in, sheets leaving."
+      },
+      {
+        "name": "dur-slow",
+        "value": "280ms",
+        "purpose": "Sheets and docks arriving."
+      },
+      {
+        "name": "ease-out",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Arrivals: sheets, panels, day and month slides (260 to 360ms)."
+        "purpose": "Everything that arrives or changes state."
       },
       {
-        "name": "ease-leave",
+        "name": "ease-in",
         "value": "cubic-bezier(0.7, 0, 0.84, 0)",
-        "purpose": "Exits, always faster than the arrival (160 to 200ms)."
-      },
-      {
-        "name": "press",
-        "value": "150ms",
-        "purpose": "Colour and press feedback on buttons and bars."
+        "purpose": "Things leaving."
       }
     ],
     "breakpoints": [
       {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
         "name": "md",
-        "value": "768px"
+        "value": "768px",
+        "purpose": "Tablet layout; the phone tab bar gives way to the header navigation."
       },
       {
         "name": "lg",
-        "value": "1024px"
+        "value": "1024px",
+        "purpose": "Pointer sizes: controls drop from 44px to 40px."
       },
       {
         "name": "short",
-        "value": "(orientation: landscape) and (max-height: 500px)"
+        "value": "(orientation: landscape) and (max-height: 500px)",
+        "purpose": "A phone held sideways: one line of controls, bottom sheets, no tab bar, side gutters clear the notch (px-safe)."
       }
     ]
   },
   "components": [
     {
-      "name": "Primary Button",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "The one green action on a screen or sheet: Confirm Booking, Save.",
-      "html": "<button class=\"ds-btn-primary\">Confirm Booking</button>",
-      "css": ".ds-btn-primary { min-height: 48px; padding: 0 16px; border: 1px solid transparent; border-radius: 8px; background: var(--accent, #047857); color: var(--accent-ink, #fafafa); font-weight: 600; font-size: 16px; box-shadow: 0 1px 2px rgb(0 0 0 / 0.15); cursor: pointer; transition: opacity 150ms; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 3px solid var(--accent, #047857); outline-offset: 2px; }"
-    },
-    {
       "name": "Button",
       "kind": "button",
       "refersTo": "button",
-      "description": "Every other action: quiet, outlined, 44px tall on touch.",
-      "html": "<button class=\"ds-btn\">Cancel</button>",
-      "css": ".ds-btn { min-height: 44px; padding: 0 16px; border: 1px solid var(--line, #deded5); border-radius: 8px; background: var(--surface, #fff); color: var(--ink, #261f1c); font-weight: 500; font-size: 16px; cursor: pointer; transition: background-color 150ms; } .ds-btn:hover { background: var(--surface-2, #ecece6); } .ds-btn:focus-visible { outline: 3px solid var(--accent, #047857); outline-offset: 2px; }"
+      "description": "The default: a firm ink tint that deepens on hover and press. Filled, never outlined.",
+      "html": "<button class=\"ds-btn\">Today</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid transparent;border-radius:6px;font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:16px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background-color 120ms cubic-bezier(0.16,1,0.3,1),color 120ms cubic-bezier(0.16,1,0.3,1);background:var(--btn, rgb(38 31 28 / 0.13));color:var(--ink, #261f1c);}.ds-btn:hover{background:var(--btn-hover, rgb(38 31 28 / 0.19));}.ds-btn:active{background:var(--btn-press, rgb(38 31 28 / 0.26));}.ds-btn:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
     },
     {
-      "name": "Tool Button (on)",
-      "kind": "custom",
-      "description": "A calendar tool with its icon above a one word label. On Hold shown on, in its own amber.",
-      "html": "<button class=\"ds-tool\"><span class=\"ds-tool-icon\">+</span><span>On Hold</span></button>",
-      "css": ".ds-tool { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 48px; width: 64px; padding: 6px 4px; border: 1px solid #fbbf24; border-radius: 8px; background: #fef3c7; color: var(--ink, #261f1c); font-size: 12px; font-weight: 500; cursor: pointer; } .ds-tool-icon { color: #d97706; font-size: 20px; line-height: 1; } .ds-tool:focus-visible { outline: 3px solid var(--accent, #047857); outline-offset: 2px; }"
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ledger green, at most one per view, never destructive.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M228 128a12 12 0 0 1-12 12h-76v76a12 12 0 0 1-24 0v-76H40a12 12 0 0 1 0-24h76V40a12 12 0 0 1 24 0v76h76a12 12 0 0 1 12 12Z\"/></svg>New Booking</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid transparent;border-radius:6px;font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:16px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background-color 120ms cubic-bezier(0.16,1,0.3,1),color 120ms cubic-bezier(0.16,1,0.3,1);font-weight:600;background:var(--accent, #1d6b50);color:var(--accent-ink, #ffffff);}.ds-btn-primary:hover{background:var(--accent-hover, #155a43);}.ds-btn-primary:active{background:var(--accent-press, #0f4733);}.ds-btn-primary:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
+    },
+    {
+      "name": "Hold Button",
+      "kind": "button",
+      "refersTo": "button-hold",
+      "description": "Straw with a dashed edge: put on hold, keep on hold. Straw means on hold and nothing else.",
+      "html": "<button class=\"ds-btn-hold\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M128 20a108 108 0 1 0 108 108A108.12 108.12 0 0 0 128 20Zm0 192a84 84 0 1 1 84-84 84.09 84.09 0 0 1-84 84Zm68-84a12 12 0 0 1-12 12h-56a12 12 0 0 1-12-12V72a12 12 0 0 1 24 0v44h44a12 12 0 0 1 12 12Z\"/></svg>Put on Hold</button>",
+      "css": ".ds-btn-hold{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid transparent;border-radius:6px;font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:16px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background-color 120ms cubic-bezier(0.16,1,0.3,1),color 120ms cubic-bezier(0.16,1,0.3,1);border-style:dashed;border-color:var(--hold-edge, #a87708);background:var(--hold, #f6ebc8);color:var(--hold-ink, #7a4e05);}.ds-btn-hold:hover{background:var(--hold-hover, #efdc9e);}.ds-btn-hold:active{background:var(--hold-press, #e7d085);}.ds-btn-hold:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Brick words on a brick tint: delete, cancel a stay.",
+      "html": "<button class=\"ds-btn-danger\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M216 48h-36V36a28 28 0 0 0-28-28h-48a28 28 0 0 0-28 28v12H40a12 12 0 0 0 0 24h4v136a20 20 0 0 0 20 20h128a20 20 0 0 0 20-20V72h4a12 12 0 0 0 0-24ZM100 36a4 4 0 0 1 4-4h48a4 4 0 0 1 4 4v12h-56Zm88 168H68V72h120Z\"/></svg>Delete</button>",
+      "css": ".ds-btn-danger{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid transparent;border-radius:6px;font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:16px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background-color 120ms cubic-bezier(0.16,1,0.3,1),color 120ms cubic-bezier(0.16,1,0.3,1);background:var(--danger-btn, #f8e7e3);color:var(--danger, #a3301e);}.ds-btn-danger:hover{background:var(--danger-hover, #f2d6cf);}.ds-btn-danger:active{background:var(--danger-press, #ecc5bc);}.ds-btn-danger:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
+    },
+    {
+      "name": "On Button",
+      "kind": "button",
+      "refersTo": "button-on",
+      "description": "Solid ink with white words: a chosen filter, tab or tool. Ink means this one is on.",
+      "html": "<button class=\"ds-btn-on\" aria-pressed=\"true\">Select</button>",
+      "css": ".ds-btn-on{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid transparent;border-radius:6px;font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:16px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background-color 120ms cubic-bezier(0.16,1,0.3,1),color 120ms cubic-bezier(0.16,1,0.3,1);font-weight:600;background:var(--bar, #261f1c);color:var(--on-ink, #ffffff);}.ds-btn-on:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "White, a visible 1px edge (3.35:1), 44px on touch, 16px type so phones never zoom.",
+      "html": "<input class=\"ds-field\" placeholder=\"Search guests...\" />",
+      "css": ".ds-field{display:block;width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--field-line, #948b80);border-radius:6px;background:var(--surface, #ffffff);color:var(--ink, #261f1c);font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:16px;transition:border-color 120ms cubic-bezier(0.16,1,0.3,1),box-shadow 120ms cubic-bezier(0.16,1,0.3,1);}.ds-field::placeholder{color:var(--muted, #6f655c);}.ds-field:hover{border-color:var(--ink, #261f1c);}.ds-field:focus-visible{outline:none;border-color:var(--accent, #1d6b50);box-shadow:0 0 0 1px var(--accent, #1d6b50),0 0 0 4px var(--accent-soft, #e6f0ea);}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "seg",
+      "description": "A tinted track with the chosen segment raised in white: calendar views, floors, booking steps, sort direction.",
+      "html": "<div class=\"ds-seg\" role=\"tablist\"><button class=\"ds-seg-item\" aria-selected=\"true\">Timeline</button><button class=\"ds-seg-item\">Month</button><button class=\"ds-seg-item\">Day</button></div>",
+      "css": ".ds-seg{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:6px;background:var(--chrome, #ebe9e3);}.ds-seg-item{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 12px;border:0;border-radius:6px;background:transparent;color:rgb(38 31 28 / 0.8);font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background-color 120ms cubic-bezier(0.16,1,0.3,1),color 120ms cubic-bezier(0.16,1,0.3,1);}.ds-seg-item:hover{color:var(--ink, #261f1c);background:rgb(255 255 255 / 0.5);}.ds-seg-item[aria-selected=\"true\"]{background:var(--raised, #ffffff);color:var(--ink, #261f1c);font-weight:600;box-shadow:0 1px 2px rgb(38 31 28 / 0.08);}.ds-seg-item:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
+    },
+    {
+      "name": "Phone Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab-bar",
+      "description": "Five tabs on an upright phone; filled symbol and a green label for the current one. White at 95% with a light blur, clear of the home indicator.",
+      "html": "<nav class=\"ds-tabbar\"><a class=\"ds-tab\" aria-current=\"page\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M208 32h-24v-8a8 8 0 0 0-16 0v8H88v-8a8 8 0 0 0-16 0v8H48a16 16 0 0 0-16 16v160a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16Zm0 48H48V48h24v8a8 8 0 0 0 16 0v-8h80v8a8 8 0 0 0 16 0v-8h24Z\"/></svg>Calendar</a><a class=\"ds-tab\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M76 64a12 12 0 0 1 12-12h128a12 12 0 0 1 0 24H88a12 12 0 0 1-12-12Zm140 52H88a12 12 0 0 0 0 24h128a12 12 0 0 0 0-24Zm0 64H88a12 12 0 0 0 0 24h128a12 12 0 0 0 0-24ZM44 112a16 16 0 1 0 16 16 16 16 0 0 0-16-16Zm0-64a16 16 0 1 0 16 16 16 16 0 0 0-16-16Zm0 128a16 16 0 1 0 16 16 16 16 0 0 0-16-16Z\"/></svg>Bookings</a></nav>",
+      "css": ".ds-tabbar{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line, #e3e1d9);background:rgb(255 255 255 / 0.95);backdrop-filter:blur(4px);padding-bottom:env(safe-area-inset-bottom);}.ds-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:12px;line-height:16px;font-weight:500;color:var(--muted, #6f655c);text-decoration:none;cursor:pointer;}.ds-tab[aria-current=\"page\"]{font-weight:600;color:var(--accent-text, #1d6b50);}.ds-tab:focus-visible{outline:3px solid var(--accent, #1d6b50);outline-offset:2px;}"
     },
     {
       "name": "Booking Bar",
       "kind": "custom",
-      "description": "A stay on the calendar: its colour, the name, then dates in green and red chips and a status chip as space allows.",
-      "html": "<div class=\"ds-bar\"><b>Ana Rao</b><span class=\"ds-line\"><i class=\"ds-in\">Mon 12 Jun</i> to <i class=\"ds-out\">Thu 15 Jun</i></span><span class=\"ds-line\"><b class=\"ds-n\">3 nights</b> <i class=\"ds-st\">Confirmed</i></span></div>",
-      "css": ".ds-bar { display: flex; flex-direction: column; justify-content: center; gap: 1px; width: 190px; min-height: 64px; padding: 0 8px; border: 1px solid #5cba91; border-radius: 8px; background: #cdeedd; color: var(--ink, #261f1c); font-size: 12px; line-height: 16px; } .ds-line { display: flex; align-items: center; gap: 4px; } .ds-bar i { font-style: normal; font-weight: 600; padding: 0 4px; border-radius: 4px; } .ds-in { background: rgb(255 255 255 / 0.8); color: var(--accent, #047857); } .ds-out { background: rgb(255 255 255 / 0.8); color: var(--danger, #b42318); } .ds-st { background: var(--accent-soft, #d8f0e6); color: var(--accent, #047857); } .ds-n { font-family: ui-monospace, monospace; }"
-    },
-    {
-      "name": "Zoom Control",
-      "kind": "custom",
-      "description": "Minus, slider, plus and the percentage, one outlined group in the second toolbar row.",
-      "html": "<div class=\"ds-zoom\"><button>-</button><input type=\"range\" min=\"0.6\" max=\"1.6\" step=\"0.05\" value=\"1\" /><button>+</button><button class=\"ds-pct\">100%</button></div>",
-      "css": ".ds-zoom { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--line, #deded5); border-radius: 8px; background: var(--surface, #fff); } .ds-zoom button { min-height: 44px; min-width: 44px; border: 1px solid transparent; border-radius: 8px; background: transparent; font-size: 18px; cursor: pointer; } .ds-zoom button:hover { background: var(--surface-2, #ecece6); } .ds-pct { min-width: 64px; font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; color: var(--muted, #6f655c); } .ds-zoom input { width: 112px; accent-color: var(--accent, #047857); }"
+      "refersTo": "booking-bar",
+      "description": "A stay on the calendar: a muted index-card tint with a firmer edge. On hold is straw, dashed and hatched so it reads without colour.",
+      "html": "<div class=\"ds-bars\"><div class=\"ds-bar\">Dr PK Banerjee</div><div class=\"ds-bar ds-bar-hold\">MMT Rathinam</div></div>",
+      "css": ".ds-bars{display:grid;gap:6px;width:260px;}.ds-bar{height:22px;display:flex;align-items:center;padding:0 8px;border:1px solid #d9a58a;border-radius:6px;background:#fbe6da;color:var(--ink, #261f1c);font-family:var(--font-sans, 'Outfit'), system-ui, sans-serif;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.ds-bar-hold{border-style:dashed;border-color:var(--hold-edge, #a87708);color:var(--hold-ink, #7a4e05);background:repeating-linear-gradient(135deg,rgb(255 255 255 / 0.55) 0 3px,transparent 3px 8px),var(--hold, #f6ebc8);}"
     }
   ],
   "narrative": {
-    "northStar": "The Front Desk Ledger",
-    "overview": "A front desk tool, not a showcase. One person, often older, often on a phone, often mid-conversation with a guest. The\ndesign language is **plain, large, and certain**: one green action per screen, everything else quiet, and every state\nshown in words and shape as well as colour. Nothing decorative; the brand lives in the precise details (hold hatching,\nroom colours, the logo).",
+    "northStar": "The register",
+    "overview": "A front desk tool, not a showcase. One person, often older, often on a phone, often mid-conversation with a guest. The thesis is **the register**: ink on paper, every room number, date and count set in hyperlegible figures, one green action per screen, and every state told in words and shape as well as colour. The thing it is remembered by is its type: one round, open typeface (Outfit) for every word and every number.",
     "keyCharacteristics": [
-      "One emerald action per screen, everything else quiet",
-      "Every state shown in words and shape as well as colour",
-      "Large touch targets and 16px type for older eyes and thumbs",
-      "Check-in green and check-out red carry the same meaning everywhere"
+      "Ink on paper: warm neutrals on a paper canvas, white cards with hairline edges.",
+      "One accent, ledger green, for the one action per screen.",
+      "Every state told in words and shape as well as colour.",
+      "One typeface, Outfit, for every word and every number.",
+      "One corner everywhere: 6px.",
+      "Flat; only things that float over the page get a shadow."
     ],
     "rules": [
       {
-        "name": "The One Accent Rule",
-        "body": "Emerald means \"do this\" or \"this is chosen\". No second accent, no second radius.",
+        "name": "Ink means \"this one is on.\"",
+        "body": "A tool that is on, the chosen filter, the chosen settings tab, the selection bar under the calendar and the mode banner are solid ink with white words. Selection inside a picker (a colour, a status, a room) is a 2px ink ring with a gap.",
         "section": "colors"
       },
       {
-        "name": "The Stable Calendar Rule",
-        "body": "Opening a panel, swapping a banner for a strip, or changing a mode never resizes the calendar.",
+        "name": "Straw yellow means on hold, and nothing else",
+        "body": "the hold status, the On Hold tool and its banner, Keep On Hold. Always with a dashed edge, so it reads without colour.",
+        "section": "colors"
+      },
+      {
+        "name": "Brick red means leaving, delete or cancel",
+        "body": "errors sit on `danger-soft` with brick words, no thick border.",
+        "section": "colors"
+      },
+      {
+        "name": "A phone is for looking at the calendar",
+        "body": "upright or sideways (the `short:` variant, used more): no tools, no Today card, no zoom buttons (pinch instead), the days shown inside the View menu, and the page itself never scrolls (it is locked; only the calendar scrolls inside).",
         "section": "layout"
+      },
+      {
+        "name": "Flat",
+        "body": "Cards are white with a hairline and no shadow. Only things that float over the page get a shadow (sheets, popovers, toasts, the unsaved change card). The header and the phone tab bar are white at 95% with a light blur.",
+        "section": "elevation"
       }
     ],
     "dos": [
@@ -263,10 +493,12 @@
       "Do keep text short: a label, then at most one line of help."
     ],
     "donts": [
-      "Don't add a second accent colour, a second radius, or Lucide icons (Phosphor only).",
+      "Don't add a second accent colour, a second radius, a colour per tool, or Lucide icons (Phosphor only).",
+      "Don't put an icon in front of a label that already says what it is.",
+      "Don't animate cancel or close icons, and don't tilt icons; keep icon motion to a lift, a turn or a nudge the way the icon points.",
       "Don't use dashes in UI text.",
-      "Don't put controls on top of the calendar. Zoom, tools and Undo live outside it. The only things drawn over it are the",
-      "Don't add a colour for decoration. Colour means status, floor, or the one emerald accent. Booking and guest colours are"
+      "Don't put controls on top of the calendar. Zoom, tools and Undo live outside it. The only things drawn over it are the confirm bar after a first tap, the booking bars' own handles, and the booking panel on wide screens (which never resizes the calendar).",
+      "Don't add a colour for decoration. Colour means status, floor, or the one green accent. Booking and guest colours are optional and limited to four swatches plus Custom."
     ]
   }
 }
