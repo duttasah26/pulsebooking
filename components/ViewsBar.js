@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Check, PencilSimple, Plus, X } from '@phosphor-icons/react';
+import { useEffect, useRef, useState } from 'react';
+import { CaretDown, Check, PencilSimple, Plus, X } from '@phosphor-icons/react';
+import { useMediaQuery } from '../lib/useMediaQuery';
 import { sameParams } from '../lib/viewState';
 import { Mark, toneStyle } from './FilterParts';
 
 /*
   Saved views and quick filters on ONE line above a list: "Views", then Standard, the one-tap quick filters, and your saved
-  views. The line scrolls sideways when it is longer than the screen. At its right end, Save names the current filters as a
+  views. The chips wrap onto more lines; on a phone they fold into one View dropdown. At its right end, Save names the current filters as a
   view and Edit shows a delete button on each saved view. Views are kept in the database, so they are the same on every device.
     views:   [{ id, name, params }]       current: the params that differ from the screen's defaults
     onApply(view) / onReset() / onSave(name) -> promise of true when saved / onDelete(view)
@@ -19,6 +20,24 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   const active = views.find((v) => sameParams(v.params, current));
   const chip = (on) => `btn shrink-0 ${on ? 'chip-on' : ''}`;
   const small = 'btn shrink-0';
+  // A phone (upright, or sideways with little height): the chips fold into one Views dropdown that names what is showing.
+  const compact = useMediaQuery('(max-width: 767px), (orientation: landscape) and (max-height: 500px)');
+  const [menu, setMenu] = useState(false);
+  const box = useRef(null);
+  useEffect(() => {
+    if (!menu) return undefined;
+    const away = (e) => !box.current?.contains(e.target) && setMenu(false);
+    const esc = (e) => e.key === 'Escape' && setMenu(false);
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('pointerdown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [menu]);
+  const onQuick = quick.filter((f) => f.on).map((f) => f.label);
+  const showing = !changed ? 'Standard' : active ? active.name : onQuick.length ? onQuick.join(', ') : 'Filtered';
+  const row = 'flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-left text-base font-medium hover:bg-tint';
 
   const submit = async (e) => {
     e.preventDefault();
@@ -32,9 +51,42 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   return (
     <section aria-label="Saved views and quick filters" className="space-y-2">
       <div className="flex items-center gap-2">
-        {/* One line that scrolls sideways on a phone; from sm up it wraps instead, so no chip (No phone or email) is ever cut off at the edge. */}
-        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-0.5 sm:flex-wrap sm:justify-center sm:overflow-visible [&>:first-child]:ml-auto [&>:last-child]:mr-auto sm:[&>:first-child]:ml-0 sm:[&>:last-child]:mr-0">
-          <button type="button" aria-pressed={!changed} onClick={onReset} className={chip(!changed)}>
+        {compact ? (
+          <div ref={box} className="relative min-w-0 flex-1">
+            <button type="button" className={`btn w-full justify-between gap-2 px-3 ${menu ? 'btn-on' : ''}`} aria-expanded={menu} aria-haspopup="true" onClick={() => setMenu((m) => !m)}>
+              <span className="min-w-0 truncate"><span className="text-muted">View: </span>{showing}</span>
+              <CaretDown size={16} aria-hidden="true" />
+            </button>
+            {menu && (
+              <div role="group" aria-label="Views" className="animate-pop absolute inset-x-0 top-full z-30 mt-1 max-h-[min(24rem,60dvh)] space-y-0.5 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-1.5 shadow-lg">
+                <button type="button" aria-pressed={!changed} className={row} onClick={() => { onReset(); setMenu(false); }}>
+                  <Check size={16} weight="bold" aria-hidden="true" className={changed ? 'invisible' : ''} /> Standard
+                </button>
+                {quick.map((f) => (
+                  <button key={f.key} type="button" aria-pressed={f.on} className={row} onClick={f.onToggle}>
+                    <Check size={16} weight="bold" aria-hidden="true" className={f.on ? '' : 'invisible'} /> {f.label}
+                  </button>
+                ))}
+                {views.length > 0 && <div aria-hidden="true" className="mx-3 my-1 h-px bg-line" />}
+                {views.map((v) => (
+                  <div key={v.id} className="flex items-center gap-1">
+                    <button type="button" aria-pressed={active?.id === v.id} className={`${row} min-w-0 flex-1`} onClick={() => { onApply(v); setMenu(false); }}>
+                      <Check size={16} weight="bold" aria-hidden="true" className={active?.id === v.id ? '' : 'invisible'} /> <span className="min-w-0 truncate">{v.name}</span>
+                    </button>
+                    {editing && (
+                      <button type="button" onClick={() => onDelete(v)} aria-label={`Delete the view ${v.name}`} className="btn btn-icon btn-danger shrink-0">
+                        <X size={16} weight="bold" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+        /* The chips wrap onto more lines, so none (No phone or email) is ever cut off at the edge or hidden off to the side. */
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 py-0.5 sm:justify-center">
+          <button type="button" aria-pressed={!changed} onClick={onReset} className={`${chip(!changed)}`}>
             {!changed && <Check size={14} weight="bold" aria-hidden="true" />}
             Standard
           </button>
@@ -78,6 +130,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
             </span>
           ))}
         </div>
+        )}
         <div className="flex shrink-0 items-center gap-1">
           {changed && !active && !naming && (
             <button type="button" className={`${small} btn-quiet text-accent-text`} onClick={() => setNaming(true)} aria-label="Save this view" title="Save these filters as a view">
