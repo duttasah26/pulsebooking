@@ -37,12 +37,12 @@ export function ChipGroup({ legend, icon, options, value, onToggle, empty, legen
 }
 
 // Pick exactly one option, drawn as a joined row. options: [[value, label]].
-export function Segmented({ legend, icon, options, value, onChange, legendHidden = false }) {
+export function Segmented({ legend, icon, options, value, onChange, legendHidden = false, min = '7rem' }) {
   return (
     <fieldset>
       <FieldLabel icon={icon} as="legend" hidden={legendHidden}>{legend}</FieldLabel>
-      {/* As many per row as fit (at least 5rem each, so three fit on the smallest phone), the rest on the next row, and a long label wraps inside its button: nothing runs into its neighbour. */}
-      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(5rem, 1fr))' }}>
+      {/* As many per row as fit (at least `min` each: 7rem, or less where the choices are short, as in Settings), the rest on the next row, and a long label wraps inside its button: nothing runs into its neighbour. */}
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${min}, 1fr))` }}>
         {options.map(([v, label, tone]) => (
           <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)} className={`${chip(value === v, tone)} h-auto justify-center !whitespace-normal px-2 py-2 text-center text-[0.9375rem] leading-tight`} style={toneStyle(value === v, tone)}>
             <Mark on={value === v} tone={tone} />

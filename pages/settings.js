@@ -46,7 +46,7 @@ const TABS = [
 // One group of settings: a clear heading, who it applies to, and the settings under it.
 function Group({ id, icon: Icon, title, scope, hint, children }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-4 sm:p-6">
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-3 sm:p-6">
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <h2 id={`${id}-title`} className="t-title font-semibold">{title}</h2>
@@ -144,7 +144,7 @@ export default function Settings() {
           <p role="status" aria-live="polite" className="min-h-6 text-base font-semibold text-accent-text">{saved}</p>
         </div>
 
-        <div className="mt-2 grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-3 lg:mt-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+        <div className="mt-2 grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:gap-3 lg:mt-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
           <div
             role="tablist"
             aria-label="Settings"
@@ -179,6 +179,7 @@ export default function Settings() {
               <Segmented
                 legend="Text size"
                 legendHidden
+                min="3.25rem"
                 options={[['normal', 'Normal'], ['large', 'Large'], ['xl', 'Extra large']]}
                 value={textSize}
                 onChange={(v) => { setTextSize(v); setSaved('Text size changed on this device'); }}
@@ -264,6 +265,7 @@ export default function Settings() {
                     <Segmented
                       legend="First view"
                       legendHidden
+                      min="3.25rem"
                       options={[['timeline', 'Timeline'], ['month', 'Month']]}
                       value={firstView}
                       onChange={(v) => { setFirstView(v); setSaved('First view changed on this device'); }}
@@ -273,6 +275,7 @@ export default function Settings() {
                     <Segmented
                       legend="Row size"
                       legendHidden
+                      min="3.25rem"
                       options={[['standard', 'Standard'], ['roomy', 'Roomy']]}
                       value={rowSize}
                       onChange={(v) => { setRowSize(v); setSaved('Row size changed on this device'); }}
