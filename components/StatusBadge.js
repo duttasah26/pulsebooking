@@ -16,13 +16,15 @@ const TONE = {
   deleted: `border-transparent ${over('danger-soft')} text-danger`,
 };
 
-export default function StatusBadge({ status, deleted = false, children }) {
+// tickOnPhone: in a list row on a phone, Confirmed (the usual case) is only its tick, beside the name; the word stays for screen readers.
+export default function StatusBadge({ status, deleted = false, tickOnPhone = false, children }) {
+  const tick = tickOnPhone && !deleted && !children && status === 'confirmed';
   const Icon = deleted ? Trash : STATUS_ICON[status] ?? Check;
   const tone = TONE[deleted ? 'deleted' : status] ?? TONE.checked_out;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-sm font-semibold leading-5 transition-colors duration-300 ${tone}`}>
+    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-sm font-semibold leading-5 transition-colors duration-300 ${tone} ${tick ? 'max-sm:px-1' : ''}`}>
       <Icon size={14} weight="bold" aria-hidden="true" className="shrink-0" />
-      {children ?? STATUS_LABEL[status]}
+      {tick ? <span className="max-sm:sr-only">{STATUS_LABEL[status]}</span> : children ?? STATUS_LABEL[status]}
     </span>
   );
 }
