@@ -358,7 +358,7 @@ export default function Bookings() {
 
   // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
   if (!list.error && (!ready || !list.data || viewsLoading)) {
-    return <Layout title="Bookings"><ListPageSkeleton title="Bookings" label="Loading bookings" groups={[1, 2, 2, 2]} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+    return <Layout title="Bookings"><ListPageSkeleton title="Bookings" label="Loading bookings" phoneAction={154} filterHeight={61} groups={[1, 2, 2, 2]} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
   }
 
   return (

@@ -180,7 +180,7 @@ export default function Guests() {
 
   // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
   if (tab === 'guests' && !list.error && (!ready || !list.data || viewsLoading)) {
-    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs avatar rows={8} chips={[119, 91, 153, 116, 155]} dockHeight={447} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs avatar phoneAction={138} rows={8} chips={[119, 91, 153, 116, 155]} dockHeight={447} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
   }
 
   return (
