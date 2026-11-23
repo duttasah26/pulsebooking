@@ -106,7 +106,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
     <div className="space-y-4">
       {onDate && (
         <nav aria-label="Days" className="flex items-stretch gap-2">
-          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch upright:hidden" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
             <CaretLeft className="ico-left" size={22} aria-hidden="true" />
           </button>
           <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
@@ -127,7 +127,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                   >
                     <span className="text-sm text-muted">{fmtWeekday(d)}</span>
                     <span className={`font-mono text-lg font-semibold ${d === todayStr ? 'text-accent-text' : ''}`}>{dayOfMonth(d)}</span>
-                    <span aria-hidden="true" className="flex gap-2 text-sm font-semibold max-sm:hidden">
+                    <span aria-hidden="true" className="flex gap-1 text-sm font-semibold sm:gap-2">
                       <span className="text-ok-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
                       <span className="text-danger">{c.leaving.length ? `-${c.leaving.length}` : ''}</span>
                     </span>
@@ -137,7 +137,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
             })}
           </ol>
           </div>
-          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch upright:hidden" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
             <CaretRight className="ico-right" size={22} aria-hidden="true" />
           </button>
         </nav>
