@@ -19,7 +19,7 @@ function Strip({ label, children }) {
 }
 
 // Timeline length: 7, 14 or 30 days, or a custom range (which opens the same panel as Go to).
-function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
+function RangeSelect({ span, monthAligned, onCustom, set, onResetView, className = '!w-auto shrink-0' }) {
   const preset = SPANS.includes(span);
   // Choosing a length starts from the default view for it: the days fill the screen again, from the first day.
   const choose = (value) => {
@@ -34,7 +34,7 @@ function RangeSelect({ span, monthAligned, onCustom, set, onResetView }) {
   };
   return (
     // A pop-up button: grey like View and zoom, showing the current choice.
-    <select aria-label="Days shown" className="btn pop-btn !w-auto shrink-0" value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
+    <select aria-label="Days shown" className={`btn pop-btn ${className}`} value={monthAligned ? 'month' : span} onChange={(e) => choose(e.target.value)}>
       {SPANS.map((n) => <option key={n} value={n}>{n} days</option>)}
       <option value="month">This month</option>
       {!preset && !monthAligned && <option value={span}>{span} days (custom)</option>}
@@ -79,19 +79,20 @@ export default function CalendarToolbar({
   return (
     // On desktop the toolbar is a grid: the two rows on the left, and the Today tile on the right as tall as both of them together, so its top
     // lines up with the title row's and its bottom with the controls row's.
-    <div className="space-y-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-4 md:gap-y-4 md:space-y-0 short:flex short:items-center short:gap-2 short:space-y-0">
+    <div className="space-y-2 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-4 md:gap-y-4 md:space-y-0 short:flex short:items-center short:gap-1.5 short:space-y-0">
       {/* On a phone the top row is also a gesture: swipe it sideways to step to the next or earlier days. */}
       <div
-        className="flex flex-wrap items-center gap-2 md:col-start-1 md:row-start-1 short:shrink-0 short:flex-nowrap"
+        className="flex flex-wrap items-center gap-2 md:col-start-1 md:row-start-1 short:shrink-0 short:flex-nowrap short:gap-1.5"
         onTouchStart={phone ? onTouchStart : undefined}
         onTouchEnd={phone ? onTouchEnd : undefined}
         onTouchCancel={phone ? () => { swipe.current = null; } : undefined}
       >
-        <div role="group" aria-label="Move through the days" className="flex shrink-0 items-center gap-1">
+        {/* A small phone held sideways has no width for the arrows: swiping this row steps the days instead. */}
+        <div role="group" aria-label="Move through the days" className={`flex shrink-0 items-center gap-1 ${phone ? 'short:max-[699px]:[&>button:not(:nth-child(2))]:hidden' : ''}`}>
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(-1)} aria-label="Previous">
             <CaretLeft className="ico-left" size={18} />
           </button>
-          <button type="button" className="btn shrink-0 px-4 font-semibold" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
+          <button type="button" className="btn shrink-0 px-4 font-semibold short:px-2" onClick={() => { set({ date: today() }); onHome(); }}>Today</button>
           <button type="button" className="btn btn-icon shrink-0" onClick={() => step(1)} aria-label="Next">
             <CaretRight className="ico-right" size={18} />
           </button>
@@ -99,23 +100,25 @@ export default function CalendarToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            className={`btn gap-2 px-3 ${rangeOpen ? 'btn-on' : ''}`}
+            className={`btn gap-2 px-3 short:px-2 ${rangeOpen ? 'btn-on' : ''}`}
             title="Go to a date, or choose a range of days"
             aria-expanded={rangeOpen}
             onPointerDown={(e) => e.stopPropagation()} // so the panel's click-outside close does not fight this button
             onClick={() => setRangeOpen((o) => !o)}
           >
             <CalendarBlank size={18} aria-hidden="true" />
-            <span className="sr-only @[44rem]:not-sr-only">Go to…</span>
+            <span className={phone ? 'sr-only' : 'sr-only @[44rem]:not-sr-only'}>Go to…</span>
+            {/* A phone held sideways shows the heading on this button, so the row has one button fewer. */}
+            {phone && <span aria-hidden="true" className="hidden max-w-36 truncate font-semibold short:inline">{title}</span>}
           </button>
           {rangeOpen && <RangePopover date={date} span={span} onShow={show} onClose={() => setRangeOpen(false)} />}
         </div>
         {phone && onNew && (
-          <button type="button" className="btn btn-primary btn-icon ml-auto shrink-0" onClick={onNew} aria-label="New booking" title="New booking">
+          <button type="button" className="btn btn-primary btn-icon ml-auto shrink-0 short:hidden" onClick={onNew} aria-label="New booking" title="New booking">
             <Plus className="ico-turn" size={20} aria-hidden="true" />
           </button>
         )}
-        <div className="flex min-w-0 flex-1 basis-48 items-center gap-2 max-md:basis-full md:mx-2 short:flex-none short:basis-auto">
+        <div className={`flex min-w-0 flex-1 basis-48 items-center gap-2 max-md:basis-full md:mx-2 short:flex-none short:basis-auto ${phone ? 'short:sr-only' : ''}`}>
           <div className="min-w-0 flex-1">
             <h1 className="min-w-0 text-[1.375rem] font-bold leading-tight tracking-[-0.015em] @[44rem]:text-[1.75rem] short:max-w-36 short:truncate short:text-base">{bits ? <bits.TitleSwap text={title} dir={stepDir.current} /> : title}</h1>
             {summary && <div className="mt-0.5 md:hidden">{summary}</div>}
@@ -125,14 +128,30 @@ export default function CalendarToolbar({
       {summary && <div className="hidden md:col-start-2 md:row-span-2 md:row-start-1 md:flex md:items-stretch short:hidden">{summary}</div>}
 
       {/* Row 2: what to look at. On a phone it is one line that scrolls sideways, so it never wraps into three. */}
-      <div className="no-scrollbar flex flex-wrap items-center gap-2 md:gap-3 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:overflow-x-auto">
+      <div className="no-scrollbar flex flex-wrap items-center gap-2 md:gap-3 max-md:flex-nowrap max-md:overflow-x-auto md:col-start-1 md:row-start-2 short:min-w-0 short:flex-1 short:flex-nowrap short:gap-1.5 short:overflow-x-auto">
         <ViewTabs view={view} onChange={(v) => set({ view: v })} />
-        <ViewMenu floorKeys={floorKeys} shownFloors={shownFloors} onToggleFloor={onToggleFloor} showDone={showDone} onToggleDone={onToggleDone && (view === 'timeline' || view === 'month') ? onToggleDone : undefined} />
+        {/* On a phone the days shown live in the View menu and zoom is a pinch, so this row fits the screen without scrolling. */}
+        <ViewMenu
+          compact={phone}
+          floorKeys={floorKeys}
+          shownFloors={shownFloors}
+          onToggleFloor={onToggleFloor}
+          showDone={showDone}
+          onToggleDone={onToggleDone && (view === 'timeline' || view === 'month') ? onToggleDone : undefined}
+          days={phone && view === 'timeline' ? <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} className="w-full" /> : null}
+        />
         {/* Range and zoom are one group: how much of the calendar you see. */}
-        <div className="flex items-center gap-2">
-          {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
-          {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
-        </div>
+        {!phone && (
+          <div className="flex items-center gap-2">
+            {view === 'timeline' && <RangeSelect span={span} monthAligned={monthAligned} set={set} onCustom={() => setRangeOpen(true)} onResetView={onResetView} />}
+            {canTool && onZoom && <ZoomControl zoom={zoom} onChange={onZoom} />}
+          </div>
+        )}
+        {phone && onNew && (
+          <button type="button" className="btn btn-primary btn-icon ml-auto hidden shrink-0 short:inline-flex" onClick={onNew} aria-label="New booking" title="New booking">
+            <Plus className="ico-turn" size={20} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       {/* Row 3 (phones and tablets; the desktop has the tool column): New Booking, the tools and Undo / Redo, in one line that

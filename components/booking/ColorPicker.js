@@ -23,10 +23,12 @@ export default function ColorPicker({
           type="button"
           aria-pressed={color === null}
           onClick={() => onChange(null)}
-          className={`btn px-4 ${color === null ? 'font-semibold ring-2 ring-ink ring-offset-2' : ''}`}
+          className={`btn px-3 sm:px-4 ${color === null ? 'font-semibold ring-2 ring-ink ring-offset-2' : ''}`}
         >
           {autoLabel}
         </button>
+        {/* The swatches stay together; on a phone they are one row under Default and Custom that shrinks to fit (44px at most), so the rows never break unevenly. */}
+        <div className="flex flex-wrap gap-2 max-sm:order-last max-sm:grid max-sm:w-full max-sm:gap-1.5" style={{ gridTemplateColumns: `repeat(${list.length}, minmax(0, 2.75rem))` }}>
         {list.map((c) => (
           <button
             key={c.key}
@@ -35,11 +37,12 @@ export default function ColorPicker({
             title={c.name}
             aria-pressed={color === c.key}
             onClick={() => onChange(c.key)}
-            className={`cell grid size-11 place-items-center rounded-lg border transition-shadow duration-150 lg:size-11 ${color === c.key ? 'ring-2 ring-ink ring-offset-2' : ''}`}
+            className={`cell grid aspect-square w-full place-items-center rounded-lg border transition-shadow duration-150 sm:size-11 ${color === c.key ? 'ring-2 ring-ink ring-offset-2' : ''}`}
             style={{ backgroundColor: c.bg, borderColor: c.border }}
           >
           </button>
         ))}
+        </div>
         {/* Any colour: the native colour picker sits invisibly over this swatch. */}
         <label
           title="Pick any colour"

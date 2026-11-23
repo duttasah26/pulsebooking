@@ -48,6 +48,7 @@ const CLEAR_FILTERS = { room: '', floor: '', from: '', to: '', org: '', contact:
 export default function Guests() {
   const { settings } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
+  const small = useMediaQuery('(max-width: 767px)'); // a phone: the long search hint would be cut off
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
   const { tab, sort, dir: dirParam, sort2, dir2, room, floor, from, to, org, contact, smin, smax, cols } = values;
   const { q, setQ, search, ready } = useUrlSearch();
@@ -187,16 +188,22 @@ export default function Guests() {
           {/* One header row: the title on the left; on the right the three lists (Guests, Companies, Deleted) and the one action. */}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <h1 className="t-display">Guests</h1>
-            <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-              <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg">
+            {/* On a phone New Guest sits beside the title and the three lists take the next line, so nothing wraps on its own. */}
+            <button type="button" className="btn btn-primary md:order-last md:w-40" onClick={() => setOpen('new')}>
+              <Plus className="ico-turn" size={18} aria-hidden="true" /> New Guest
+            </button>
+            {small ? (
+              // A phone: the three lists are one dropdown, a whole line of buttons was too many.
+              <select aria-label="Show guests, companies or deleted guests" className="btn pop-btn w-full font-semibold" value={tab} onChange={(e) => setParams({ tab: e.target.value })}>
+                {TABS.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+              </select>
+            ) : (
+              <div role="tablist" aria-label="Guests, companies or deleted guests" onKeyDown={tabKeys} className="seg ml-auto">
                 {TABS.map(([key, label]) => (
                   <button key={key} type="button" role="tab" aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => setParams({ tab: key })} className="seg-item min-h-11 px-4 lg:min-h-9">{label}</button>
                 ))}
               </div>
-              <button type="button" className="btn btn-primary ml-auto sm:ml-0 sm:w-40" onClick={() => setOpen('new')}>
-                <Plus className="ico-turn" size={18} aria-hidden="true" /> New Guest
-              </button>
-            </div>
+            )}
           </div>
 
           <Swap id={tab} className="flex min-h-0 flex-col gap-5 lg:flex-1">
@@ -205,9 +212,9 @@ export default function Guests() {
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
-          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
+          <div className="shrink-0 bg-canvas pb-3 pt-1 md:sticky md:top-14 md:z-20 lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
-              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder="Search by name, initials (ZB), month, phone, email…" />} />
+              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder={small ? 'Search guests…' : 'Search by name, initials (ZB), month, phone, email…'} />} />
               <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
             </div>
           </div>

@@ -13,11 +13,11 @@ export default function FilterDock({ wide, open, onToggle, summary, children }) 
   }
   return (
     <details className="group rounded-lg border border-line bg-surface">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 text-base font-semibold">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-base font-semibold">
         <span className="flex min-w-0 items-center gap-2">
           <Funnel size={18} aria-hidden="true" className="shrink-0" />
           <span className="shrink-0 whitespace-nowrap">Filter &amp; Sort</span>
-          <span className="truncate font-normal text-muted">{summary}</span>
+          <span className="min-w-0 font-normal leading-snug text-muted lg:truncate">{summary}</span>
         </span>
         <CaretDown size={16} aria-hidden="true" className="shrink-0 transition-transform group-open:rotate-180" />
       </summary>

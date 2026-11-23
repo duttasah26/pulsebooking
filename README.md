@@ -14,7 +14,7 @@ It is not a channel manager or a multi-property suite. Product intent lives in `
 - **Overview tab** (after Guests, full screen width): a greeting with the signed-in name, a day picker, five figure cards (Arrivals, Departures, In the house, Upcoming, On hold), a week overview (arrivals as bars, departures as a line, occupancy tiles, past or next 7 days), and a full-height list panel on the right. A row opens the booking in a sheet on the same page; the diagonal arrow shows it on the calendar. The same arrow is in the Bookings tab's details.
 - **Search**: header search on the calendar (press `/` or Ctrl+K). Booking results use the same row design as the Bookings tab.
 - **Settings**: floor and status colours, default check-in and check-out times, automatic check-out, what the Overview shows, first calendar view, row density.
-- **Assistant**: an optional chat that answers questions about rooms and bookings, can make a booking or hold, change dates or room, and bring back an accidentally deleted booking (`restore_booking`). Every write is summary first, then only after a yes (Gemini).
+- **Assistant**: an optional chat (Gemini) that answers questions about rooms, bookings, guests and settings, and can also change them: book, move, edit details, change status, delete and restore bookings, add, edit, delete, restore and merge guests (a merge can be undone), retire rooms, change settings. Every change is a summary first, a yes from you, one change per answer, and reversible: nothing is removed, only marked deleted.
 - **History and Undo**: every insert, update, delete and restore of a booking is recorded by a trigger with who and when. Bookings and guests are soft-deleted and can be restored. The only hard delete is a removed on-hold booking (a hold), which is meant to be disposable.
 
 ## Stack
@@ -29,7 +29,7 @@ It is not a channel manager or a multi-property suite. Product intent lives in `
 | Database | Postgres on Neon, driver `postgres` (postgres.js) |
 | Hosting | Vercel, functions pinned to `sin1` (`vercel.json`) |
 | Auth | Signed cookie sessions, scrypt password hashes, enforced by `middleware.js` |
-| Assistant | Google Gemini API with read-only tools plus one `book_stay` write tool |
+| Assistant | Google Gemini API: read-only lookup tools plus confirmed, reversible write tools (`lib/assistantTools.js`, `lib/assistantActions.js`) |
 
 Light and dark themes, chosen with the one button in the navbar (each press flips what you see; when the result matches the device it is saved as System, which follows the device; kept per device). The device's Increase Contrast setting is honoured. Times are India local time (IST).
 
@@ -153,6 +153,8 @@ NEXT_DIST_DIR=.next-test npx next start -p 3111
 Open it at `http://127.0.0.1:3111` (not `localhost`, which would share cookies with the dev server). Use a throwaway database, not the real one.
 
 ## Recent changes
+
+- **Overview, pickers and loading (Nov 2026).** Overview figures count guests (or bookings or rooms, chosen from the three dots, remembered per device); clicking a day in the week chart opens that day; the day tab uses the app's calendar. Every date field now uses that calendar and takes words: type `next fri`, `dec 1 to dec 5` or `fri for 3 nights` (`lib/naturalDate.js`, `components/DateField.js`). Loading states are placeholders of the real layout with a sweep of light, and the Overview shows placeholders for the whole tab. Icons move a little when pointed at (not the cancel icons), light and dark cross-fade slowly, and the Company field searches like Contacts and can add a new company. A booking in several rooms counts all its guests and room-nights.
 
 - **Design review pass** (after an Apple HIG review; all on the `apple-pass` branch, started from the tag `pre-apple-pass`):
   - The calendar controls row is three groups: the view tabs, a **View** menu (floors, checked-out stays, with a count of what is hidden), and range with zoom.

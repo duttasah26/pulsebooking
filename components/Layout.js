@@ -20,8 +20,8 @@ const UTILITY = [
   { href: '/settings', label: 'Settings', Icon: GearSix },
   { href: '/settings?tab=account', label: 'Account', Icon: UserCircle },
 ];
-// The phone's tab bar holds all six.
-const TABS = [...PLACES, ...UTILITY];
+// The phone's tab bar holds five: Account is a tab inside Settings.
+const TABS = [...PLACES, UTILITY[0]];
 
 // wide: the calendar and the Overview use the full screen width; Bookings, Guests and Settings stay in a readable, centred column.
 export default function Layout({ title, wide = false, children }) {
@@ -47,8 +47,8 @@ export default function Layout({ title, wide = false, children }) {
         Skip to Main Content
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-sm">
-        <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-4 md:px-6`}>
+      <header className="nav-still sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-sm">
+        <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-safe`}>
           <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
           </Link>
@@ -64,7 +64,7 @@ export default function Layout({ title, wide = false, children }) {
                   here === href ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'
                 }`}
               >
-                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="ico-pop hidden lg:block short:block" />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block short:block" />
                 <span className="short:sr-only">{label}</span>
               </Link>
             ))}
@@ -91,9 +91,9 @@ export default function Layout({ title, wide = false, children }) {
                 aria-label={label}
                 title={label}
                 aria-current={here === href ? 'page' : undefined}
-                className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-ink' : 'text-muted'}`}
+                className={`btn btn-quiet btn-icon hidden md:inline-flex ${href.includes('account') ? 'short:hidden!' : 'short:inline-flex'} ${here === href ? 'text-ink' : 'text-muted'}`}
               >
-                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className={Icon === GearSix ? 'ico-spin' : 'ico-pop'} />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} />
               </Link>
             ))}
             {/* Below the desktop width the assistant opens from here, not from a button floating over the page. */}
@@ -106,15 +106,16 @@ export default function Layout({ title, wide = false, children }) {
       </header>
 
       {/* animate-fade: the page content fades in quickly each time a page opens or reloads, instead of popping in as it is drawn and then filled. */}
-      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-4 pb-28 pt-4 outline-none md:px-6 md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-safe pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-4 outline-none md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
-      {/* Phone tab bar: six places, a filled symbol and an emerald label for the one you are on. */}
+      {/* Phone tab bar: five places, a filled symbol and an emerald label for the one you are on. */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
+        data-tabbar
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
-          const active = here === href;
+          const active = here === href || (href === '/settings' && pathname === '/settings'); // Account is a tab of Settings
           return (
             <Link
               key={href}

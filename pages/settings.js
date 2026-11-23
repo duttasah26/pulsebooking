@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Bed, CalendarBlank, Clock, Palette, SignIn, SignOut, SlidersHorizontal, TextAa, UserCircle } from '@phosphor-icons/react';
 import Layout from '../components/Layout';
 import TimeSelect from '../components/TimeSelect';
@@ -36,7 +36,7 @@ const STAY_ROWS = [
   { key: 'checkOut', label: 'Check-out Day', sample: 'Check-out' },
 ];
 const TABS = [
-  { id: 'look', label: 'Look and feel', Icon: Palette },
+  { id: 'look', label: 'Look and feel', short: 'Look', Icon: Palette },
   { id: 'calendar', label: 'Calendar', Icon: CalendarBlank },
   { id: 'bookings', label: 'Bookings', Icon: Clock },
   { id: 'rooms', label: 'Rooms', Icon: Bed },
@@ -46,7 +46,7 @@ const TABS = [
 // One group of settings: a clear heading, who it applies to, and the settings under it.
 function Group({ id, icon: Icon, title, scope, hint, children }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-6">
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-32 space-y-6 rounded-lg border border-line bg-surface p-3 sm:p-6">
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <h2 id={`${id}-title`} className="t-title font-semibold">{title}</h2>
@@ -107,13 +107,7 @@ export default function Settings() {
   const [saved, setSaved] = useState('');
   const [tabParam, setTab] = useQueryState('tab', 'look');
   const tab = TABS.some((t) => t.id === tabParam) ? tabParam : 'look';
-  // On a phone the tabs are one row that scrolls sideways: keep the chosen one in view (Account sits off the edge otherwise).
-  const tabStrip = useRef(null);
-  useEffect(() => {
-    const strip = tabStrip.current;
-    const chosen = strip?.querySelector(`#tab-${tab}`);
-    if (strip && chosen && strip.scrollWidth > strip.clientWidth) strip.scrollTo({ left: chosen.offsetLeft - 16 });
-  }, [tab]);
+  // On a phone the tabs are a slim column at the left (icon over a short word), so nothing scrolls sideways.
 
   // Every change saves by itself and says so.
   const apply = async (change, said = 'Saved') => {
@@ -150,15 +144,14 @@ export default function Settings() {
           <p role="status" aria-live="polite" className="min-h-6 text-base font-semibold text-accent-text">{saved}</p>
         </div>
 
-        <div className="mt-2 lg:mt-6 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="mt-2 grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:gap-3 lg:mt-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
           <div
-            ref={tabStrip}
             role="tablist"
             aria-label="Settings"
             onKeyDown={tabKeys}
-            className="no-scrollbar sticky top-14 z-20 -mx-4 mb-4 flex gap-1 overflow-x-auto bg-canvas px-4 py-2 lg:top-20 lg:mx-0 lg:mb-0 lg:flex-col lg:overflow-visible lg:px-0 lg:py-0"
+            className="sticky top-[4.5rem] z-20 flex flex-col gap-1 short:top-14 lg:top-20"
           >
-            {TABS.map(({ id, label, Icon }) => {
+            {TABS.map(({ id, label, short, Icon }) => {
               const on = tab === id;
               return (
                 <button
@@ -170,10 +163,10 @@ export default function Settings() {
                   tabIndex={on ? 0 : -1}
                   aria-controls="settings-panel"
                   onClick={() => { setTab(id); setSaved(''); }}
-                  className={`btn shrink-0 justify-start gap-3 px-3 ${on ? 'btn-on' : 'btn-quiet'}`}
+                  className={`btn min-w-0 flex-col gap-0.5 px-1 py-1.5 text-[0.8125rem] leading-4 lg:shrink-0 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-0 lg:text-[0.9375rem] ${on ? 'btn-on' : 'btn-quiet'}`}
                 >
                   <Icon size={18} weight={on ? 'fill' : 'bold'} aria-hidden="true" className="shrink-0" />
-                  {label}
+                  {short ? <><span className="lg:hidden">{short}</span><span className="hidden lg:inline">{label}</span></> : label}
                 </button>
               );
             })}
@@ -186,6 +179,7 @@ export default function Settings() {
               <Segmented
                 legend="Text size"
                 legendHidden
+                min="3.25rem"
                 options={[['normal', 'Normal'], ['large', 'Large'], ['xl', 'Extra large']]}
                 value={textSize}
                 onChange={(v) => { setTextSize(v); setSaved('Text size changed on this device'); }}
@@ -271,6 +265,7 @@ export default function Settings() {
                     <Segmented
                       legend="First view"
                       legendHidden
+                      min="3.25rem"
                       options={[['timeline', 'Timeline'], ['month', 'Month']]}
                       value={firstView}
                       onChange={(v) => { setFirstView(v); setSaved('First view changed on this device'); }}
@@ -280,6 +275,7 @@ export default function Settings() {
                     <Segmented
                       legend="Row size"
                       legendHidden
+                      min="3.25rem"
                       options={[['standard', 'Standard'], ['roomy', 'Roomy']]}
                       value={rowSize}
                       onChange={(v) => { setRowSize(v); setSaved('Row size changed on this device'); }}
@@ -309,7 +305,7 @@ export default function Settings() {
             {tab === 'bookings' && (
             <Group id="bookings" icon={Clock} title="Bookings" scope="Everyone" hint="How new bookings start, and what the app does by itself.">
               <Setting label="Usual times" hint="Filled in on every new booking. Each booking can still change them.">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <TimeSelect id="s-in-time" icon={SignIn} label="Check-in time" value={settings.checkInTime} onChange={(v) => apply({ checkInTime: v })} />
                   <TimeSelect id="s-out-time" icon={SignOut} label="Check-out time" value={settings.checkOutTime} onChange={(v) => apply({ checkOutTime: v })} />
                 </div>
@@ -326,12 +322,12 @@ export default function Settings() {
 
             {tab === 'rooms' && (
             <Group id="rooms" icon={Bed} title="Rooms" scope="Everyone" hint="Switch a room off to hide it from the calendar. Its bookings are kept.">
-              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <ul className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(7.5rem, 1fr))' }}>
                 {roomList.map((r) => {
                   const tone = roomShade(r, settings);
                   return (
                     <li key={r.id}>
-                      <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
+                      <label className="btn w-full cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
                         <Switch size="sm" icons={false} name={`room-${r.number}`} checked={r.active} onChange={(on) => setActive(r, on)} />
                         <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-[rgb(var(--edge-rgb)/0.2)]" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>

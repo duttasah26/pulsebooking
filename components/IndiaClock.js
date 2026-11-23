@@ -29,7 +29,7 @@ export default function IndiaClock() {
 
   return (
     <div
-      className="pointer-events-none flex items-center md:max-lg:hidden"
+      className="pointer-events-none flex items-center md:max-lg:hidden short:max-[699px]:hidden"
       title="India Standard Time"
       aria-label={now ? `India time: ${now.date}, ${now.hour}:${now.minute} ${now.period}` : 'India time'}
     >

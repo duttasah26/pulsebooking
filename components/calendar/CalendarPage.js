@@ -52,8 +52,9 @@ export default function CalendarPage() {
   const { ready: settingsReady } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
   const short = useMediaQuery('(orientation: landscape) and (max-height: 500px)'); // a phone held sideways
-  const rail = wide || short; // the tool pane on the left (a phone held sideways has the width for it, not the height for the toolbar rows)
-  const phone = useMediaQuery('(max-width: 767px)') && !short; // a phone held upright: the calendar comes first, with no tool strip
+  const rail = wide; // the tool pane on the left (desktop only: a phone is for looking, upright or sideways)
+  const narrow = useMediaQuery('(max-width: 767px)');
+  const phone = !wide && (narrow || short); // a phone, upright or sideways: the calendar comes first, with no tools
   const { view, date, span, floors, set } = useCalendarParams();
 
   const [quickHold, setQuickHold] = useStoredState('pulse.quickHold', false, { parse: (raw) => raw === '1', serialize: (v) => (v ? '1' : '0') }); // off: dragging selects
@@ -409,6 +410,16 @@ export default function CalendarPage() {
       />
     );
   }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, monthRows, thisMonth, nextMonth, summaryReady]);
+  // On a phone the calendar fills the screen exactly, so the page itself never scrolls: only the calendar does. Locking it also stops
+  // the browser's address bar from sliding in and out, which would change the height the grid was sized to.
+  useEffect(() => {
+    if (!phone) return undefined;
+    const html = document.documentElement;
+    const prev = [html.style.overflowY, html.style.overscrollBehavior];
+    html.style.overflowY = 'hidden';
+    html.style.overscrollBehavior = 'none';
+    return () => { [html.style.overflowY, html.style.overscrollBehavior] = prev; };
+  }, [phone]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;
@@ -534,7 +545,7 @@ export default function CalendarPage() {
   return (
     // The title row sits 16px under the navbar (the page's top padding), as far as the controls row sits under it.
     // md:-mb-2 halves the page padding under the grid (16 to 8px); the grid's reserve in RoomGrid is 8px smaller to match.
-    <div className="space-y-4 md:-mb-2 short:mb-0">
+    <div className="space-y-4 md:-mb-2 short:mb-0 short:space-y-2">
       <div className="@container">
         <CalendarToolbar
           view={view}
@@ -556,7 +567,7 @@ export default function CalendarPage() {
           }}
           wide={rail}
           phone={phone}
-          summary={todaySummary}
+          summary={phone ? null : todaySummary}
           canTool={showGrid}
           quickHold={quickHold}
           drawing={drawing}
@@ -584,7 +595,7 @@ export default function CalendarPage() {
         </p>
       )}
 
-      <div className={`relative lg:grid lg:items-start lg:gap-4 short:grid short:grid-cols-[4.5rem_minmax(0,1fr)] short:items-start short:gap-2 ${grid}`}>
+      <div className={`relative lg:grid lg:items-start lg:gap-4 ${grid}`}>
         {rail && roomList.length > 0 && (
           <ToolRail
             canTool={showGrid}
