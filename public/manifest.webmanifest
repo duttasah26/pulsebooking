@@ -4,7 +4,7 @@
   "description": "Room bookings for The Pulse Newtown",
   "start_url": "/",
   "scope": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "any",
   "background_color": "#f3f2ee",
   "theme_color": "#ffffff",
