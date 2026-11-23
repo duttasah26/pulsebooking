@@ -302,7 +302,7 @@ export default function Settings() {
             {tab === 'bookings' && (
             <Group id="bookings" icon={Clock} title="Bookings" scope="Everyone" hint="How new bookings start, and what the app does by itself.">
               <Setting label="Usual times" hint="Filled in on every new booking. Each booking can still change them.">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <TimeSelect id="s-in-time" icon={SignIn} label="Check-in time" value={settings.checkInTime} onChange={(v) => apply({ checkInTime: v })} />
                   <TimeSelect id="s-out-time" icon={SignOut} label="Check-out time" value={settings.checkOutTime} onChange={(v) => apply({ checkOutTime: v })} />
                 </div>
@@ -319,12 +319,12 @@ export default function Settings() {
 
             {tab === 'rooms' && (
             <Group id="rooms" icon={Bed} title="Rooms" scope="Everyone" hint="Switch a room off to hide it from the calendar. Its bookings are kept.">
-              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <ul className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(7.5rem, 1fr))' }}>
                 {roomList.map((r) => {
                   const tone = roomShade(r, settings);
                   return (
                     <li key={r.id}>
-                      <label className="btn cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
+                      <label className="btn w-full cursor-pointer justify-start gap-2 px-3 focus-within:outline-2 focus-within:outline-accent" style={{ borderColor: r.active ? tone.edge : undefined }}>
                         <Switch size="sm" icons={false} name={`room-${r.number}`} checked={r.active} onChange={(on) => setActive(r, on)} />
                         <span aria-hidden="true" className="size-3 shrink-0 rounded-sm border border-[rgb(var(--edge-rgb)/0.2)]" style={{ backgroundColor: tone.fill }} />
                         <span className={`font-mono ${r.active ? '' : 'text-muted line-through'}`}>{r.number}</span>
