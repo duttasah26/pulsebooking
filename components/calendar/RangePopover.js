@@ -28,12 +28,15 @@ export default function RangePopover({ date, span, onShow, onClose }) {
   const days = diffDays(from, to);
   const tooLong = days > MAX_SPAN;
 
+  // Under its button on wider screens. An upright phone has no room beside the button (it sits a third of the way across), so
+  // there the panel is centred under the header and kept between the header and the tab bar.
+
   return (
     <div
       ref={box}
       role="dialog"
       aria-label="Choose dates to show"
-      className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] max-h-[calc(100dvh-8rem)] space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-3 shadow-lg"
+      className="popover-in absolute left-0 top-full z-40 mt-1.5 w-[min(21rem,calc(100vw-2rem))] max-h-[calc(100dvh-8rem)] space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-3 shadow-lg upright:fixed upright:inset-x-0 upright:top-[calc(4rem+var(--app-top))] upright:mx-auto upright:mt-0 upright:max-h-[calc(100dvh-9.5rem-var(--app-top)-var(--app-bottom))]"
     >
       <DateRangePicker inclusive checkIn={from} checkOut={to} onChange={(a, b) => { setFrom(a); setTo(b); }} />
       {tooLong && <p role="alert" className="text-sm text-danger">Pick at most {MAX_SPAN} days.</p>}
