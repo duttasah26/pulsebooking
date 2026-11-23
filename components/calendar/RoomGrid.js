@@ -19,6 +19,18 @@ import GhostBar from './grid/GhostBar';
 import BarHandles from './grid/BarHandles';
 import { SelectionSummary, TouchBar } from './grid/SelectionOverlay';
 
+// The height of an iPhone's home bar at the bottom of the screen (0 on phones without one, and in desktop browsers). The
+// calendar leaves this much room under it, so held sideways, above all when opened from the home screen, its last row is
+// not under the bar.
+function homeBar() {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-bottom:env(safe-area-inset-bottom)';
+  document.body.appendChild(probe);
+  const h = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+  probe.remove();
+  return h;
+}
+
 /*
   The room calendar. One grid, two layouts:
     orientation="rows": rooms down the side, days across (timeline)
@@ -72,7 +84,7 @@ export default function RoomGrid({
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
       const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
       const tabbar = document.querySelector('[data-tabbar]')?.offsetHeight ?? 0; // the phone tab bar, with the home bar on phones that have one (0 when hidden)
-      const base = short ? 20 : window.innerWidth < 768 ? tabbar + 28 : 22; // short 20: the 12px page padding and the 8px gap under the grid. Phones: the tab bar, its 16px clearance, the 8px gap and 4px to spare. 22: the page padding under the grid (8 on the calendar) and a little for the day bar being taller than counted, so the page itself does not scroll (measured: it overflowed by 5px at 16 and had 12px of slack at 28)
+      const base = short ? 20 + homeBar() : window.innerWidth < 768 ? tabbar + 28 : 22; // short 20: the 12px page padding and the 8px gap under the grid. Phones: the tab bar, its 16px clearance, the 8px gap and 4px to spare. 22: the page padding under the grid (8 on the calendar) and a little for the day bar being taller than counted, so the page itself does not scroll (measured: it overflowed by 5px at 16 and had 12px of slack at 28)
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
       setSmall(short || window.innerWidth < 768);

@@ -6,7 +6,20 @@ import { MEASURES } from '../../lib/devicePrefs';
 // The choice is kept on this device. `className` places the button; the menu opens under it.
 export default function MeasureMenu({ label, value, onPick, className = '' }) {
   const [open, setOpen] = useState(false);
+  // The menu lines up with the dots' right edge, moved sideways just enough to stay 16px inside the screen (a figure in the left
+  // column of a phone has no room for it on either side of the dots).
+  const [shift, setShift] = useState(0);
   const box = useRef(null);
+  const toggle = () => {
+    if (!open && box.current) {
+      const vw = document.documentElement.clientWidth;
+      const w = Math.min(208, vw - 32);
+      const right = box.current.getBoundingClientRect().right;
+      const left = Math.min(Math.max(16, right - w), vw - 16 - w);
+      setShift(left - (right - w));
+    }
+    setOpen((o) => !o);
+  };
   const id = useId();
 
   useEffect(() => {
@@ -34,12 +47,12 @@ export default function MeasureMenu({ label, value, onPick, className = '' }) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? id : undefined}
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
       >
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" />
       </button>
       {open && (
-        <div id={id} role="menu" aria-label={`${label}: show`} style={{ transformOrigin: "top right" }} className="popover-in absolute right-0 top-full mt-1 w-52 rounded-lg border border-line bg-surface p-1 shadow-lg">
+        <div id={id} role="menu" aria-label={`${label}: show`} style={{ right: -shift, transformOrigin: shift > 0 ? 'top left' : 'top right' }} className="popover-in absolute top-full mt-1 w-52 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-1 shadow-lg">
           <p className="px-3 pb-1 pt-1.5 text-[0.8125rem] font-semibold text-muted">Show</p>
           {MEASURES.map(([key, text]) => (
             <button

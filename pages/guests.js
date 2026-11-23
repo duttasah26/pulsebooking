@@ -49,6 +49,8 @@ export default function Guests() {
   const { settings } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
   const small = useMediaQuery('(max-width: 767px)'); // a phone: the long search hint would be cut off
+  const short = useMediaQuery('(orientation: landscape) and (max-height: 500px)'); // a phone held sideways
+  const phone = small || short; // only the search row stays pinned: the whole block would hide half of a phone screen
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
   const { tab, sort, dir: dirParam, sort2, dir2, room, floor, from, to, org, contact, smin, smax, cols } = values;
   const { q, setQ, search, ready } = useUrlSearch();
@@ -178,7 +180,7 @@ export default function Guests() {
 
   // Until the list and the saved views are both in, the whole page is its outline, so nothing shifts as they arrive.
   if (tab === 'guests' && !list.error && (!ready || !list.data || viewsLoading)) {
-    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs avatar rows={8} chips={[119, 91, 153, 116, 155]} dockHeight={447} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
+    return <Layout title="Guests"><ListPageSkeleton title="Guests" label="Loading guests" tabs avatar phoneAction={138} rows={8} chips={[119, 91, 153, 116, 155]} dockHeight={447} dock={wide} gridClass={wide ? (dockOpen ? DOCK_GRID.narrow.open : DOCK_GRID.narrow.folded) : ''} /></Layout>;
   }
 
   return (
@@ -211,13 +213,15 @@ export default function Guests() {
           {tab === 'companies' && <div className="min-h-0 lg:flex-1 lg:overflow-y-auto"><CompanyList onSearchGuests={(name) => { setParams({ tab: 'guests', org: name }); }} /></div>}
           {tab === 'guests' && <>
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
-          {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
-          <div className="shrink-0 bg-canvas pb-3 pt-1 md:sticky md:top-14 md:z-20 lg:static">
+          {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width.
+              On a phone only the search and its filters stay; the saved views scroll away under them. */}
+          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 short:top-12 lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
               <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guests" placeholder={small ? 'Search guests…' : 'Search by name, initials (ZB), month, phone, email…'} />} />
-              <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
+              {!phone && <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />}
             </div>
           </div>
+          {phone && <div className="-mt-5"><ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} /></div>}
           <div className="min-h-0 space-y-5 lg:flex-1 lg:overflow-y-auto">
           <DuplicatesPanel groups={groups} onMerge={(a, b) => setMerge({ a, b })} />
 

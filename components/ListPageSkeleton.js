@@ -41,21 +41,27 @@ export function ListRowsSkeleton({ rows = 6, avatar = false, label }) {
   );
 }
 
-export default function ListPageSkeleton({ title, label, tabs = false, action = 160, chips = [119, 150, 148, 88, 104, 155], groups, rows = 6, avatar = false, gridClass = '', dock = false, dockHeight = 691 }) {
+//   phoneAction: the main button's width on a phone    filterHeight: the Filter & Sort card's height above the search below the desktop
+//   width (its summary wraps, so Bookings is taller than Guests)
+// Below the desktop width the page also has the Filter & Sort card; on a phone the Guests lists are a dropdown under the title, Filter is a
+// square button, and the quick filters are one View dropdown under the search.
+export default function ListPageSkeleton({ title, label, tabs = false, action = 160, phoneAction = action, chips = [119, 150, 148, 88, 104, 155], groups, rows = 6, avatar = false, gridClass = '', dock = false, dockHeight = 691, filterHeight = 49 }) {
   return (
     <div className={`lg:grid lg:items-start lg:gap-4 ${gridClass}`} aria-busy="true" aria-label={label}>
       <div className="flex min-w-0 flex-col gap-5 lg:h-[calc(100dvh-5.5rem-1px)]">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <h1 className="t-display">{title}</h1>
           <div className="flex items-center gap-3">
-            {tabs && <Block className="hidden h-10 w-[278px] rounded-lg sm:block" />}
-            <Block className="h-11 rounded-lg lg:h-10" i={1} style={{ width: action }} />
+            {tabs && <Block className="hidden h-12 w-[278px] rounded-lg md:block lg:h-10" />}
+            <Block className={`h-11 w-[var(--pw)] rounded-lg lg:h-10 ${tabs ? 'md:w-[var(--w)]' : 'sm:w-[var(--w)]'}`} i={1} style={{ '--w': `${action}px`, '--pw': `${phoneAction}px` }} />
           </div>
+          {tabs && <Block className="h-11 basis-full rounded-lg md:hidden" i={2} />}
         </div>
+        <Block className="shrink-0 rounded-lg lg:hidden" i={1} style={{ height: filterHeight }} />
         <div className="shrink-0 pb-3 pt-1">
-          <div className="mx-auto w-full max-w-4xl space-y-3">
-            <div className="flex gap-2"><Block className="h-11 min-w-0 flex-1 rounded-lg" /><Block className="h-11 w-40 rounded-lg" i={1} /></div>
-            <div className="flex items-center gap-2">
+          <div className="mx-auto w-full max-w-4xl">
+            <div className="flex gap-2"><Block className="h-12 min-w-0 flex-1 rounded-lg lg:h-11" /><Block className="h-12 w-12 rounded-lg sm:w-40 lg:h-11" i={1} /></div>
+            <div className="mt-3 hidden items-center gap-2 md:flex short:hidden">
               <div className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2 py-0.5">
                 {chips.map((w, i) => <Block key={i} className="h-11 rounded-lg lg:h-10" i={i} style={{ width: w }} />)}
               </div>
@@ -63,6 +69,7 @@ export default function ListPageSkeleton({ title, label, tabs = false, action = 
             </div>
           </div>
         </div>
+        <Block className="-mt-5 h-11 shrink-0 rounded-lg md:hidden short:block" i={2} />
         <div className="min-h-0 overflow-hidden lg:flex-1 lg:overflow-y-auto">
           <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
             {groups
