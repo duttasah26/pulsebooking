@@ -101,7 +101,7 @@ export default function CalendarToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            className={`btn gap-2 px-3 short:px-2 ${rangeOpen ? 'btn-on' : ''}`}
+            className={`btn min-w-11 gap-2 px-3 short:px-2 ${rangeOpen ? 'btn-on' : ''}`}
             title="Go to a date, or choose a range of days"
             aria-expanded={rangeOpen}
             onPointerDown={(e) => e.stopPropagation()} // so the panel's click-outside close does not fight this button

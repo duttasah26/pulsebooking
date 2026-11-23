@@ -57,7 +57,7 @@ export default function Layout({ title, wide = false, children }) {
           </button>
 
           {/* On an upright phone with the header search, the brand mark sits inside the search instead (like a native app's search bar). */}
-          <Link href="/" className={`flex shrink-0 items-center rounded-md ${pathname === '/' || pathname === '/overview' ? 'upright:hidden' : ''}`} aria-label="The Pulse Newtown, Rooms: go to the calendar">
+          <Link href="/" className={`flex min-h-11 shrink-0 items-center rounded-md ${pathname === '/' || pathname === '/overview' ? 'upright:hidden' : ''}`} aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
           </Link>
 

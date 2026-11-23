@@ -146,7 +146,7 @@ export default function Settings() {
           <p role="status" aria-live="polite" className="min-h-6 text-base font-semibold text-accent-text">{saved}</p>
         </div>
 
-        <div className="mt-2 grid grid-cols-[4rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:gap-3 lg:mt-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+        <div className="mt-2 grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)] sm:gap-3 lg:mt-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
           <div
             role="tablist"
             aria-label="Settings"
@@ -165,7 +165,7 @@ export default function Settings() {
                   tabIndex={on ? 0 : -1}
                   aria-controls="settings-panel"
                   onClick={() => { setTab(id); setSaved(''); }}
-                  className={`btn min-w-0 flex-col gap-0.5 px-1 py-1.5 text-[0.8125rem] leading-4 lg:shrink-0 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-0 lg:text-[0.9375rem] ${on ? 'btn-on' : 'btn-quiet'}`}
+                  className={`btn min-w-0 flex-col gap-0.5 px-1 py-1.5 text-sm leading-4 lg:shrink-0 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-0 lg:text-[0.9375rem] ${on ? 'btn-on' : 'btn-quiet'}`}
                 >
                   <Icon size={18} weight={on ? 'fill' : 'bold'} aria-hidden="true" className="shrink-0" />
                   {short ? <><span className="lg:hidden">{short}</span><span className="hidden lg:inline">{label}</span></> : label}

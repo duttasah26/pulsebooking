@@ -547,6 +547,10 @@ body {
     @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-[0.9375rem] font-medium text-ink/80 lg:min-h-9;
     transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
   }
+  /* A segment is 40px inside its 44px track; the invisible layer reaches over the track's edge and half the gap on each side,
+     so the place a finger can press is 44px everywhere without the track growing. */
+  .seg-item { position: relative; }
+  .seg-item::after { content: ""; position: absolute; inset: -2px -1px; }
   .seg-item:hover { @apply text-ink; background-color: color-mix(in srgb, var(--raised) 50%, transparent); }
   .seg-item[aria-selected="true"], .seg-item[aria-current="page"], .seg-item[aria-current="step"], .seg-item[aria-pressed="true"] {
     @apply font-semibold text-ink;

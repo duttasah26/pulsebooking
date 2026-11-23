@@ -85,7 +85,7 @@ function Figure({ title, value, name, pop, notes, active, onPick, measure, onMea
           ))}
         </span>
       </ShineCard>
-      {!loading && <MeasureMenu label={title} value={measure} onPick={onMeasure} className="absolute right-2 top-2 lg:right-1.5 lg:top-1.5" />}
+      {!loading && <MeasureMenu label={title} value={measure} onPick={onMeasure} className="absolute right-0.5 top-0.5 lg:right-1.5 lg:top-1.5" />}
     </div>
   );
 }
@@ -94,7 +94,7 @@ function Tile({ label, value, tone = 'bg-surface-2', text = 'text-ink', big = fa
   return (
     <div className={`flex flex-col items-center justify-center rounded-xl px-2 text-center ${big ? 'min-h-28' : 'min-h-24'} lg:min-h-0 ${loading ? 'bg-surface-2' : tone}`}>
       <p className={`font-mono font-medium leading-none ${big ? 'text-4xl' : 'text-3xl'} ${text}`}>{loading ? <Sk className={big ? 'h-9 w-[3ch]' : 'h-7 w-[2ch]'} /> : value}</p>
-      <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-[0.8125rem] text-muted'}`}>{loading ? <Sk className={`h-3.5 ${big ? 'w-16' : 'w-20'}`} /> : label}</p>
+      <p className={`mt-2 leading-tight ${big ? `text-[0.9375rem] font-semibold ${text}` : 'text-sm text-muted'}`}>{loading ? <Sk className={`h-3.5 ${big ? 'w-16' : 'w-20'}`} /> : label}</p>
     </div>
   );
 }
@@ -219,7 +219,7 @@ function Pills({ label, items, value, onPick, className = '' }) {
           aria-selected={value === key}
           tabIndex={value === key ? 0 : -1}
           onClick={() => onPick(key)}
-          className={`min-h-9 shrink-0 rounded-full px-4 text-[0.9375rem] ${value === key ? 'bg-surface-2 font-semibold text-ink' : 'font-medium text-muted hover:bg-surface-2 hover:text-ink'}`}
+          className={`min-h-11 shrink-0 rounded-full px-4 text-[0.9375rem] lg:min-h-9 ${value === key ? 'bg-surface-2 font-semibold text-ink' : 'font-medium text-muted hover:bg-surface-2 hover:text-ink'}`}
         >
           {text}
         </button>
@@ -372,7 +372,7 @@ export default function OverviewPage() {
                     <MeasureMenu label="Week overview" value={measures.week} onPick={(m) => setMeasure({ ...measures, week: m })} className="relative" />
                   </div>
                 ) : (
-                  <div aria-hidden="true" className="flex items-center gap-2"><span className="skeleton h-9 w-[4.75rem] rounded-full" /><span className="skeleton h-9 w-[4.75rem] rounded-full" /><span className="skeleton size-9 rounded-full" /></div>
+                  <div aria-hidden="true" className="flex items-center gap-2"><span className="skeleton h-11 w-[4.75rem] rounded-full lg:h-9" /><span className="skeleton h-11 w-[4.75rem] rounded-full lg:h-9" /><span className="skeleton size-11 rounded-full lg:size-9" /></div>
                 )}
               </div>
               <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:min-h-0 lg:flex-1">

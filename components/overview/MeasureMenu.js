@@ -45,7 +45,7 @@ export default function MeasureMenu({ label, value, onPick, className = '' }) {
     <div ref={box} className={`${className} ${open ? 'z-40' : ''}`}>
       <button
         type="button"
-        className="btn btn-icon btn-quiet size-9! min-h-0! min-w-0! p-0!"
+        className="btn btn-icon btn-quiet size-11! min-h-0! min-w-0! p-0! lg:size-9!"
         aria-label={`${label}: what to show`}
         aria-haspopup="menu"
         aria-expanded={open}

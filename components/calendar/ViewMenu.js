@@ -31,7 +31,7 @@ export default function ViewMenu({ compact = false, floorKeys, shownFloors, onTo
 
   return (
     <div ref={box} className="relative shrink-0">
-      <button type="button" className={`btn gap-2 px-3 ${open ? 'btn-on' : 'bg-chrome hover:bg-surface-3'}`} aria-expanded={open} aria-haspopup="dialog" onClick={() => {
+      <button type="button" className={`btn min-w-11 gap-2 px-3 ${open ? 'btn-on' : 'bg-chrome hover:bg-surface-3'}`} aria-expanded={open} aria-haspopup="dialog" onClick={() => {
         const r = box.current?.getBoundingClientRect();
         // the page's own width (without a scrollbar), so the menu's right edge stays 8px inside the screen
         if (r) setAt({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, document.documentElement.clientWidth - Math.min(288, document.documentElement.clientWidth - 16) - 8)) });

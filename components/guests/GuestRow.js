@@ -58,7 +58,7 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
         )}
       </button>
       {duplicate && onMerge && (
-        <button type="button" className="btn btn-sm m-3 shrink-0 self-center" onClick={() => onMerge(g)} aria-label={`Merge ${g.name} with the guest that looks the same`}>
+        <button type="button" className="btn btn-sm m-3 shrink-0 self-center max-lg:min-h-11 max-lg:min-w-11" onClick={() => onMerge(g)} aria-label={`Merge ${g.name} with the guest that looks the same`}>
           <GitMerge size={16} aria-hidden="true" /> <span className="hidden sm:inline">Merge</span>
         </button>
       )}
