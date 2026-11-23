@@ -4,6 +4,8 @@ import ShineCard from '../ShineCard';
 import { Bell, CaretDown, X } from '@phosphor-icons/react';
 import { addDays, daysInMonth, diffDays, fmtShort, monthStart, range, today } from '../../lib/dates';
 import { useApi } from '../../lib/useApi';
+import { useMediaQuery } from '../../lib/useMediaQuery';
+import Sheet from '../Sheet';
 import { useOverviewMeasures, useOverviewParts } from '../../lib/devicePrefs';
 import { tabKeys } from '../../lib/tabKeys';
 import BookingRow from '../bookings/BookingRow';
@@ -291,6 +293,11 @@ export default function OverviewPage() {
   const pills = FILTERS[kind];
   const shown = pills && filter !== 'all' ? list.rows.filter((r) => isDone(kind, r.first.status) === (filter === 'done')) : list.rows;
   const pick = (k) => { setKind(k); setFilter('all'); };
+  // Below the desktop width there is no panel beside the figures: a figure opens its list in a sheet, so nobody has to
+  // scroll to the foot of the page to find it.
+  const narrow = useMediaQuery('(max-width: 1023px)');
+  const [listOpen, setListOpen] = useState(false);
+  const choose = (k) => { pick(k); if (narrow) setListOpen(true); };
 
   const open = (b, members) => setSheet({ mode: 'edit', booking: b, group: members?.length > 1 ? members : undefined });
   // The same booking on the calendar: the address names the view, the days and the booking, and the calendar opens it.
@@ -312,10 +319,16 @@ export default function OverviewPage() {
         <div className="flex min-w-0 items-center gap-4">
           <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-lg sm:size-14 sm:text-xl font-semibold text-accent-text ${ready ? 'bg-accent-soft' : 'skeleton'}`}>{ready ? first[0] ?? '·' : ''}</span>
           <div className="min-w-0">
-            <h1 className="text-[1.5rem] font-bold leading-tight sm:truncate sm:text-[1.875rem]">{ready ? (first ? `Hello again, ${first}` : 'Hello again') : <Sk className="h-8 w-72 max-w-full" />}</h1>
+            <h1 className="text-[1.5rem] font-bold leading-tight sm:truncate sm:text-[1.875rem]">{ready ? (first ? `Hello again, ${first}` : 'Hello again') : (
+              // On a phone the greeting with a name runs to two lines, so its outline does too.
+              <>
+                <span className="hidden sm:inline"><Sk className="h-8 w-72 max-w-full" /></span>
+                <span className="sm:hidden"><Sk className="h-6 w-52 max-w-full" /><br /><Sk className="h-6 w-32" /></span>
+              </>
+            )}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
               {ready ? <Bell size={16} weight="fill" aria-hidden="true" /> : <Sk className="size-4 rounded-full" />}
-              {ready ? <span className="min-w-0 sm:truncate">{label}: {summary}</span> : <span aria-hidden="true"><span className="skeleton inline-block h-4 w-56 rounded-md align-middle" /></span>}
+              {ready ? <span className="min-w-0 sm:truncate">{label}: {summary}</span> : <span aria-hidden="true"><span className="skeleton inline-block h-4 w-56 max-w-full rounded-md align-middle" /><span className="hidden max-[359px]:inline"><br /><span className="skeleton inline-block h-4 w-24 rounded-md align-middle" /></span></span>}
             </p>
           </div>
         </div>
@@ -329,19 +342,19 @@ export default function OverviewPage() {
 
         <div className="flex min-h-0 flex-col gap-4 lg:flex-1">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            <Figure loading={!ready} title="Arrivals" name={MEASURE_NAME[measures.arrivals]} value={dash(count(arrivals, measures.arrivals))} pop="green" active={kind === 'arrivals'} onPick={() => pick('arrivals')}
+            <Figure loading={!ready} title="Arrivals" name={MEASURE_NAME[measures.arrivals]} value={dash(count(arrivals, measures.arrivals))} pop="green" active={kind === 'arrivals'} onPick={() => choose('arrivals')}
               measure={measures.arrivals} onMeasure={(m) => setMeasure({ ...measures, arrivals: m })}
               notes={[['Checked in', dash(count(arrivals.filter((r) => isDone('arrivals', r.first.status)), measures.arrivals))]]} />
-            <Figure loading={!ready} title="Departures" name={MEASURE_NAME[measures.departures]} value={dash(count(departures, measures.departures))} pop="red" active={kind === 'departures'} onPick={() => pick('departures')}
+            <Figure loading={!ready} title="Departures" name={MEASURE_NAME[measures.departures]} value={dash(count(departures, measures.departures))} pop="red" active={kind === 'departures'} onPick={() => choose('departures')}
               measure={measures.departures} onMeasure={(m) => setMeasure({ ...measures, departures: m })}
               notes={[['Checked out', dash(count(departures.filter((r) => isDone('departures', r.first.status)), measures.departures))]]} />
-            <Figure loading={!ready} title="In the house" name={measures.house === 'rooms' ? 'Rooms in use' : MEASURE_NAME[measures.house]} value={dash(count(inHouse, measures.house))} pop="blue" active={kind === 'house'} onPick={() => pick('house')}
+            <Figure loading={!ready} title="In the house" name={measures.house === 'rooms' ? 'Rooms in use' : MEASURE_NAME[measures.house]} value={dash(count(inHouse, measures.house))} pop="blue" active={kind === 'house'} onPick={() => choose('house')}
               measure={measures.house} onMeasure={(m) => setMeasure({ ...measures, house: m })}
               notes={[['Adults', dash(adults)], ['Children', dash(children)]]} />
-            <Figure loading={!ready} title="Upcoming" name={MEASURE_NAME[measures.upcoming]} value={dash(count(upcoming, measures.upcoming))} pop="violet" active={kind === 'upcoming'} onPick={() => pick('upcoming')}
+            <Figure loading={!ready} title="Upcoming" name={MEASURE_NAME[measures.upcoming]} value={dash(count(upcoming, measures.upcoming))} pop="violet" active={kind === 'upcoming'} onPick={() => choose('upcoming')}
               measure={measures.upcoming} onMeasure={(m) => setMeasure({ ...measures, upcoming: m })}
               notes={[['Next 7 days', dash(count(upcoming.filter((r) => r.first.check_in < addDays(d, 8)), measures.upcoming))]]} />
-            <Figure loading={!ready} title="On hold" name={measures.holds === 'bookings' ? 'Holds' : MEASURE_NAME[measures.holds]} value={dash(count(holdRows, measures.holds))} pop="amber" active={kind === 'holds'} onPick={() => pick('holds')}
+            <Figure loading={!ready} title="On hold" name={measures.holds === 'bookings' ? 'Holds' : MEASURE_NAME[measures.holds]} value={dash(count(holdRows, measures.holds))} pop="amber" active={kind === 'holds'} onPick={() => choose('holds')}
               measure={measures.holds} onMeasure={(m) => setMeasure({ ...measures, holds: m })}
               notes={[measures.holds === 'rooms' ? ['Holds', dash(holdRows.length)] : ['Rooms', dash(count(holdRows, 'rooms'))]]} />
           </div>
@@ -389,8 +402,23 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      {listOpen && narrow && (
+        <Sheet title={list.title} onClose={() => setListOpen(false)} locked={!!sheet}>
+          {pills && <Pills label={`${list.title} filter`} items={pills} value={filter} onPick={setFilter} className="pb-3" />}
+          {shown.length ? (
+            <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
+              {shown.map((r, i) => (
+                <BookingRow key={r.key} index={i} b={{ ...r.first, rooms: r.rooms, members: r.list.length > 1 ? r.list : undefined }} hidden={['contact', 'organization', 'status']} minimal onOpen={open} />
+              ))}
+            </ul>
+          ) : (
+            <p className="t-footnote rounded-lg border border-line bg-surface p-4">{list.empty}</p>
+          )}
+        </Sheet>
+      )}
+
       {panel && (
-        <aside aria-label={list.title} className="-mx-4 border-t border-line bg-surface md:-mx-6 lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-t-0 lg:[scrollbar-gutter:stable]">
+        <aside aria-label={list.title} className="hidden -mx-4 border-t border-line bg-surface md:-mx-6 lg:block lg:ml-0 lg:-mr-6 lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:self-start lg:overflow-y-auto lg:border-l lg:border-t-0 lg:[scrollbar-gutter:stable]">
           <div className="flex min-h-14 items-center justify-between gap-2 px-4">
             <h2 className="text-base font-semibold">{ready ? list.title : <Sk className="h-4 w-24" />}</h2>
             {kind !== 'arrivals' && (
