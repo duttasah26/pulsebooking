@@ -91,7 +91,7 @@ export default function Layout({ title, wide = false, children }) {
                 aria-label={label}
                 title={label}
                 aria-current={here === href ? 'page' : undefined}
-                className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-ink' : 'text-muted'}`}
+                className={`btn btn-quiet btn-icon hidden md:inline-flex ${href.includes('account') ? 'short:hidden!' : 'short:inline-flex'} ${here === href ? 'text-ink' : 'text-muted'}`}
               >
                 <Icon size={20} weight={here === href ? 'fill' : 'bold'} />
               </Link>
