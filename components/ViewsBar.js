@@ -131,7 +131,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
           ))}
         </div>
         )}
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1 empty:hidden">
           {changed && !active && !naming && (
             <button type="button" className={`${small} btn-quiet text-accent-text`} onClick={() => setNaming(true)} aria-label="Save this view" title="Save these filters as a view">
               <Plus className="ico-turn" size={16} aria-hidden="true" /> <span className="hidden sm:inline">Save View</span>
