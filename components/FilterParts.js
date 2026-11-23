@@ -41,8 +41,8 @@ export function Segmented({ legend, icon, options, value, onChange, legendHidden
   return (
     <fieldset>
       <FieldLabel icon={icon} as="legend" hidden={legendHidden}>{legend}</FieldLabel>
-      {/* As many per row as fit (at least 7rem each), the rest on the next row, and a long label wraps inside its button: nothing runs into its neighbour. */}
-      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(7rem, 1fr))' }}>
+      {/* As many per row as fit (at least 5rem each, so three fit on the smallest phone), the rest on the next row, and a long label wraps inside its button: nothing runs into its neighbour. */}
+      <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(5rem, 1fr))' }}>
         {options.map(([v, label, tone]) => (
           <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)} className={`${chip(value === v, tone)} h-auto justify-center !whitespace-normal px-2 py-2 text-center text-[0.9375rem] leading-tight`} style={toneStyle(value === v, tone)}>
             <Mark on={value === v} tone={tone} />
