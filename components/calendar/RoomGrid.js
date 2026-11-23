@@ -30,7 +30,8 @@ import { SelectionSummary, TouchBar } from './grid/SelectionOverlay';
 export const MIN_WIDTH_SCALE = 0.5;
 export const MAX_WIDTH_SCALE = 3;
 const MAX_HEIGHT_SCALE = 6;
-const MIN_ROW_PX = 20; // every room fits in the window: rows shrink to this before the room bar has to scroll (text shrinks with them)
+const MIN_ROW_PX = 20;
+const PHONE_MIN_ROW_PX = 16; // a phone has the least height, so its rows go a little lower before the rooms scroll // every room fits in the window: rows shrink to this before the room bar has to scroll (text shrinks with them)
 const MAX_ROW_PX = 240;
 
 export default function RoomGrid({
@@ -59,6 +60,7 @@ export default function RoomGrid({
   // scrolls inside. A phone held sideways (the `short` variant in globals.css) has no bottom nav and a one-row toolbar,
   // so it keeps less in reserve and may go lower than the usual 240px minimum.
   const [avail, setAvail] = useState(null);
+  const [small, setSmall] = useState(false); // a phone, upright or sideways
   const [boxW, setBoxW] = useState(0); // width of the scrolling box, so `visibleDays` days fill it exactly
   useEffect(() => {
     const measure = () => {
@@ -69,9 +71,11 @@ export default function RoomGrid({
       // Whatever sits under the grid (the mode banner, the bar with zoom, the picked-bookings strip) marks itself with
       // data-below-grid, so the grid leaves exactly that much room, plus the bottom nav on a phone and the page padding.
       const below = [...document.querySelectorAll('[data-below-grid]')].filter((n) => !n.closest('[data-leaving]')).reduce((total, n) => total + n.offsetHeight + 8, 0);
-      const base = short ? 8 : window.innerWidth < 768 ? 84 : 22; // 22: the page padding under the grid (8 on the calendar) and a little for the day bar being taller than counted, so the page itself does not scroll (measured: it overflowed by 5px at 16 and had 12px of slack at 28)
+      const tabbar = document.querySelector('[data-tabbar]')?.offsetHeight ?? 0; // the phone tab bar, with the home bar on phones that have one (0 when hidden)
+      const base = short ? 20 : window.innerWidth < 768 ? tabbar + 28 : 22; // short 20: the 12px page padding and the 8px gap under the grid. Phones: the tab bar, its 16px clearance, the 8px gap and 4px to spare. 22: the page padding under the grid (8 on the calendar) and a little for the day bar being taller than counted, so the page itself does not scroll (measured: it overflowed by 5px at 16 and had 12px of slack at 28)
       const reserve = base + navigator + below; // the line under the grid, page padding, the status bar (phones: and the bottom nav)
       setBoxW(el.clientWidth);
+      setSmall(short || window.innerWidth < 768);
       setAvail(Math.max(short ? 130 : window.innerWidth < 768 ? 180 : 240, Math.floor(window.innerHeight - (el.getBoundingClientRect().top + window.scrollY) - reserve)));
     };
     measure();
@@ -148,7 +152,7 @@ export default function RoomGrid({
   const topRowRef = useRef(0);
   const [rowSize] = useRowSize();
   const roomy = rowSize === 'roomy'; // Settings: rows at least 40px tall, with larger names, even if the rooms then scroll
-  const minRow = roomy ? 40 : MIN_ROW_PX;
+  const minRow = roomy ? 40 : small ? PHONE_MIN_ROW_PX : MIN_ROW_PX;
   const fitRow = rows && avail ? Math.min(160, Math.max(minRow, Math.floor((avail / Math.min(1, zoom) - HEAD) / rooms.length))) : baseH;
   const cellH = rows && avail ? Math.min(MAX_ROW_PX, Math.max(minRow, Math.round(fitRow * heightScale))) : baseH;
   const rowPx = cellH * zoom;
@@ -435,7 +439,7 @@ export default function RoomGrid({
 
   return (
     <div className="relative">
-      {rows && (
+      {rows && !touchUi && ( // a finger scrolls the grid itself; the bar would only take height from the rooms
         <div
           ref={topBar}
           aria-hidden="true"
