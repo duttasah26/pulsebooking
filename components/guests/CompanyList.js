@@ -51,7 +51,7 @@ export default function CompanyList({ onSearchGuests }) {
                     <Buildings size={20} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[1.0625rem] font-semibold">{c.name}</span>
+                    <span className="block text-[1.0625rem] font-semibold [overflow-wrap:anywhere] sm:truncate">{c.name}</span>
                     <span className="mt-1 flex items-center gap-1 text-[0.9375rem] text-muted">
                       <Users size={14} aria-hidden="true" /> {c.guests} {c.guests === 1 ? 'guest' : 'guests'}, {c.stays} {c.stays === 1 ? 'booking' : 'bookings'}
                     </span>

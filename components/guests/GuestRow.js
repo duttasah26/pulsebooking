@@ -38,8 +38,8 @@ export default function GuestRow({ g, onOpen, hidden = [], density = 'roomy', du
           {anyLine && (
             <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-4 text-[0.9375rem] text-muted">
               {show('phone') && g.phone && <span className="flex items-center gap-1 whitespace-nowrap"><Phone size={14} aria-hidden="true" />{g.phone}</span>}
-              {show('email') && g.email && <span className="flex min-w-0 items-center gap-1"><Envelope size={14} aria-hidden="true" className="shrink-0" /><span className="truncate">{g.email}</span></span>}
-              {show('organization') && g.organization && <span className="flex min-w-0 items-center gap-1"><Buildings size={14} aria-hidden="true" className="shrink-0" /><span className="truncate">{g.organization}</span></span>}
+              {show('email') && g.email && <span className="flex min-w-0 items-center gap-1"><Envelope size={14} aria-hidden="true" className="shrink-0" /><span className="min-w-0 [overflow-wrap:anywhere] sm:truncate">{g.email}</span></span>}
+              {show('organization') && g.organization && <span className="flex min-w-0 items-center gap-1"><Buildings size={14} aria-hidden="true" className="shrink-0" /><span className="min-w-0 [overflow-wrap:anywhere] sm:truncate">{g.organization}</span></span>}
               {noContact && <span>No phone or email</span>}
             </span>
           )}

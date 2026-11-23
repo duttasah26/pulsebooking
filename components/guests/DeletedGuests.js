@@ -35,7 +35,7 @@ export default function DeletedGuests({ onRestored }) {
       {guests.map((g) => (
         <li key={g.id} className="flex items-center gap-4 px-4 py-3 md:px-5">
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[1.0625rem] font-semibold">{g.name}</span>
+            <span className="block text-[1.0625rem] font-semibold [overflow-wrap:anywhere] sm:truncate">{g.name}</span>
             <span className="block text-[0.9375rem] text-muted">
               Deleted {fmtDateTime(g.deleted_at)}{g.deleted_by ? ` by ${g.deleted_by}` : ''}
             </span>
