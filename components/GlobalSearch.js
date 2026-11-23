@@ -9,6 +9,7 @@ import { colorFor } from '../lib/colors';
 import StatusBadge from './StatusBadge';
 import RoomNumber from './RoomNumber';
 import { useSettings } from './SettingsProvider';
+import { useMediaQuery } from '../lib/useMediaQuery';
 
 // One search box in the header, on the calendar page: type a guest, a company or a phone number and jump to their booking on the
 // calendar or to their guest record. "/" or Ctrl+K puts the cursor here. The results are the first few bookings and guests; the
@@ -20,6 +21,7 @@ export default function GlobalSearch() {
   const router = useRouter();
   const { settings } = useSettings();
   const [q, setQ] = useState('');
+  const wide = useMediaQuery('(min-width: 768px)'); // a phone gets a short hint: the header has little room beside the logo
   const [open, setOpen] = useState(false);
   const [mark, setMark] = useState(-1); // the result the arrow keys are on
   const box = useRef(null);
@@ -98,7 +100,7 @@ export default function GlobalSearch() {
   };
   const row = (on) => `row-in flex min-h-14 w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-2 ${on ? 'bg-surface-2' : ''}`;
   // The results are a panel of their own, as wide as a booking line needs, over a dimmed calendar; the box in the header stays put.
-  const panel = 'animate-pop fixed inset-x-4 top-14 z-40 mx-auto flex max-h-[min(34rem,calc(100dvh-4.5rem))] max-w-[44rem] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg';
+  const panel = 'animate-pop fixed inset-x-4 top-[calc(3.5rem+var(--app-top))] z-40 mx-auto flex max-h-[min(34rem,calc(100dvh-4.5rem-var(--app-top)))] max-w-[44rem] flex-col overflow-hidden rounded-lg border border-line bg-surface shadow-lg';
   const heading = (text, first) => <p aria-hidden="true" className={`t-group px-2 pb-1 ${first ? 'pt-1' : 'pt-3'}`}>{text}</p>;
   // A booking as everywhere else: its colour and name with the status, then the rooms, dates, nights and guests with their icons.
   const stayRow = (b, i) => {
@@ -145,7 +147,7 @@ export default function GlobalSearch() {
 
   return (
     <div ref={box} className="relative mx-auto w-full max-w-md">
-      <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+      <MagnifyingGlass size={18} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 md:left-3 -translate-y-1/2 text-muted" />
       <input
         ref={input}
         type="search"
@@ -157,10 +159,10 @@ export default function GlobalSearch() {
         aria-autocomplete="list"
         aria-activedescendant={showing && mark >= 0 ? `gs-opt-${mark}` : undefined}
         aria-label="Search guests and bookings"
-        placeholder="Search guests and bookings"
+        placeholder={wide ? 'Search guests and bookings' : 'Search…'}
         autoComplete="off"
         spellCheck={false}
-        className="field pl-9 pr-10 text-[0.9375rem] [&::-webkit-search-cancel-button]:hidden"
+        className={`field pl-8 md:pl-9 text-base md:text-[0.9375rem] [&::-webkit-search-cancel-button]:hidden ${q ? 'pr-10' : 'pr-3 md:pr-10'}`}
         value={q}
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
@@ -171,11 +173,11 @@ export default function GlobalSearch() {
           <X size={16} aria-hidden="true" />
         </button>
       )}
-      {!q && <kbd aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-line px-1.5 font-mono text-sm leading-5 text-muted">/</kbd>}
+      {!q && <kbd aria-hidden="true" className="pointer-events-none absolute hidden md:block right-2.5 top-1/2 -translate-y-1/2 rounded border border-line px-1.5 font-mono text-sm leading-5 text-muted">/</kbd>}
       <p className="sr-only" role="status" aria-live="polite">{showing && fresh && !searching ? (total ? `${total} ${total === 1 ? 'result' : 'results'}` : 'No results') : ''}</p>
       {open && typeof document !== 'undefined' && createPortal(
         <>
-      {open && (showing || q.trim().length === 1) && <div aria-hidden="true" className="fixed inset-x-0 bottom-0 top-13 z-30 bg-[rgb(var(--shadow-rgb)/0.2)]" />}
+      {open && (showing || q.trim().length === 1) && <div aria-hidden="true" className="fixed inset-x-0 bottom-0 top-[calc(3.25rem+var(--app-top))] z-30 bg-[rgb(var(--shadow-rgb)/0.2)]" />}
       {open && q.trim().length === 1 && (
         <div data-gs-panel className={`${panel} p-4 text-base text-muted`}>Type 2 or more letters.</div>
       )}

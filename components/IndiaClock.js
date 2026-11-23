@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+// Shown at desktop width only: a phone or tablet already shows the time in its own status bar, and the header there holds the search.
 const ZONE = 'Asia/Kolkata';
 const dateFormat = new Intl.DateTimeFormat('en-IN', { timeZone: ZONE, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 const timeParts = new Intl.DateTimeFormat('en-IN', { timeZone: ZONE, hour: 'numeric', minute: '2-digit', hour12: true });
@@ -29,7 +30,7 @@ export default function IndiaClock() {
 
   return (
     <div
-      className="pointer-events-none flex items-center md:max-lg:hidden short:max-[699px]:hidden"
+      className="pointer-events-none hidden items-center lg:flex"
       title="India Standard Time"
       aria-label={now ? `India time: ${now.date}, ${now.hour}:${now.minute} ${now.period}` : 'India time'}
     >

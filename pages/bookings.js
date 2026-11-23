@@ -375,7 +375,7 @@ export default function Bookings() {
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width.
               On a phone only the search and its filters stay; the saved views scroll away under them. */}
-          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 short:top-12 lg:static">
+          <div className="sticky top-[calc(3.5rem+var(--app-top))] z-20 shrink-0 bg-canvas pb-3 pt-1 short:top-[calc(3rem+var(--app-top))] lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
               <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder={small ? 'Search bookings…' : 'Search by name, initials (ZB) or month…'} />} />
               {!phone && <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />}

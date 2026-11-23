@@ -205,6 +205,25 @@
 
 @custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
+/* Room above the header and under the phone tab bar. In a browser tab the browser's own bars give that room, so it is only the
+   notch and home bar insets. Opened from the home screen the app reaches the very edges of the screen, so the header comes
+   down 16px (more under a notch) and the tab bar rises 12px (more over a home bar), clear of the rounded corners, the status
+   icons and the swipe area. A phone held sideways keeps its few pixels of height: only the insets there. Everything that
+   sits under the header or above the tab bar is offset by these too. */
+:root {
+  --app-top: env(safe-area-inset-top, 0px);
+  --app-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  :root {
+    --app-top: max(env(safe-area-inset-top, 0px), 1rem);
+    --app-bottom: max(env(safe-area-inset-bottom, 0px), 0.75rem);
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --app-top: env(safe-area-inset-top, 0px); }
+}
+
 /* The page's side gutter (16px, 24px from tablet width), widened to clear the notch or Dynamic Island on a phone held sideways. */
 @utility px-safe {
   padding-left: max(1rem, env(safe-area-inset-left));

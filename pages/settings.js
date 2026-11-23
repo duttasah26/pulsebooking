@@ -149,7 +149,7 @@ export default function Settings() {
             role="tablist"
             aria-label="Settings"
             onKeyDown={tabKeys}
-            className="sticky top-[4.5rem] z-20 flex flex-col gap-1 short:top-14 lg:top-20"
+            className="sticky top-[calc(4.5rem+var(--app-top))] z-20 flex flex-col gap-1 short:top-[calc(3.5rem+var(--app-top))] lg:top-20"
           >
             {TABS.map(({ id, label, short, Icon }) => {
               const on = tab === id;
