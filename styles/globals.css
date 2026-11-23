@@ -205,6 +205,16 @@
 
 @custom-variant short (@media (orientation: landscape) and (max-height: 500px));
 
+/* The page's side gutter (16px, 24px from tablet width), widened to clear the notch or Dynamic Island on a phone held sideways. */
+@utility px-safe {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  @media (width >= 48rem) {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
 @theme inline {
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);

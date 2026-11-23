@@ -48,7 +48,7 @@ export default function Layout({ title, wide = false, children }) {
       </a>
 
       <header className="nav-still sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-sm">
-        <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-4 md:px-6`}>
+        <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-safe`}>
           <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
           </Link>
@@ -106,7 +106,7 @@ export default function Layout({ title, wide = false, children }) {
       </header>
 
       {/* animate-fade: the page content fades in quickly each time a page opens or reloads, instead of popping in as it is drawn and then filled. */}
-      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-4 outline-none md:px-6 md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-safe pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-4 outline-none md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
       {/* Phone tab bar: five places, a filled symbol and an emerald label for the one you are on. */}
       <nav
