@@ -48,7 +48,7 @@ export default function Layout({ title, wide = false, children }) {
       </a>
 
       <header className="nav-still sticky top-0 z-30 border-b pt-[var(--app-top)] border-line bg-surface/95 backdrop-blur-sm">
-        <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-safe`}>
+        <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-2 px-safe md:gap-4`}>
           <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
           </Link>
@@ -70,9 +70,10 @@ export default function Layout({ title, wide = false, children }) {
             ))}
           </nav>
 
-          {/* The header search is on the calendar page only: Bookings and Guests have their own, and Settings has nothing to search. */}
-          {pathname === '/' && (
-            <div className="hidden min-w-0 flex-1 justify-center md:flex short:hidden">
+          {/* The header search is on the calendar page (and, on an upright phone, the Overview too): Bookings and Guests have their
+              own, and Settings has nothing to search. A phone held sideways has no room for it beside the four places. */}
+          {(pathname === '/' || pathname === '/overview') && (
+            <div className={`min-w-0 flex-1 justify-center short:hidden ${pathname === '/' ? 'flex' : 'flex md:hidden'}`}>
               <div className="w-full max-w-2xl">
                 <GlobalSearch />
               </div>
