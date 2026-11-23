@@ -122,6 +122,12 @@ leaves a slim column at its right (the width of the folded tab). The room bar si
 open panel covers; fold the panel or use the wheel to scroll the rooms. Nothing scrolls
 sideways except the calendar itself.
 
+An upright phone's header is a native app's search bar: on the Calendar and Overview a round search bar with the brand mark
+inside it (no logo beside it) and the assistant button; no clock and no theme button (the theme is in Settings, Look and
+feel). Filter & Sort on a phone or tablet is a row that opens the filters in a bottom sheet, closed with its X. Occupancy on
+an upright phone shows each day's count of rooms taken instead of dots, and the Day strip has no arrows (tap a day or
+swipe). The installed app is standalone: the phone keeps its status bar, coloured like the header.
+
 ## Elevation & Depth
 
 Flat. Cards are white with a hairline and no shadow. Only things that float over the page get a shadow (sheets,
@@ -129,7 +135,7 @@ popovers, toasts, the unsaved change card). The header and the phone tab bar are
 
 ## Shapes
 
-One corner everywhere: 6px. No pills and no circles on controls, except the two round dots that stretch a booking bar (dots in the occupancy month are data).
+One corner everywhere: 6px. No pills and no circles on controls, except the two round dots that stretch a booking bar (dots in the occupancy month are data), and the header search bar on an upright phone, which is round like a native app's (the user's choice).
 Status is told by shape too: on hold is dashed and hatched.
 
 ## Components
