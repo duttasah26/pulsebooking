@@ -61,6 +61,7 @@ export default function Bookings() {
   const router = useRouter();
   const { settings } = useSettings();
   const wide = useMediaQuery('(min-width: 1024px)');
+  const small = useMediaQuery('(max-width: 767px)'); // a phone: the long search hint would be cut off
 
   // The filter, sort and search live in the URL, so they survive a reload and can be shared.
   const [values, setParams] = useQueryParams(URL_DEFAULTS);
@@ -371,9 +372,9 @@ export default function Bookings() {
 
           {!wide && <FilterDock wide={false} summary={summary}>{panel}</FilterDock>}
           {/* Search, filters and saved views are one centred column that stays under the navbar while the list scrolls; the list uses the full width. */}
-          <div className="sticky top-14 z-20 shrink-0 bg-canvas pb-3 pt-1 lg:static">
+          <div className="shrink-0 bg-canvas pb-3 pt-1 md:sticky md:top-14 md:z-20 lg:static">
             <div className="mx-auto w-full max-w-4xl space-y-3">
-              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder="Search by name, initials (ZB) or month…" />} />
+              <FilterBar fields={filterFields} onClearAll={() => setParams(CLEAR_FILTERS)} search={<SearchBox value={q} onChange={setQ} label="Search guest, organization or label" placeholder={small ? 'Search bookings…' : 'Search by name, initials (ZB) or month…'} />} />
               <ViewsBar quick={quick} views={views} loading={viewsLoading} current={current} onApply={applyView} onReset={resetView} onSave={(name) => saveView(name, current)} onDelete={removeView} />
             </div>
           </div>
