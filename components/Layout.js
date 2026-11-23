@@ -20,8 +20,8 @@ const UTILITY = [
   { href: '/settings', label: 'Settings', Icon: GearSix },
   { href: '/settings?tab=account', label: 'Account', Icon: UserCircle },
 ];
-// The phone's tab bar holds all six.
-const TABS = [...PLACES, ...UTILITY];
+// The phone's tab bar holds five: Account is a tab inside Settings.
+const TABS = [...PLACES, UTILITY[0]];
 
 // wide: the calendar and the Overview use the full screen width; Bookings, Guests and Settings stay in a readable, centred column.
 export default function Layout({ title, wide = false, children }) {
@@ -108,14 +108,14 @@ export default function Layout({ title, wide = false, children }) {
       {/* animate-fade: the page content fades in quickly each time a page opens or reloads, instead of popping in as it is drawn and then filled. */}
       <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-4 pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-4 outline-none md:px-6 md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
-      {/* Phone tab bar: six places, a filled symbol and an emerald label for the one you are on. */}
+      {/* Phone tab bar: five places, a filled symbol and an emerald label for the one you are on. */}
       <nav
         aria-label="Main"
         data-tabbar
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
-          const active = here === href;
+          const active = here === href || (href === '/settings' && pathname === '/settings'); // Account is a tab of Settings
           return (
             <Link
               key={href}
