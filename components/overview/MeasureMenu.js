@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Check, DotsThreeVertical } from '@phosphor-icons/react';
 import { MEASURES } from '../../lib/devicePrefs';
+import { useKeepInView } from '../../lib/useKeepInView';
 
 // The three dots on a figure (or on the chart): a small menu to choose what is counted, bookings, the number of guests, or rooms.
 // The choice is kept on this device. `className` places the button; the menu opens under it.
@@ -10,6 +11,8 @@ export default function MeasureMenu({ label, value, onPick, className = '' }) {
   // column of a phone has no room for it on either side of the dots).
   const [shift, setShift] = useState(0);
   const box = useRef(null);
+  const menu = useRef(null);
+  useKeepInView(menu, open);
   const toggle = () => {
     if (!open && box.current) {
       const vw = document.documentElement.clientWidth;
@@ -52,7 +55,7 @@ export default function MeasureMenu({ label, value, onPick, className = '' }) {
         <DotsThreeVertical size={20} weight="bold" aria-hidden="true" />
       </button>
       {open && (
-        <div id={id} role="menu" aria-label={`${label}: show`} style={{ right: -shift, transformOrigin: shift > 0 ? 'top left' : 'top right' }} className="popover-in absolute top-full mt-1 w-52 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-1 shadow-lg">
+        <div ref={menu} id={id} role="menu" aria-label={`${label}: show`} style={{ right: -shift, transformOrigin: shift > 0 ? 'top left' : 'top right' }} className="popover-in absolute top-full mt-1 w-52 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-1 shadow-lg">
           <p className="px-3 pb-1 pt-1.5 text-[0.8125rem] font-semibold text-muted">Show</p>
           {MEASURES.map(([key, text]) => (
             <button

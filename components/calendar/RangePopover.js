@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import DateRangePicker from '../DateRangePicker';
 import { MAX_SPAN } from './useCalendarParams';
 import { addDays, diffDays } from '../../lib/dates';
+import { useKeepInView } from '../../lib/useKeepInView';
 
 /*
   The calendar's "Go to" panel: the same month picker as the booking form, but for choosing the days to look at.
@@ -13,6 +14,7 @@ export default function RangePopover({ date, span, onShow, onClose }) {
   const [from, setFrom] = useState(date);
   const [to, setTo] = useState(addDays(date, span)); // the day after the last day
   const box = useRef(null);
+  useKeepInView(box, true);
 
   useEffect(() => {
     const onPointer = (e) => !box.current?.contains(e.target) && onClose();

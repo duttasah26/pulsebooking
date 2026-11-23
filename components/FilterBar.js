@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CaretLeft, Plus, X } from '@phosphor-icons/react';
+import { useKeepInView } from '../lib/useKeepInView';
 
 /*
   A row of filters, one chip each, with a "+ Filter" button to add another.
@@ -16,6 +17,8 @@ import { CaretLeft, Plus, X } from '@phosphor-icons/react';
 // A small pop-up under its button: closes on Escape and on a click outside.
 function Pop({ button, children, open, onToggle, align = 'left' }) {
   const root = useRef(null);
+  const panel = useRef(null);
+  useKeepInView(panel, open);
   useEffect(() => {
     if (!open) return undefined;
     const away = (e) => !root.current?.contains(e.target) && onToggle(false);
@@ -32,6 +35,7 @@ function Pop({ button, children, open, onToggle, align = 'left' }) {
       {button}
       {open && (
         <div
+          ref={panel}
           role="dialog"
           className={`animate-pop absolute top-full z-40 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-3 shadow-lg ${align === 'right' ? 'right-0' : 'left-0'}`}
         >
