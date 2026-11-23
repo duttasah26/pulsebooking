@@ -47,7 +47,7 @@ export default function Layout({ title, wide = false, children }) {
         Skip to Main Content
       </a>
 
-      <header className="nav-still sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-sm">
+      <header className="nav-still sticky top-0 z-30 border-b pt-[var(--app-top)] border-line bg-surface/95 backdrop-blur-sm">
         <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-safe`}>
           <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
@@ -106,13 +106,13 @@ export default function Layout({ title, wide = false, children }) {
       </header>
 
       {/* animate-fade: the page content fades in quickly each time a page opens or reloads, instead of popping in as it is drawn and then filled. */}
-      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-safe pb-[calc(4.5rem+env(safe-area-inset-bottom))] pt-4 outline-none md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
+      <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-safe pb-[calc(4.5rem+var(--app-bottom))] pt-4 outline-none md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
 
       {/* Phone tab bar: five places, a filled symbol and an emerald label for the one you are on. */}
       <nav
         aria-label="Main"
         data-tabbar
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm md:hidden short:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[var(--app-bottom)] backdrop-blur-sm md:hidden short:hidden"
       >
         {TABS.map(({ href, label, Icon }) => {
           const active = here === href || (href === '/settings' && pathname === '/settings'); // Account is a tab of Settings

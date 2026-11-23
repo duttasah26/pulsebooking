@@ -97,7 +97,7 @@ export default function Assistant() {
 
   // The panel opens next to the tool pane on the calendar, and at the bottom right elsewhere. The round button sits below
   // the pop-up sheets (z-35), so a sheet's own buttons are never covered by it.
-  const place = railLaunch ? 'fixed left-24 z-[45] bottom-4' : 'fixed right-4 z-[45] bottom-20 md:bottom-4';
+  const place = railLaunch ? 'fixed left-24 z-[45] bottom-4' : 'fixed right-4 z-[45] bottom-[calc(5rem+var(--app-bottom))] md:bottom-4';
   if (!open) {
     if (railLaunch || !wide) return null; // phones and tablets: the Ask button in the top bar opens it, so nothing floats over the page
     return (
