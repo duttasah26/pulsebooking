@@ -29,5 +29,6 @@ export async function middleware(req) {
   return NextResponse.redirect(url);
 }
 
-// Not the build files, the icons and the logo (the login screen needs them).
-export const config = { matcher: ['/((?!_next/|favicon.ico|icon.png|apple-touch-icon.png|Pulse-Logo_Final.webp).*)'] };
+// Not the build files, the icons and the logo (the login screen needs them), nor the home screen manifest and its icons
+// (a phone fetches those without the sign-in cookie).
+export const config = { matcher: ['/((?!_next/|favicon.ico|icon.png|icon-192.png|icon-512.png|icon-maskable-512.png|manifest.webmanifest|apple-touch-icon.png|Pulse-Logo_Final.webp).*)'] };
