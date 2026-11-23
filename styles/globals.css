@@ -779,6 +779,8 @@ main > canvas { animation: bg-in 1200ms var(--ease-out) backwards; }
 :is(a, button):not(:disabled):hover .ico-sun { transform: rotate(90deg) scale(1.1); }
 :is(a, button):not(:disabled):hover .ico-moon { transform: rotate(-24deg) scale(1.1); }
 .btn:not(:disabled):hover > svg:not([class*="ico-"]) { transform: scale(1.1); }
+/* The top navbar stays still on hover: only its colours change. */
+.nav-still svg { transform: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .ico-pop, .ico-spin, .ico-turn, .ico-right, .ico-left, .ico-sun, .ico-moon, .btn > svg { transition: none; }
   :is(a, button, summary, label, [role="tab"], [role="menuitemradio"]):hover :is(.ico-pop, .ico-spin, .ico-turn, .ico-right, .ico-left, .ico-sun, .ico-moon), .btn:hover > svg { transform: none !important; }

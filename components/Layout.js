@@ -47,7 +47,7 @@ export default function Layout({ title, wide = false, children }) {
         Skip to Main Content
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-sm">
+      <header className="nav-still sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-sm">
         <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-4 px-4 md:px-6`}>
           <Link href="/" className="flex shrink-0 items-center rounded-md" aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
@@ -64,7 +64,7 @@ export default function Layout({ title, wide = false, children }) {
                   here === href ? 'bg-tint font-semibold text-ink' : 'font-medium text-muted hover:bg-tint hover:text-ink'
                 }`}
               >
-                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="ico-pop hidden lg:block short:block" />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className="hidden lg:block short:block" />
                 <span className="short:sr-only">{label}</span>
               </Link>
             ))}
@@ -93,7 +93,7 @@ export default function Layout({ title, wide = false, children }) {
                 aria-current={here === href ? 'page' : undefined}
                 className={`btn btn-quiet btn-icon hidden md:inline-flex short:inline-flex ${here === href ? 'text-ink' : 'text-muted'}`}
               >
-                <Icon size={20} weight={here === href ? 'fill' : 'bold'} className={Icon === GearSix ? 'ico-spin' : 'ico-pop'} />
+                <Icon size={20} weight={here === href ? 'fill' : 'bold'} />
               </Link>
             ))}
             {/* Below the desktop width the assistant opens from here, not from a button floating over the page. */}
