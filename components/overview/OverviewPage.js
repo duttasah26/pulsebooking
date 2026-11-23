@@ -68,7 +68,7 @@ function Figure({ title, value, name, pop, notes, active, onPick, measure, onMea
         aria-pressed={loading ? undefined : active}
         onClick={loading ? undefined : onPick}
         tilt={loading ? 0 : 4}
-        className={`flex h-full w-full flex-col rounded-xl border p-4 text-left lg:p-3 ${active && !loading ? POP[pop].on : 'border-line bg-surface'}`}
+        className={`flex h-full w-full flex-col rounded-xl border p-3 text-left sm:p-4 lg:p-3 ${active && !loading ? POP[pop].on : 'border-line bg-surface'}`}
       >
         <span className="flex items-center justify-between">
           <span className="text-[0.9375rem] font-semibold">{loading ? <Sk className="h-4 w-20" /> : title}</span>
@@ -76,7 +76,7 @@ function Figure({ title, value, name, pop, notes, active, onPick, measure, onMea
         </span>
         <span className={`mt-3 text-center font-mono text-5xl font-medium leading-none lg:mt-2 lg:text-4xl ${tone}`}>{loading ? <span className="block h-12 lg:h-9"><Sk className="h-[0.8em] w-[1.6ch] align-top" /></span> : value}</span>
         <span className={`mt-2 text-center text-base font-semibold ${tone}`}>{loading ? <Sk className="h-4 w-24" /> : name}</span>
-        <span className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5 text-[0.8125rem] text-muted lg:mt-2 lg:pt-2">
+        <span className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-line pt-2.5 text-[0.8125rem] text-muted lg:mt-2 lg:pt-2">
           {notes.map(([label, n]) => (
             <span key={label} className="flex items-baseline gap-1.5">{loading ? <Sk className="h-3 w-14" /> : label} <span className="font-mono text-base font-semibold text-ink">{loading ? <Sk className="h-3.5 w-4" /> : n}</span></span>
           ))}
@@ -188,7 +188,7 @@ function DayPicker({ day, today: t, onPick, loading = false }) {
         aria-expanded={open}
         disabled={loading}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex h-11 min-w-[11.5rem] items-center justify-between gap-2 rounded-t-xl bg-canvas px-4 text-base font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:h-10"
+        className="inline-flex h-11 min-w-[11.5rem] items-center justify-between gap-2 whitespace-nowrap rounded-t-xl bg-canvas px-4 text-base font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:h-10"
       >
         <span className="sr-only">Day: </span>
         {loading ? <Sk className="h-4 w-32" /> : <span>{day === t ? `Today, ${fmtShort(day)}` : fmtShort(day)}</span>}
@@ -205,7 +205,7 @@ function DayPicker({ day, today: t, onPick, loading = false }) {
 
 function Pills({ label, items, value, onPick, className = '' }) {
   return (
-    <div role="tablist" aria-label={label} onKeyDown={tabKeys} className={`no-scrollbar flex gap-2 overflow-x-auto ${className}`}>
+    <div role="tablist" aria-label={label} onKeyDown={tabKeys} className={`flex flex-wrap gap-2 ${className}`}>
       {items.map(([key, text]) => (
         <button
           key={key}
@@ -310,12 +310,12 @@ export default function OverviewPage() {
       <div className="flex min-w-0 flex-col gap-6 pt-0 md:pb-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:gap-4">
         <div className="-ml-4 flex flex-col gap-3 bg-surface pl-4 pr-4 pt-3 md:-ml-6 md:pl-6 lg:-mr-6">
         <div className="flex min-w-0 items-center gap-4">
-          <span aria-hidden="true" className={`grid size-14 shrink-0 place-items-center rounded-full text-xl font-semibold text-accent-text ${ready ? 'bg-accent-soft' : 'skeleton'}`}>{ready ? first[0] ?? '·' : ''}</span>
+          <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full text-lg sm:size-14 sm:text-xl font-semibold text-accent-text ${ready ? 'bg-accent-soft' : 'skeleton'}`}>{ready ? first[0] ?? '·' : ''}</span>
           <div className="min-w-0">
-            <h1 className="truncate text-[1.875rem] font-bold leading-tight">{ready ? (first ? `Hello again, ${first}` : 'Hello again') : <Sk className="h-8 w-72 max-w-full" />}</h1>
+            <h1 className="text-[1.5rem] font-bold leading-tight sm:truncate sm:text-[1.875rem]">{ready ? (first ? `Hello again, ${first}` : 'Hello again') : <Sk className="h-8 w-72 max-w-full" />}</h1>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-muted">
               {ready ? <Bell size={16} weight="fill" aria-hidden="true" /> : <Sk className="size-4 rounded-full" />}
-              {ready ? <span className="min-w-0 truncate">{label}: {summary}</span> : <span aria-hidden="true"><span className="skeleton inline-block h-4 w-56 rounded-md align-middle" /></span>}
+              {ready ? <span className="min-w-0 sm:truncate">{label}: {summary}</span> : <span aria-hidden="true"><span className="skeleton inline-block h-4 w-56 rounded-md align-middle" /></span>}
             </p>
           </div>
         </div>
