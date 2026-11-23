@@ -14,7 +14,7 @@ The only real fix is to make the site **installable** and open it from the home 
 
 | Platform | What you get once installed |
 |---|---|
-| Android (Chrome) | `display: "fullscreen"` hides the address bar, the status bar and the navigation bar. |
+| Android (Chrome) | `display: "standalone"` hides the address bar and keeps the phone's status bar (time, battery). `"fullscreen"` also hides the status bar, which we dropped: people want to see the time and battery. |
 | iPhone (Safari) | No Safari bars. The status bar stays when the phone is upright (iOS never hides it); held sideways iOS hides it. |
 
 No service worker was needed: Chrome installed the app with the manifest alone.
@@ -30,7 +30,7 @@ No service worker was needed: Chrome installed the app with the manifest alone.
   "description": "Room bookings for The Pulse Newtown",
   "start_url": "/",
   "scope": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "any",
   "background_color": "#f3f2ee",
   "theme_color": "#ffffff",
@@ -42,7 +42,7 @@ No service worker was needed: Chrome installed the app with the manifest alone.
 }
 ```
 
-- `display: "fullscreen"`: Android hides everything. iOS treats it as `standalone`.
+- `display: "standalone"`: no browser bar, the status bar stays (coloured with `theme_color` and the `theme-color` meta; switch the meta for dark mode). `"fullscreen"` hides the status bar too: the time and battery disappear, so we went back to standalone.
 - `scope: "/"`: every page stays inside the app. A page outside the scope makes Android show a URL bar again.
 - `orientation: "any"`: do not lock it; staff turn the phone sideways.
 - Chrome needs a **192px and a 512px** icon to install. The maskable one keeps the logo inside the middle 80%, because
@@ -155,7 +155,7 @@ own bars there, so the extra room is given only when the app runs from the home 
   --app-top: env(safe-area-inset-top, 0px);
   --app-bottom: env(safe-area-inset-bottom, 0px);
 }
-@media (display-mode: fullscreen), (display-mode: standalone) {
+@media (display-mode: fullscreen) { /* standalone keeps the system bars, so it needs only the insets */
   :root {
     --app-top: max(env(safe-area-inset-top, 0px), 1rem);
     --app-bottom: max(env(safe-area-inset-bottom, 0px), 0.75rem);

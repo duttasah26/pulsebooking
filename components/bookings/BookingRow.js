@@ -7,7 +7,7 @@ import StatusBadge from '../StatusBadge';
 import RoomNumber from '../RoomNumber';
 import { useSettings } from '../SettingsProvider';
 import { colorFor, roomShade } from '../../lib/colors';
-import { fmtDateTime, fmtShort } from '../../lib/dates';
+import { fmtDateTime, fmtDayMonth, fmtShort } from '../../lib/dates';
 
 // The columns a view can show or hide. The guest's name is always there.
 export const BOOKING_COLUMNS = [
@@ -18,10 +18,14 @@ export const BOOKING_COLUMNS = [
   ['status', 'Status'],
 ];
 
+// A date in a row: "Tue 24 Nov", or on a phone "24 Nov" (the weekday would push the room and the dates onto two lines).
+const Day = ({ d }) => <><span className="sm:hidden">{fmtDayMonth(d)}</span><span className="hidden sm:inline">{fmtShort(d)}</span></>;
+
 // One booking in the list, in two lines: its colour and the guest's name with the status, then a row of small facts, each with its icon
 // (room, dates, nights, guests, organization, contact; each can be switched off in a view). A chevron at the end says the row opens.
 // minimal: the quiet form for a narrow list (the Overview): the name, then room, dates, nights and guests in small plain text, no badge or chip.
-// A deleted booking offers Restore; a hold offers Confirm and Cancel in one click. Checked-out and cancelled stays are faded.
+// On a phone the row keeps only what tells stays apart (name, room, dates, nights, guests): the organization and contact are in the
+// booking itself, one tap away. A deleted booking offers Restore; a hold offers Confirm and Cancel in one click. Checked-out and cancelled stays are faded.
 export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm, onCancelHold, hidden = [], density = 'roomy', minimal = false }) {
   const { settings } = useSettings();
   const isDeleted = Boolean(b.deleted_at);
@@ -49,18 +53,18 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
       >
         <span aria-hidden="true" className={`shrink-0 rounded-md ${minimal ? 'size-3.5' : 'size-4'}`} style={{ backgroundColor: colorFor(b, settings).bg, boxShadow: `inset 0 0 0 1.5px ${colorFor(b, settings).border}` }} />
         <span className="min-w-0 flex-1">
-          <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:gap-x-3">
             <span className={`min-w-0 [overflow-wrap:break-word] sm:truncate ${minimal ? 'text-[0.9375rem]' : 'text-[1.0625rem]'} font-semibold ${isDeleted ? 'line-through' : ''}`}>{b.name}</span>
             {pinned && !isDeleted && <PushPin size={14} weight="fill" aria-label="Pinned" className="shrink-0 text-muted" />}
             {show('status') && (
               isDeleted ? (
                 <StatusBadge deleted>{`Deleted ${fmtDateTime(b.deleted_at)}${b.deleted_by ? ` by ${b.deleted_by}` : ''}`}</StatusBadge>
               ) : (
-                <StatusBadge status={b.status} />
+                <StatusBadge status={b.status} tickOnPhone />
               )
             )}
           </span>
-          <span className={`mt-1 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 ${minimal ? 'text-[0.8125rem]' : 'text-[0.9375rem]'} text-muted`}>
+          <span className={`mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4 ${minimal ? 'text-[0.8125rem]' : 'text-[0.9375rem]'} text-muted`}>
             {show('room') && (
               <span className="flex flex-wrap items-center gap-1.5" title={`Rooms ${rooms.join(', ')}`}>
                 {rooms.length > 1 ? (
@@ -79,7 +83,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
               <span className="flex items-center gap-1.5">
                 <CalendarBlank size={minimal ? 14 : 16} weight="fill" aria-hidden="true" className="shrink-0" />
                 <span>
-                  <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_in)}</span> to <span className={minimal ? '' : 'font-semibold text-ink'}>{fmtShort(b.check_out)}</span>
+                  <span className={minimal ? '' : 'font-semibold text-ink'}><Day d={b.check_in} /></span> to <span className={minimal ? '' : 'font-semibold text-ink'}><Day d={b.check_out} /></span>
                 </span>
               </span>
             )}
@@ -92,20 +96,20 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
             )}
             </span>
             {show('organization') && b.organization && (
-              <span className="flex min-w-0 items-center gap-1.5">
+              <span className="flex min-w-0 items-center gap-1.5 max-sm:hidden">
                 <Buildings size={16} weight="fill" aria-hidden="true" className="shrink-0" />
                 <span className="min-w-0 [overflow-wrap:break-word] sm:truncate">{b.organization}</span>
               </span>
             )}
             {show('contact') && (
-              <span className="flex min-w-0 items-center gap-1.5">
+              <span className="flex min-w-0 items-center gap-1.5 max-sm:hidden">
                 {contact && <Phone size={16} weight="fill" aria-hidden="true" className="shrink-0" />}
                 <span className="min-w-0 [overflow-wrap:break-word] sm:truncate">{b.guest_id ? contact || 'No phone or email' : 'No guest yet'}</span>
               </span>
             )}
           </span>
         </span>
-        {chevron && <span className="flex w-14 shrink-0 justify-center"><CaretRight size={18} aria-hidden="true" className="ico-right text-muted" /></span>}
+        {chevron && <span className="flex w-10 shrink-0 justify-center sm:w-14"><CaretRight size={18} aria-hidden="true" className="ico-right text-muted" /></span>}
       </button>
       {!isDeleted && b.status === 'on_hold' && onConfirm && (
         <div className="flex shrink-0 items-center gap-3 pr-3 sm:gap-2">
@@ -118,7 +122,7 @@ export default function BookingRow({ b, index = 0, onOpen, onRestore, onConfirm,
         </div>
       )}
       {members && !isDeleted && (
-        <span className="flex w-14 shrink-0 items-center justify-center">
+        <span className="flex w-10 shrink-0 items-center justify-center sm:w-14">
           <button type="button" className="btn btn-icon btn-quiet" aria-expanded={open} aria-label={`${open ? 'Hide' : 'Show'} the ${members.length} rooms of ${b.name}`} onClick={() => setOpen((v) => !v)}>
             <CaretDown size={18} aria-hidden="true" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
           </button>

@@ -411,15 +411,16 @@ export default function CalendarPage() {
     );
   }, [bookingList, todayRows, spot, rooms.data, shownDate, span, view, monthNights, monthRows, thisMonth, nextMonth, summaryReady]);
   // On a phone the calendar fills the screen exactly, so the page itself never scrolls: only the calendar does. Locking it also stops
-  // the browser's address bar from sliding in and out, which would change the height the grid was sized to.
+  // the browser's address bar from sliding in and out, which would change the height the grid was sized to. Only the grids (Timeline
+  // and Month) are sized to the screen: the Day lists and the Occupancy month are taller than a phone, so their page scrolls.
   useEffect(() => {
-    if (!phone) return undefined;
+    if (!phone || (view !== 'timeline' && view !== 'month')) return undefined;
     const html = document.documentElement;
     const prev = [html.style.overflowY, html.style.overscrollBehavior];
     html.style.overflowY = 'hidden';
     html.style.overscrollBehavior = 'none';
     return () => { [html.style.overflowY, html.style.overscrollBehavior] = prev; };
-  }, [phone]);
+  }, [phone, view]);
   // A phone is for looking: it has no tools, so a tool left on from a wider screen is switched off, and taps simply open bookings.
   useEffect(() => {
     if (!phone) return;

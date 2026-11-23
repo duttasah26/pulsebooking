@@ -1,9 +1,13 @@
-import { CaretDown, Funnel } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { CaretUp, Funnel } from '@phosphor-icons/react';
 import Dock from './Dock';
+import Sheet from './Sheet';
 
-// Filters and sort as a dock: on wide screens a panel on the right that folds to a tab; on narrow screens a
-// collapsible block (use it above the list). `summary` is a short reminder of what is chosen ("Upcoming, Check-in date").
+// Filters and sort as a dock: on wide screens a panel on the right that folds to a tab. On narrow screens a row above the list
+// that says what is chosen and opens the filters in a sheet (rising from the bottom on a phone, like a booking's details),
+// closed with its X, a tap outside or Escape. `summary` is a short reminder of what is chosen ("Upcoming, Check-in date").
 export default function FilterDock({ wide, open, onToggle, summary, children }) {
+  const [sheet, setSheet] = useState(false);
   if (wide) {
     return (
       <Dock open={open} onToggle={onToggle} label="Filters and sort" title="Filter & Sort" tab="Filter & Sort">
@@ -12,16 +16,26 @@ export default function FilterDock({ wide, open, onToggle, summary, children }) 
     );
   }
   return (
-    <details className="group rounded-lg border border-line bg-surface">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 py-2 text-base font-semibold">
+    <>
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={sheet}
+        onClick={() => setSheet(true)}
+        className="flex min-h-12 w-full items-center justify-between gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-left text-base font-semibold transition-colors duration-150 hover:bg-surface-2"
+      >
         <span className="flex min-w-0 items-center gap-2">
           <Funnel size={18} aria-hidden="true" className="shrink-0" />
           <span className="shrink-0 whitespace-nowrap">Filter &amp; Sort</span>
-          <span className="min-w-0 font-normal leading-snug text-muted lg:truncate">{summary}</span>
+          <span className="min-w-0 font-normal leading-snug text-muted">{summary}</span>
         </span>
-        <CaretDown size={16} aria-hidden="true" className="shrink-0 transition-transform group-open:rotate-180" />
-      </summary>
-      <div className="border-t border-line p-4">{children}</div>
-    </details>
+        <CaretUp size={16} aria-hidden="true" className="shrink-0" />
+      </button>
+      {sheet && (
+        <Sheet title="Filter & Sort" onClose={() => setSheet(false)}>
+          <div className="rounded-lg border border-line bg-surface p-4">{children}</div>
+        </Sheet>
+      )}
+    </>
   );
 }

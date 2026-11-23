@@ -34,19 +34,26 @@ function RoomChip({ number }) {
 function Row({ b, tone, what, detail, onOpen }) {
   const hold = b.status === 'on_hold';
   const bg = { arriving: 'bg-ok-soft', leaving: 'bg-danger-soft', staying: 'bg-surface', hold: 'bg-hold' }[hold ? 'hold' : tone];
+  const whatTone = tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-ok-text' : '';
+  // On a phone the state ("Leaves tomorrow", "at 1:00 PM") is a line under the details instead of a column at the right, so the
+  // name and the dates keep the width of the row and nothing is cut.
   return (
     <li>
       <button
         type="button"
         onClick={() => onOpen(b)}
-        className={`flex min-h-16 w-full items-center gap-4 px-4 py-3 text-left transition-[filter] duration-150 hover:brightness-95 ${bg} ${hold ? 'border-y border-dashed border-hold-edge' : ''}`}
+        className={`flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-[filter] duration-150 hover:brightness-95 sm:gap-4 ${bg} ${hold ? 'border-y border-dashed border-hold-edge' : ''}`}
       >
         <RoomChip number={b.room_number} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-base font-semibold">{b.name}</span>
+          <span className="block text-base font-semibold [overflow-wrap:break-word] sm:truncate">{b.name}</span>
           <span className="block text-[0.9375rem] text-muted">{detail}</span>
+          <span className={`block text-[0.9375rem] font-semibold sm:hidden ${whatTone}`}>
+            {what}
+            {hold && <span className="text-hold-ink">{what ? ', on hold' : 'On hold'}</span>}
+          </span>
         </span>
-        <span className={`shrink-0 text-right text-base font-semibold ${tone === 'leaving' && !hold ? 'text-danger' : tone === 'arriving' && !hold ? 'text-ok-text' : ''}`}>
+        <span className={`hidden shrink-0 text-right text-base font-semibold sm:block ${whatTone}`}>
           {what}
           {hold && <span className="block text-sm font-semibold text-hold-ink">On hold</span>}
         </span>
@@ -106,7 +113,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
     <div className="space-y-4">
       {onDate && (
         <nav aria-label="Days" className="flex items-stretch gap-2">
-          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch upright:hidden" aria-label="Day before" {...hold('prev', () => onDate(addDays(date, -1)))}>
             <CaretLeft className="ico-left" size={22} aria-hidden="true" />
           </button>
           <div className="-m-1 min-w-0 flex-1 overflow-hidden p-1">
@@ -127,7 +134,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
                   >
                     <span className="text-sm text-muted">{fmtWeekday(d)}</span>
                     <span className={`font-mono text-lg font-semibold ${d === todayStr ? 'text-accent-text' : ''}`}>{dayOfMonth(d)}</span>
-                    <span aria-hidden="true" className="flex gap-2 text-sm font-semibold max-sm:hidden">
+                    <span aria-hidden="true" className="flex gap-1 text-sm font-semibold sm:gap-2">
                       <span className="text-ok-text">{c.arriving.length ? `+${c.arriving.length}` : ''}</span>
                       <span className="text-danger">{c.leaving.length ? `-${c.leaving.length}` : ''}</span>
                     </span>
@@ -137,7 +144,7 @@ export default function DayView({ date, rooms, bookings, onOpen, onCreate, onDat
             })}
           </ol>
           </div>
-          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
+          <button type="button" className="btn btn-quiet btn-icon h-auto shrink-0 self-stretch upright:hidden" aria-label="Day after" {...hold('next', () => onDate(addDays(date, 1)))}>
             <CaretRight className="ico-right" size={22} aria-hidden="true" />
           </button>
         </nav>

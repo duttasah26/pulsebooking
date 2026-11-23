@@ -208,16 +208,17 @@
 /* A phone held upright (phone width, and taller than a phone held sideways). Used as `upright:` in class names. */
 @custom-variant upright (@media (max-width: 767px) and (min-height: 501px));
 
-/* Room above the header and under the phone tab bar. In a browser tab the browser's own bars give that room, so it is only the
-   notch and home bar insets. Opened from the home screen the app reaches the very edges of the screen, so the header comes
-   down 16px (more under a notch) and the tab bar rises 17px (more over a home bar), clear of the rounded corners, the status
-   icons and the swipe area. A phone held sideways keeps its few pixels of height: only the insets there. Everything that
-   sits under the header or above the tab bar is offset by these too. */
+/* Room above the header and under the phone tab bar. In a browser tab, and in the installed app (standalone: the phone keeps its
+   status bar with the time and battery, and its own bottom bar), the system bars give that room, so it is only the notch and
+   home bar insets, as in a native app. Fullscreen (not used now: it hid the time and battery) reaches the very edges of the
+   screen, so there the header comes down 16px and the tab bar rises 17px (Reddit measured), clear of the rounded corners and
+   the swipe area. A phone held sideways keeps its few pixels of height: only the insets there. Everything that sits under the
+   header or above the tab bar is offset by these too. */
 :root {
   --app-top: env(safe-area-inset-top, 0px);
   --app-bottom: env(safe-area-inset-bottom, 0px);
 }
-@media (display-mode: fullscreen), (display-mode: standalone) {
+@media (display-mode: fullscreen) {
   :root {
     --app-top: max(env(safe-area-inset-top, 0px), 1rem);
     --app-bottom: max(env(safe-area-inset-bottom, 0px), 1.0625rem); /* 17px: the tab bar sits where a native app's does (Reddit measured) */
@@ -546,6 +547,10 @@ body {
     @apply inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3 text-[0.9375rem] font-medium text-ink/80 lg:min-h-9;
     transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out), box-shadow var(--dur-quick) var(--ease-out);
   }
+  /* A segment is 40px inside its 44px track; the invisible layer reaches over the track's edge and half the gap on each side,
+     so the place a finger can press is 44px everywhere without the track growing. */
+  .seg-item { position: relative; }
+  .seg-item::after { content: ""; position: absolute; inset: -2px -1px; }
   .seg-item:hover { @apply text-ink; background-color: color-mix(in srgb, var(--raised) 50%, transparent); }
   .seg-item[aria-selected="true"], .seg-item[aria-current="page"], .seg-item[aria-current="step"], .seg-item[aria-pressed="true"] {
     @apply font-semibold text-ink;
@@ -866,6 +871,20 @@ details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-ou
 }
 @keyframes sheet-away {
   to { opacity: 0; transform: translateX(1.5rem); }
+}
+/* The phone menu: a drawer from the left edge, and back to it. Reduced motion keeps only the fade. */
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateX(-1.5rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes drawer-out {
+  to { opacity: 0; transform: translateX(-1.5rem); }
+}
+.animate-drawer { animation: drawer-in var(--dur-slow) var(--ease-out); }
+.animate-drawer-out { animation: drawer-out var(--dur-base) var(--ease-in) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-drawer { animation-name: fade-in; }
+  .animate-drawer-out { animation-name: fade-out; }
 }
 @keyframes dock-in {
   from { opacity: 0; transform: translateX(0.75rem); }

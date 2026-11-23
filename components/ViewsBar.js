@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CaretDown, Check, PencilSimple, Plus, X } from '@phosphor-icons/react';
 import { useMediaQuery } from '../lib/useMediaQuery';
+import { useKeepInView } from '../lib/useKeepInView';
 import { sameParams } from '../lib/viewState';
 import { Mark, toneStyle } from './FilterParts';
 
@@ -24,6 +25,8 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
   const compact = useMediaQuery('(max-width: 767px), (orientation: landscape) and (max-height: 500px)');
   const [menu, setMenu] = useState(false);
   const box = useRef(null);
+  const list = useRef(null);
+  useKeepInView(list, menu);
   useEffect(() => {
     if (!menu) return undefined;
     const away = (e) => !box.current?.contains(e.target) && setMenu(false);
@@ -58,7 +61,7 @@ export default function ViewsBar({ views, current, onApply, onReset, onSave, onD
               <CaretDown size={16} aria-hidden="true" />
             </button>
             {menu && (
-              <div role="group" aria-label="Views" className="animate-pop absolute inset-x-0 top-full z-30 mt-1 max-h-[min(24rem,60dvh)] space-y-0.5 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-1.5 shadow-lg">
+              <div ref={list} role="group" aria-label="Views" className="animate-pop absolute inset-x-0 top-full z-30 mt-1 max-h-[min(24rem,60dvh)] space-y-0.5 overflow-y-auto overscroll-contain rounded-lg border border-line bg-surface p-1.5 shadow-lg">
                 <button type="button" aria-pressed={!changed} className={row} onClick={() => { onReset(); setMenu(false); }}>
                   <Check size={16} weight="bold" aria-hidden="true" className={changed ? 'invisible' : ''} /> Standard
                 </button>

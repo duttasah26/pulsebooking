@@ -84,8 +84,10 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
       const el = gridRef.current;
       if (!el) return;
       const top = el.getBoundingClientRect().top + window.scrollY;
-      const legend = window.innerWidth < 640 ? 88 : 64; // the legend under the grid, and the padding
-      const left = window.innerHeight - top - legend - 12;
+      const upright = window.innerWidth < 768 && window.innerHeight > 500; // an upright phone shows counts, not dots, and no legend
+      const legend = upright ? 16 : window.innerWidth < 640 ? 88 : 64; // the legend under the grid, and the padding
+      const tabbar = document.querySelector('[data-tabbar]')?.offsetHeight ?? 0; // the phone tab bar (0 where it is hidden)
+      const left = window.innerHeight - top - legend - tabbar - 12;
       setCellH(Math.max(44, Math.floor((left - (rows - 1) * 6) / rows)));
     };
     measure();
@@ -157,13 +159,15 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
                 style={{ '--i': i, ...(counts[i] > 0 && total > 0 ? { backgroundColor: `color-mix(in srgb, var(--accent) ${Math.round((counts[i] / total) * 70)}%, transparent)` } : null) }} // the fuller the day, the deeper the tint, so a busy day stands out at a glance
                 onClick={() => onPickDay(d)}
                 aria-label={`${fmtDayMonth(d)}: ${counts[i]} of ${total} rooms taken, ${Math.max(0, total - counts[i])} free`}
-                className={`cell cell-in flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
+                className={`cell cell-in @container flex min-h-0 flex-col items-start justify-between gap-0.5 overflow-hidden rounded-lg border text-left ${tight ? 'p-1' : roomy ? 'p-1.5 sm:p-2' : 'p-1.5'} ${isWeekend(d) ? 'bg-surface-2/60' : ''} ${d < todayStr ? 'opacity-70' : ''} ${isToday ? 'border-2 border-accent' : 'border-transparent hover:border-line'}`}
               >
                 <span className="flex w-full items-baseline gap-2">
                   <span className={`font-mono leading-none ${tight ? 'text-sm' : 'text-base sm:text-lg'} ${isToday ? 'font-semibold text-accent-text' : 'font-semibold'}`}>{dayOfMonth(d)}</span>
-                  <span className="hidden font-mono text-sm leading-none text-muted sm:inline">{counts[i]}/{total}</span>
+                  <span className="hidden font-mono text-sm leading-none text-muted sm:inline upright:hidden">{counts[i]}/{total}</span>
                 </span>
-                <span className="flex flex-col" style={{ gap: gapY }} aria-hidden="true">
+                {/* An upright phone has no room for readable dots: the count of rooms taken, large, instead. */}
+                <span aria-hidden="true" className="hidden self-center whitespace-nowrap font-mono text-base font-bold leading-none upright:block">{counts[i]}<span className="text-[0.625rem] font-medium text-muted @max-[2.4rem]:hidden">/{total}</span></span>
+                <span className="flex flex-col upright:hidden" style={{ gap: gapY }} aria-hidden="true">
                   {floors.map(({ floor, rooms: list, shade }) => (
                     <span key={floor} className="flex" style={{ gap: gapX }}>
                       {list.map((r) => (
@@ -181,7 +185,7 @@ export default function OccupancyMonth({ date, rooms, bookings, onPickDay, onDat
           })}
         </div>
 
-        <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1 pt-3 text-[0.9375rem] text-muted" aria-label="What the dots mean">
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1 pt-3 text-[0.9375rem] text-muted upright:hidden" aria-label="What the dots mean">
           <li className="flex items-center gap-2"><span className="size-3 rounded-full bg-muted" aria-hidden="true" /> Room taken</li>
           <li className="flex items-center gap-2"><span className="size-3 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px var(--muted)' }} aria-hidden="true" /> Room free</li>
           {floors.map(({ floor, shade }) => (

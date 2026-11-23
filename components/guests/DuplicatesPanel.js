@@ -1,27 +1,33 @@
 import { useState } from 'react';
-import { CaretDown, Warning } from '@phosphor-icons/react';
+import { CaretDown, Warning, X } from '@phosphor-icons/react';
+import { useStoredState } from '../../lib/useStoredState';
 
 // Guests that may be the same person (Z B and ZB), found across the whole guest list. It only points them out: a Merge button
-// opens the merge screen, where the person at the desk decides. Hidden when there is nothing to review.
+// opens the merge screen, where the person at the desk decides. Hidden when there is nothing to review, and after its X on this
+// device until the set of possible duplicates changes (a new pair shows it again).
 //   groups: [{ key, guests: [{ id, name, phone, email, organization, stays }] }]
 export default function DuplicatesPanel({ groups, onMerge }) {
   const [open, setOpen] = useState(false);
-  if (!groups.length) return null;
+  const [hidden, setHidden] = useStoredState('pulse.dupesHidden', '');
+  const seen = groups.map((g) => g.key).sort().join('|');
+  if (!groups.length || hidden === seen) return null;
   return (
     <section aria-label="Guests that may be the same person" className="animate-fade rounded-lg border border-line bg-surface">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left"
-      >
-        <Warning size={24} weight="fill" aria-hidden="true" className="shrink-0 text-ink" />
-        <span className="min-w-0 flex-1 text-base font-semibold leading-snug">
-          {groups.length === 1 ? '1 guest may be listed twice' : `${groups.length} guests may be listed twice`}
-          <span className="t-footnote block font-normal">Same name once spaces and capitals are ignored, such as Z B and ZB. Nothing is merged unless you choose to.</span>
-        </span>
-        <CaretDown size={20} aria-hidden="true" className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-      </button>
+      <div className="flex items-center pr-2">
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+          className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 pl-4 pr-2 text-left"
+        >
+          <Warning size={22} weight="fill" aria-hidden="true" className="shrink-0 text-ink" />
+          <span className="min-w-0 flex-1 text-base font-semibold">{groups.length === 1 ? '1 possible duplicate' : `${groups.length} possible duplicates`}</span>
+          <CaretDown size={20} aria-hidden="true" className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        </button>
+        <button type="button" className="btn btn-quiet btn-icon shrink-0" aria-label="Hide possible duplicates" title="Hide" onClick={() => setHidden(seen)}>
+          <X size={18} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
       {open && (
         <ul className="divide-y divide-line border-t border-line">
           {groups.map((group) => (
