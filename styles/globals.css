@@ -868,6 +868,20 @@ details[open] > .details-body { animation: step-in var(--dur-base) var(--ease-ou
 @keyframes sheet-away {
   to { opacity: 0; transform: translateX(1.5rem); }
 }
+/* The phone menu: a drawer from the left edge, and back to it. Reduced motion keeps only the fade. */
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateX(-1.5rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes drawer-out {
+  to { opacity: 0; transform: translateX(-1.5rem); }
+}
+.animate-drawer { animation: drawer-in var(--dur-slow) var(--ease-out); }
+.animate-drawer-out { animation: drawer-out var(--dur-base) var(--ease-in) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-drawer { animation-name: fade-in; }
+  .animate-drawer-out { animation-name: fade-out; }
+}
 @keyframes dock-in {
   from { opacity: 0; transform: translateX(0.75rem); }
   to { opacity: 1; transform: none; }

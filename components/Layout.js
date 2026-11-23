@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -6,7 +7,8 @@ import { useRouter } from 'next/router';
 import IndiaClock from './IndiaClock';
 import GlobalSearch from './GlobalSearch';
 import { OPEN_ASSISTANT } from './Assistant';
-import { CalendarBlank, ChatCircleDots, GearSix, ListBullets, SquaresFour, UserCircle, Users } from '@phosphor-icons/react';
+import MenuDrawer from './MenuDrawer';
+import { CalendarBlank, ChatCircleDots, GearSix, List, ListBullets, SquaresFour, UserCircle, Users } from '@phosphor-icons/react';
 
 // The four places staff work in, named in words on every screen wide enough for them.
 const PLACES = [
@@ -29,6 +31,7 @@ export default function Layout({ title, wide = false, children }) {
   const { pathname, query } = useRouter();
   // Settings and Account are two tabs of one page, so the current tab says which of the two is lit.
   const here = pathname === '/settings' ? (query.tab === 'account' ? '/settings?tab=account' : '/settings') : pathname;
+  const [menu, setMenu] = useState(false); // the burger menu of an upright phone
 
   return (
     <>
@@ -48,6 +51,11 @@ export default function Layout({ title, wide = false, children }) {
 
       <header className="nav-still sticky top-0 z-30 border-b pt-[var(--app-top)] border-line bg-surface/95 backdrop-blur-sm">
         <div className={`mx-auto flex h-14 short:h-12 ${max} items-center gap-2 px-safe md:gap-4`}>
+          {/* An upright phone: the burger opens the menu of quick places (MenuDrawer), as in a native app. */}
+          <button type="button" className="btn btn-quiet btn-icon -ml-2 hidden shrink-0 text-ink upright:inline-flex" aria-label="Menu" aria-haspopup="dialog" aria-expanded={menu} onClick={() => setMenu(true)}>
+            <List size={24} weight="bold" />
+          </button>
+
           {/* On an upright phone with the header search, the brand mark sits inside the search instead (like a native app's search bar). */}
           <Link href="/" className={`flex shrink-0 items-center rounded-md ${pathname === '/' || pathname === '/overview' ? 'upright:hidden' : ''}`} aria-label="The Pulse Newtown, Rooms: go to the calendar">
             <Image src="/Pulse-Logo_Final.webp" alt="" width={744} height={380} priority className="h-7 w-auto" />
@@ -106,6 +114,7 @@ export default function Layout({ title, wide = false, children }) {
           </div>
         </div>
       </header>
+      {menu && <MenuDrawer onClose={() => setMenu(false)} />}
 
       {/* animate-fade: the page content fades in quickly each time a page opens or reloads, instead of popping in as it is drawn and then filled. */}
       <main id="main" tabIndex={-1} className={`animate-fade mx-auto ${max} px-safe pb-[calc(4.5rem+var(--app-bottom))] pt-4 outline-none md:pb-4 md:pt-4 short:pb-3 short:pt-2`}>{children}</main>
