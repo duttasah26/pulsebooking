@@ -146,6 +146,31 @@ function homeBar() {
 
 Use `dvh` (not `vh`) for full height elements: `100vh` is taller than the visible screen on phones.
 
+**Extra room only in the installed app.** Fullscreen on Android puts the header right at the top edge (under the rounded
+corners and where the status icons appear when pulled down) and the tab bar right on the swipe area. A browser tab has its
+own bars there, so the extra room is given only when the app runs from the home screen, through two variables:
+
+```css
+:root {
+  --app-top: env(safe-area-inset-top, 0px);
+  --app-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  :root {
+    --app-top: max(env(safe-area-inset-top, 0px), 1rem);
+    --app-bottom: max(env(safe-area-inset-bottom, 0px), 0.75rem);
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --app-top: env(safe-area-inset-top, 0px); } /* sideways the height is too precious */
+}
+```
+
+Then `pt-[var(--app-top)]` on the sticky header, `pb-[var(--app-bottom)]` on the phone tab bar, and every element placed
+against them is offset the same way: a sticky bar under the header `top-[calc(3.5rem+var(--app-top))]`, a toast or panel
+above the tab bar `bottom-[calc(4rem+var(--app-bottom))]`, the page's bottom padding `pb-[calc(4.5rem+var(--app-bottom))]`.
+Test it in a desktop browser by setting the two variables on `<html>` by hand: `display-mode` cannot be faked there.
+
 ## 6. Installing it (tell the users)
 
 - **Android**: open the live HTTPS site in **Chrome**, menu, **Install app**. If it asks "Install" or "Create shortcut",
